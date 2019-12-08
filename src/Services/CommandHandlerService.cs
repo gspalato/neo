@@ -63,7 +63,7 @@ namespace Arpa.Services
 
 			_CommandContext ctx = new _CommandContext(this.client, msg);
 
-			this.services.GetRequiredService<_CommandService>().ExecuteAsync(ctx);
+			this.services.GetRequiredService<_CommandService>().Execute(ctx);
 
 			await Task.Run(() => { }).ConfigureAwait(false);
 

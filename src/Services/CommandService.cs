@@ -100,7 +100,7 @@ namespace Arpa.Services
 			this.typeParsers.Add(type, parser);
 		}
 
-		public void ExecuteAsync(_CommandContext ctx)
+		public void Execute(_CommandContext ctx)
 		{
 			string prefix = services.GetRequiredService<IConfiguration>()["Environment:PROD:PREFIX"];
 			List<string> args = this.handlerService
