@@ -20,10 +20,10 @@ using Arpa.Utilities;
 	> Execution also involves string parsing and argument resolving.
 
 	Features:
-	[?]  Type resolvers;
+	[?] Type resolvers;
 	[X] Automatic module (command) discovery;
-	[]  Multi argument match handling;
-	[]  Command overloading;
+	[] Multi argument match handling;
+	[] Command overloading;
 */
 
 namespace Arpa.Services
@@ -53,7 +53,7 @@ namespace Arpa.Services
 			this.typeParsers = new Dictionary<Type, object>();
 		}
 
-		public void AddCommand(CommandInfo info, Command cmd) =>
+		public void AddCommand(CommandInfo info, Type cmd) =>
 			commands.AddCommand(info.Id, cmd);
 
 		public void AddModules()
@@ -84,14 +84,13 @@ namespace Arpa.Services
 		public void Execute(CommandContext ctx)
 		{
 			string prefix = services.GetRequiredService<IConfiguration>()["Environment:DEV:PREFIX"];
+			string content = ctx.Message.Content.Substring(prefix.Length);
 
-			List<string> args = this.handlerService
-				.ParseMessage(ctx.Message.Content.Substring(prefix.Length));
+			List<string> args = this.handlerService.ParseMessage(content);
 
-			Command cmd = this.commands.FindCommands((info) => info.Id == args[0]).First();
+			Command cmd = this.commands.GetCommand(args[0]);
 
 			cmd.SetContext(ctx);
-
 			cmd.GetType().GetMethod("RunAsync").Invoke(cmd,
 				ParseRequiredArguments(cmd.GetType(), ctx, args).ToArray());
 		}
@@ -101,7 +100,6 @@ namespace Arpa.Services
 
 		private void HandleCommandLoading(Type t)
 		{
-			Command cmd = ClassUtilities.Instantiate<Command>(t);
 			try
 			{
 				CommandAttributes attributes = this.ReadCommandAttributes(t);
@@ -110,7 +108,7 @@ namespace Arpa.Services
 					Id = attributes.Id
 				};
 
-				this.AddCommand(info, cmd);
+				this.AddCommand(info, t);
 			}
 			catch (Exception e)
 			{
@@ -123,7 +121,7 @@ namespace Arpa.Services
 		{
 			Type targetType = iT.GetGenericArguments().First();
 
-			object parser = Activator.CreateInstance(t);
+			object parser = ClassUtilities.Instantiate(t);
 
 			AddTypeParser(targetType, parser);
 		}
@@ -141,8 +139,6 @@ namespace Arpa.Services
 			{
 				Type type = info.ParameterType.GetType();
 				object parser = GetTypeParser(type);
-
-				Console.WriteLine(parser);
 
 				dynamic result = parser.GetType().GetMethod("ParseAsync").Invoke(parser, new object[] {
 					args[i], ctx, i

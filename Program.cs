@@ -9,7 +9,7 @@ using Discord.WebSocket;
 
 namespace Arpa
 {
-	class Program
+	internal sealed class Program
 	{
 		static void Main(string[] args) =>
 			new App().MainAsync(args).GetAwaiter().GetResult();

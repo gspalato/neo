@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 namespace Arpa.Structures
 {
-	public interface _ICommand
+	public interface ICommand
 	{
 		void SetContext(CommandContext Context);
 	}
 
-	abstract public class Command : _ICommand
+	abstract public class Command : ICommand
 	{
 		public CommandContext Context { get; private set; }
 
