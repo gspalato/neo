@@ -5,14 +5,14 @@ namespace Arpa.Structures
 {
 	public interface _ICommand
 	{
-		void SetContext(_CommandContext Context);
+		void SetContext(CommandContext Context);
 	}
 
-	abstract public class _Command : _ICommand
+	abstract public class Command : _ICommand
 	{
-		public _CommandContext Context { get; private set; }
+		public CommandContext Context { get; private set; }
 
-		public void SetContext(_CommandContext Context)
+		public void SetContext(CommandContext Context)
 		{
 			this.Context = Context;
 		}

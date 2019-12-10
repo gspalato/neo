@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 
 using Arpa.Services;
@@ -42,19 +41,10 @@ namespace Arpa
 				{
 					await services
 						.GetRequiredService<CommandHandlerService>()
-						.InstallCommandsAsync(Configuration["Environment:PROD:PREFIX"]);
+						.InstallCommandsAsync(Configuration["Environment:DEV:PREFIX"]);
 				};
 
-				try
-				{
-					services.GetRequiredService<_CommandService>().AddModules();
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e);
-				}
-
-				await this.Client.LoginAsync(TokenType.Bot, Configuration["Environment:PROD:TOKEN"]);
+				await this.Client.LoginAsync(TokenType.Bot, Configuration["Environment:DEV:TOKEN"]);
 				await this.Client.StartAsync();
 
 				await Task.Delay(-1);
@@ -70,7 +60,6 @@ namespace Arpa
 				.AddSingleton<DatabaseService>()
 				.AddSingleton<CommandService>()
 				.AddSingleton<CommandHandlerService>()
-				.AddSingleton<_CommandService>()
 				.BuildServiceProvider();
 		}
 

@@ -4,18 +4,19 @@ using System.Threading.Tasks;
 
 using Discord.WebSocket;
 
-using Arpa.Structures;
+using Arpa.Entities;
+using Arpa.Errors;
 
 namespace Arpa.Structures
 {
-	public class SocketUserParser : TypeParser<SocketUser>
+	public class SocketUserParser : ITypeParser<SocketUser>
 	{
-		public override async Task<TypeParserResult> ParseAsync(string arg, _CommandContext ctx, int position)
+		public async Task<SocketUser> ParseAsync(string arg, CommandContext ctx, int position)
 		{
 			if (!(ulong.TryParse(arg, out ulong id)))
-				return await GenerateTask(null);
+				throw new ArgumentParsingException("SocketUser");
 
-			return await GenerateTask(await ctx.Client.GetUserAsync(id));
+			return (await Task.FromResult(await ctx.Client.GetUserAsync(id))) as SocketUser;
 		}
 	}
 }

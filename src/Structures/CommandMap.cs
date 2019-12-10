@@ -6,27 +6,27 @@ namespace Arpa.Structures
 {
 	public interface _ICommandMap
 	{
-		List<_Command> FindCommands(Func<_CommandInfo, bool> predicate);
-		void AddCommand(string id, _Command command);
+		List<Command> FindCommands(Func<CommandInfo, bool> predicate);
+		void AddCommand(string id, Command command);
 	}
 
-	public class _CommandMap : _ICommandMap
+	public class CommandMap : _ICommandMap
 	{
-		public Dictionary<string, _Command> commands = new Dictionary<string, _Command>();
+		public Dictionary<string, Command> commands = new Dictionary<string, Command>();
 
-		public List<_Command> FindCommands(string name) =>
-			FindCommands((_CommandInfo info) => info.Id == name);
+		public List<Command> FindCommands(string name) =>
+			FindCommands((CommandInfo info) => info.Id == name);
 
-		public List<_Command> FindCommands(Func<_CommandInfo, bool> predicate)
+		public List<Command> FindCommands(Func<CommandInfo, bool> predicate)
 		{
-			List<_Command> found = new List<_Command>();
+			List<Command> found = new List<Command>();
 
 			foreach (string key in this.commands.Keys)
 			{
-				_Command cmd;
+				Command cmd;
 				if (this.commands.TryGetValue(key, out cmd))
 				{
-					_CommandInfo info = new _CommandInfo
+					CommandInfo info = new CommandInfo
 					{
 						Id = key
 					};
@@ -41,7 +41,7 @@ namespace Arpa.Structures
 			return found;
 		}
 
-		public void AddCommand(string id, _Command command)
+		public void AddCommand(string id, Command command)
 		{
 			this.commands.Add(id, command);
 		}

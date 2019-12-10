@@ -12,7 +12,7 @@ namespace Arpa.Structures
 
 	}
 
-	public class _CommandInfo : _ICommandInfo
+	public class CommandInfo : _ICommandInfo
 	{
 		public string Id;
 		public List<string> Alias = null;

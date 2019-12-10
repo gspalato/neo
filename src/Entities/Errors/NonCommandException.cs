@@ -6,9 +6,6 @@ namespace Arpa.Errors
 {
 	public class NonCommandException : Exception
 	{
-		public NonCommandException() : base("Provided class is not a valid command.")
-		{
-
-		}
+		public NonCommandException() : base("Provided class is not a valid command.") { }
 	}
 }

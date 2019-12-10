@@ -11,8 +11,8 @@ using Arpa.Structures;
 
 namespace Arpa.Modules
 {
-	[_CommandAttribute("say")]
-	public class TestCommand : _Command
+	[CommandAttribute("say")]
+	public class TestCommand : Command
 	{
 		public Task RunAsync(SocketUser user)
 		{

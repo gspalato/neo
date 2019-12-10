@@ -15,14 +15,14 @@ namespace Arpa.Structures
 
 	}
 
-	public class _CommandAttributes : _ICommandAttributes
+	public class CommandAttributes : _ICommandAttributes
 	{
 		public string Id;
 		public List<string> Alias;
 		public string Name;
 		public string Group;
 
-		public _CommandAttributes(string id, List<string> alias = null, string group = "")
+		public CommandAttributes(string id, List<string> alias = null, string group = "")
 		{
 			this.Id = id;
 			this.Alias = alias;

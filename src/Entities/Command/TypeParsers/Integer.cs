@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Arpa.Structures;
+using Arpa.Entities;
 
 namespace Arpa.Structures
 {
-	public class IntegerParser : TypeParser<int>
+	public class IntegerParser : ITypeParser<int>
 	{
-		public override Task<TypeParserResult> ParseAsync(string arg, _CommandContext ctx, int position)
+		public Task<int> ParseAsync(string arg, CommandContext ctx, int position)
 		{
 			if (!(Int32.TryParse(arg, out int n)))
-				return GenerateTask(n);
+				return Task.FromResult(n);
 			else
 				return null;
 		}

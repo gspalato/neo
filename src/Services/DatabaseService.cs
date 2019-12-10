@@ -6,13 +6,10 @@ using MongoDB.Driver;
 
 using Discord;
 
+using Arpa.Structures;
+
 namespace Arpa.Services
 {
-	public interface IDatabaseService
-	{
-		void Initialize();
-	}
-
 	public class DatabaseService : IDatabaseService
 	{
 		IMongoClient connection;

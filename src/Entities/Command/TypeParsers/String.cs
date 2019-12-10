@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Arpa.Structures;
+using Arpa.Entities;
 
 namespace Arpa.Structures
 {
-	public class StringParser : TypeParser<string>
+	public class StringParser : ITypeParser<string>
 	{
-		public override Task<TypeParserResult> ParseAsync(string arg, _CommandContext ctx, int position)
+		public Task<string> ParseAsync(string arg, CommandContext ctx, int position)
 		{
-			return GenerateTask(arg);
+			return Task.FromResult(arg);
 		}
 	}
 }

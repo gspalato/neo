@@ -8,12 +8,12 @@ using Discord.WebSocket;
 
 namespace Arpa.Structures
 {
-	public interface I_CommandContext
+	public interface ICommandContext
 	{
 		Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null);
 	}
 
-	public class _CommandContext : I_CommandContext
+	public class CommandContext : ICommandContext
 	{
 		public IDiscordClient Client;
 		public ITextChannel Channel;
@@ -21,7 +21,7 @@ namespace Arpa.Structures
 		public IUserMessage Message;
 		public IUser User;
 
-		public _CommandContext(IDiscordClient client, IUserMessage msg)
+		public CommandContext(IDiscordClient client, IUserMessage msg)
 		{
 			this.Client = client;
 			this.Channel = msg.Channel as ITextChannel;
