@@ -137,10 +137,14 @@ namespace Arpa.Services
 			int i = 1;
 			foreach (ParameterInfo info in infos)
 			{
-				Type type = info.ParameterType.GetType();
+				Type type = info.ParameterType;
 				object parser = GetTypeParser(type);
 
-				dynamic result = parser.GetType().GetMethod("ParseAsync").Invoke(parser, new object[] {
+				MethodInfo method = parser.GetType().GetMethod("ParseAsync", BindingFlags.Instance,
+					null, new Type[] { typeof(string), typeof(CommandContext), typeof(int) }, null);
+				Console.WriteLine(method.ToString());
+
+				dynamic result = method.Invoke(parser, new object[] {
 					args[i], ctx, i
 				});
 

@@ -10,12 +10,12 @@ using Discord.WebSocket;
 
 namespace Arpa.Structures
 {
-	public interface _ICommandAttributes
+	public interface ICommandAttributes
 	{
 
 	}
 
-	public class CommandAttributes : _ICommandAttributes
+	public class CommandAttributes : ICommandAttributes
 	{
 		public string Id;
 		public List<string> Alias;

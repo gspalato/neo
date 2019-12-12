@@ -7,12 +7,12 @@ using Discord.WebSocket;
 
 namespace Arpa.Structures
 {
-	public interface _ICommandInfo
+	public interface ICommandInfo
 	{
 
 	}
 
-	public class CommandInfo : _ICommandInfo
+	public class CommandInfo : ICommandInfo
 	{
 		public string Id;
 		public List<string> Alias = null;
