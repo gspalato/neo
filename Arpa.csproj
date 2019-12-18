@@ -6,10 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="2.1.1" />
+    <PackageReference Include="DSharpPlus" Version="3.2.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.0" />
     <PackageReference Include="MongoDB.Bson" Version="2.10.0-beta1" />
     <PackageReference Include="MongoDB.Driver" Version="2.10.0-beta1" />

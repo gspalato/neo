@@ -5,128 +5,77 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using Discord;
-using Discord.WebSocket;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+
+using Qmmands;
 
 using Arpa.Entities;
+using Arpa.Entities.Results;
 using Arpa.Structures;
 
 namespace Arpa.Services
 {
 	public class CommandHandlerService : ICommandHandlerService
 	{
-		private readonly DiscordSocketClient client;
+		private readonly DiscordClient client;
 		private readonly IServiceProvider services;
+
+		private readonly CommandService commandService;
 
 		public string prefix;
 
 		public CommandHandlerService(
-			DiscordSocketClient client,
+			DiscordClient client,
+			CommandService commandService,
 			IServiceProvider services
 		)
 		{
 			this.services = services;
 			this.client = client;
+
+			this.commandService = commandService;
 		}
 
-		public Task InstallCommandsAsync(string prefix)
+		public void InstallCommandsAsync(string prefix)
 		{
-			this.client.MessageReceived += HandleCommandAsync;
+			this.client.MessageCreated += HandleCommandAsync;
 			this.prefix = prefix;
 
-			try
-			{
-				services.GetRequiredService<CommandService>().AddModules();
-			}
-			catch (Exception e)
-			{
-				services.GetRequiredService<LoggingService>().LogAsync(e.ToString());
-			}
-
-			return Task.CompletedTask;
+			this.commandService.AddModules(Assembly.GetEntryAssembly());
 		}
 
-		private async Task HandleCommandAsync(SocketMessage raw)
+		private async Task HandleCommandAsync(MessageCreateEventArgs args)
 		{
-			if (!(raw is SocketUserMessage msg))
+			DiscordMessage msg = args.Message;
+
+			if (msg.Author.IsBot)
 				return;
 
-			if (msg.Source != MessageSource.User)
+			if (!CommandUtilities.HasPrefix(msg.Content, this.prefix, out string output))
 				return;
 
-			if (!(msg.Content.Substring(0, this.prefix.Length).Equals(this.prefix))
-				|| msg.Content.Length <= this.prefix.Length)
-				return;
+			Console.WriteLine($"content: {msg.Content}, out: {output}, guild: {msg.Channel.Guild.Name}");
 
-			CommandContext ctx = new CommandContext(this.client, msg);
+			ArpaCommandContext ctx = new ArpaCommandContext(msg, services);
 
-			await Task.Run(() => this.services.GetRequiredService<CommandService>().Execute(ctx))
-				.ConfigureAwait(false);
-
-			/*ICommandContext context = new SocketCommandContext(this.client, msg);
-
-			await this.commands.ExecuteAsync(
-				context: context,
-				argPos: argPos,
-				services: this.services
-			);*/
+			IResult result = await commandService.ExecuteAsync(output, ctx);
+			if (result is ArpaFailedResult failed)
+				await this.HandleCommandFailAsync(msg, failed);
+			else if (result == null)
+				Console.WriteLine("null >:(");
 		}
 
-		public List<string> ParseMessage(string args, ParserMode type = ParserMode.Default)
+		public async Task HandleCommandFailAsync(DiscordMessage msg, ArpaFailedResult result)
 		{
-			List<string> parsedArguments = new List<string>();
+			DiscordEmbedBuilder builder = new DiscordEmbedBuilder()
+				.WithTitle("⚠️ Error")
+				.WithDescription(result.Reason)
+				.WithFooter(msg.Author.Username, msg.Author.AvatarUrl)
+				.WithTimestamp(DateTime.UtcNow);
 
-			string currentArg = "";
-
-			bool isQuotedArgument = false;
-
-			for (int i = 0; i < args.Length; i++)
-			{
-				char character = args[i];
-
-				if (i == (args.Length - 1) && character != '"')
-				{
-					currentArg += character;
-					parsedArguments.Add(currentArg);
-					break;
-				}
-				else if (i == (args.Length - 1) && character == '"')
-				{
-					parsedArguments.Add(currentArg);
-					break;
-				}
-
-				if (isQuotedArgument)
-				{
-					currentArg += character;
-					continue;
-				}
-
-				if (type == ParserMode.Default && char.IsWhiteSpace(character))
-				{
-					parsedArguments.Add(currentArg);
-					currentArg = "";
-					continue;
-				}
-
-				if (type == ParserMode.Default && character == '"')
-				{
-					if (isQuotedArgument)
-					{
-						parsedArguments.Add(currentArg);
-						currentArg = "";
-						isQuotedArgument = false;
-						continue;
-					}
-
-					isQuotedArgument = true;
-					continue;
-				}
-
-				currentArg += character;
-			}
-
-			return parsedArguments;
+			await msg.Channel.SendMessageAsync(embed: builder.Build());
 		}
 	}
 }

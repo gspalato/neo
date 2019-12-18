@@ -7,6 +7,6 @@ namespace Arpa.Services
 {
 	public interface ICommandHandlerService
 	{
-		Task InstallCommandsAsync(string prefix);
+		void InstallCommandsAsync(string prefix);
 	}
 }

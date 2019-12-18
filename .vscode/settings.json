@@ -2,5 +2,6 @@
 	"material-icon-theme.folders.associations": {
 		"Arpa.Services": "services",
 		"Arpa.Structures": "class"
-	}
+	},
+	"discord.enabled": true
 }

@@ -1,38 +1,41 @@
 using System;
 using System.Threading.Tasks;
 
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
+
+using DSharpPlus;
+using DSharpPlus.Entities;
+
+using Qmmands;
 
 
 namespace Arpa.Structures
 {
 	public interface ICommandContext
 	{
-		Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null);
+		Task<DiscordMessage> ReplyAsync(string text = null, bool isTTS = false, DiscordEmbed embed = null);
 	}
 
-	public class CommandContext : ICommandContext
+	public class ArpaCommandContext : CommandContext
 	{
-		public IDiscordClient Client;
-		public ITextChannel Channel;
-		public IGuild Guild;
-		public IUserMessage Message;
-		public IUser User;
+		public DiscordClient Client;
+		public DiscordChannel Channel => Message.Channel;
+		public DiscordGuild Guild => Message.Channel.Guild;
+		public DiscordMessage Message { get; }
+		public DiscordUser User => Message.Author;
 
-		public CommandContext(IDiscordClient client, IUserMessage msg)
+		public ServiceProvider Services;
+
+		public ArpaCommandContext(DiscordMessage message, IServiceProvider provider) : base(provider)
 		{
-			this.Client = client;
-			this.Channel = msg.Channel as ITextChannel;
-			this.Guild = (msg.Channel as IGuildChannel)?.Guild;
-			this.Message = msg;
-			this.User = msg.Author;
+			this.Message = message;
+			this.Services = provider as ServiceProvider;
 		}
 
-		public async Task<IUserMessage> ReplyAsync(string text = null, bool isTTS = false, Embed embed = null)
+		public async Task<DiscordMessage> ReplyAsync(string text = null, bool isTTS = false,
+		DiscordEmbed embed = null)
 		{
-			return await this.Channel.SendMessageAsync(text: text, isTTS: isTTS, embed: embed);
+			return await this.Channel.SendMessageAsync(content: text, tts: isTTS, embed: embed);
 		}
 	}
 }
