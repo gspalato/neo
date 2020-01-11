@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
+using MongoDB;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -21,13 +23,23 @@ namespace Arpa.Services
 
 		public void Initialize()
 		{
-			IMongoClient connection = new MongoClient("mongodb://localhost:27017");
+			IMongoClient connection = new MongoClient(new MongoClientSettings
+			{
+				Server = new MongoServerAddress("localhost", 27017),
+				UseTls = true
+			});
 			this.connection = connection;
 		}
 
-		public void GetGuildSettingsAsync()
+		public GuildSettings GetGuildSettingsAsync(ulong guildId)
 		{
+			IMongoDatabase db = this.connection.GetDatabase("arpa");
+			IMongoCollection<GuildSettings> collection = db.GetCollection<GuildSettings>("GuildSettings");
 
+			var filter = Builders<GuildSettings>.Filter.Eq("guild_id", guildId);
+			var found = collection.Find(filter).FirstOrDefault();
+
+			return found;
 		}
 	}
 }

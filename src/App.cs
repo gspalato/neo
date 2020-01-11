@@ -8,8 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using DSharpPlus;
 using DSharpPlus.EventArgs;
 
-using Qmmands;
-
 using Arpa.Services;
 
 
@@ -43,7 +41,7 @@ namespace Arpa
 		{
 			using (ServiceProvider services = this.ConfigureServices())
 			{
-				await RegisterEvents(services);
+				this.RegisterEvents(services);
 
 				await this.Client.ConnectAsync();
 
@@ -51,46 +49,38 @@ namespace Arpa
 			}
 		}
 
-		private Task RegisterEvents(ServiceProvider services)
+		private void RegisterEvents(ServiceProvider services)
 		{
 			this.Client.Ready += async (ReadyEventArgs args) =>
-				{
-					services
-						.GetRequiredService<CommandHandlerService>()
-						.InstallCommandsAsync(Configuration["Environment:PROD:PREFIX"]);
+			{
+				CommandService commandService = services.GetRequiredService<CommandService>();
+				commandService.InstallCommandsAsync();
 
-					await services.GetRequiredService<LoggingService>().LogAsync("Ready!");
-				};
+				MusicService musicService = services.GetRequiredService<MusicService>();
+				await musicService.Initialize();
+
+				await services.GetRequiredService<LoggingService>().LogAsync("Ready!");
+			};
 
 			this.Client.ClientErrored += (ClientErrorEventArgs args) =>
 				services.GetRequiredService<LoggingService>().LogAsync(args.Exception.ToString());
-
-			return Task.CompletedTask;
 		}
 
-		private ServiceProvider ConfigureServices()
-		{
-			CommandService commandService = new CommandService(
-				new CommandServiceConfiguration { DefaultRunMode = RunMode.Parallel }
-			);
-
-			return new ServiceCollection()
+		private ServiceProvider ConfigureServices() =>
+			new ServiceCollection()
 				.AddSingleton(Client)
 				.AddSingleton(Configuration)
-				.AddSingleton(commandService)
 				.AddSingleton<Random>()
 				.AddSingleton<LoggingService>()
 				.AddSingleton<DatabaseService>()
-				.AddSingleton<CommandHandlerService>()
+				.AddSingleton<CommandService>()
+				.AddSingleton<MusicService>()
 				.BuildServiceProvider();
-		}
 
-		private IConfiguration LoadConfiguration()
-		{
-			return new ConfigurationBuilder()
+		private IConfiguration LoadConfiguration() =>
+			new ConfigurationBuilder()
 				.SetBasePath(Directory.GetCurrentDirectory())
 				.AddJsonFile("appsettings.json")
 				.Build();
-		}
 	}
 }

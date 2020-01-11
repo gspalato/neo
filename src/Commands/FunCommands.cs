@@ -7,44 +7,34 @@ using Microsoft.Extensions.DependencyInjection;
 
 using DSharpPlus;
 using DSharpPlus.Entities;
-
-using Qmmands;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
 
 using Arpa;
-using Arpa.Entities;
-using Arpa.Structures;
 
 
 namespace Arpa.Commands
 {
-	[Name("Fun")]
 	[Description("🎉")]
-	public class FunCommands : ModuleBase<ArpaCommandContext>
+	public class Fun : BaseCommandModule
 	{
 		[Command("hug")]
 		[Description("Hug someone! **(っ´▽`)っ**")]
-		[IgnoresExtraArguments]
-		public async Task HugAsync(DiscordUser user)
+		public async Task HugAsync(CommandContext ctx, DiscordMember user)
 		{
-			Console.WriteLine(user);
-
 			string who;
-			if (user.Id.Equals(Context.User.Id))
+			if (user.Id.Equals(ctx.User.Id))
 				who = "themself";
-			else if (user.Id.Equals(Context.Client.CurrentUser.Id))
+			else if (user.Id.Equals(ctx.Client.CurrentUser.Id))
 				who = "me";
 			else
 				who = user.Mention;
 
-			//string url = this.GetHugImage(ctx);
-			DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-				.WithDescription($"{Context.User.Username} hugged {who}! **(っ´▽`)っ**")
-				.WithColor(new DiscordColor(0x2A8EF4));
-			//	.WithImageUrl(url);
+			DiscordEmbedBuilder embed = new DiscordEmbedBuilder();
+			embed.WithDescription($"{ctx.User.Username} hugged {who}! **(っ´▽`)っ**");
+			embed.WithColor(new DiscordColor(0x2A8EF4));
 
-			//Console.WriteLine($"img: {url}");
-
-			await Context.Channel.SendMessageAsync(embed: embed.Build());
+			await ctx.RespondAsync(embed: embed.Build());
 		}
 	}
 }
