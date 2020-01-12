@@ -54,7 +54,7 @@ namespace Arpa.Commands
 			}
 			else
 			{
-				await player.Play(channel);
+				await player.Play(channel, ctx.Channel);
 
 				DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
 					.WithTitle("🎶 Now Playing")
