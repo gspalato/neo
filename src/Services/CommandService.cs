@@ -17,7 +17,7 @@ namespace Arpa.Services
 
 		public CommandService(
 			DiscordClient client,
-			ServiceProvider services)
+			IServiceProvider services)
 		{
 			this.client = client;
 

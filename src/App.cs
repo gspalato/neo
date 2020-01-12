@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using DSharpPlus;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Lavalink;
 
 using Arpa.Services;
 
@@ -57,7 +58,7 @@ namespace Arpa
 				commandService.InstallCommandsAsync();
 
 				MusicService musicService = services.GetRequiredService<MusicService>();
-				await musicService.Initialize();
+				await musicService.Initialize(this.Client.UseLavalink());
 
 				await services.GetRequiredService<LoggingService>().LogAsync("Ready!");
 			};

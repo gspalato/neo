@@ -14,19 +14,21 @@ namespace Arpa.Services
 	public class MusicService
 	{
 		public readonly DiscordClient client;
-		public readonly LavalinkExtension lavalink;
+
+		public LavalinkExtension lavalink;
 		public LavalinkNodeConnection nodeConnection;
 
-		private readonly Dictionary<ulong, IPlayer> players;
+		private readonly Dictionary<ulong, IPlayer> players = new Dictionary<ulong, IPlayer>();
 
-		public MusicService(LavalinkExtension lavalink)
+		public MusicService(DiscordClient client)
 		{
-			this.lavalink = lavalink;
-			this.players = new Dictionary<ulong, IPlayer>();
+			this.client = client;
 		}
 
-		public async Task Initialize()
+		public async Task Initialize(LavalinkExtension lavalink)
 		{
+			this.lavalink = lavalink;
+
 			this.nodeConnection = await this.lavalink.ConnectAsync(new LavalinkConfiguration
 			{
 				Password = "bluisthebestbotever"

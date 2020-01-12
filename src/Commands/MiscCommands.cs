@@ -55,22 +55,5 @@ namespace Arpa.Commands
 		[Command("echo")]
 		public async Task EchoAsync(CommandContext ctx, params string[] text) =>
 			await ctx.RespondAsync(string.Join(" ", text));
-
-		[Command("play")]
-		public async Task PlayAsync(CommandContext ctx, params string[] text)
-		{
-			string total = string.Join(" ", text);
-			Console.WriteLine(total);
-
-			MusicService musicService = (ctx.Services as ServiceProvider)
-				.GetRequiredService<MusicService>();
-
-			IPlayer player = musicService.GetPlayer(ctx.Guild);
-			LavalinkLoadResult result = await musicService.Resolve(total);
-			LavalinkTrack track = result.Tracks.First();
-
-			player.Push(track);
-			await player.Play(ctx.Channel);
-		}
 	}
 }
