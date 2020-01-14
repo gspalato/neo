@@ -29,10 +29,22 @@ namespace Arpa.Services
 		{
 			this.lavalink = lavalink;
 
-			this.nodeConnection = await this.lavalink.ConnectAsync(new LavalinkConfiguration
+			try
 			{
-				Password = "bluisthebestbotever"
-			});
+				Console.WriteLine("Trying to connect to Lavalink...");
+				this.nodeConnection = await this.lavalink.ConnectAsync(new LavalinkConfiguration
+				{
+					Password = "bluisthebestbotever"
+				});
+			}
+			catch
+			{
+				Console.WriteLine("Failed to connect. Trying again in 10 seconds.");
+
+				await Task.Delay(10000);
+
+				await this.Initialize(lavalink);
+			}
 		}
 
 		public IPlayer GetPlayer(DiscordGuild guild)

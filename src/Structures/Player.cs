@@ -1,15 +1,13 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
-using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using DSharpPlus.Lavalink.EventArgs;
 
-using Arpa;
 using Arpa.Services;
 
 namespace Arpa.Structures
@@ -25,7 +23,7 @@ namespace Arpa.Structures
 		public readonly MusicService musicService;
 
 		public readonly ulong guildId;
-		public readonly List<LavalinkTrack> queue = new List<LavalinkTrack>();
+		public readonly ConcurrentQueue<LavalinkTrack> queue = new ConcurrentQueue<LavalinkTrack>();
 		public readonly LavalinkNodeConnection nodeConnection;
 
 		public LavalinkGuildConnection connection;
@@ -44,7 +42,7 @@ namespace Arpa.Structures
 
 		public void Push(LavalinkTrack track)
 		{
-			this.queue.Add(track);
+			this.queue.Enqueue(track);
 		}
 
 		public async Task Play(DiscordChannel channel, DiscordChannel textChannel)
@@ -55,62 +53,42 @@ namespace Arpa.Structures
 				return;
 			}
 
-			this.connection = await this.nodeConnection.ConnectAsync(channel);
+			this.connection = this.connection ?? await this.nodeConnection.ConnectAsync(channel);
 
-			if (this.queue.Count == 0)
+			LavalinkTrack next;
+			if (this.isLooping)
+				next = current;
+			else
 			{
-				Console.WriteLine("Empty queue.");
+				if (this.queue.TryDequeue(out LavalinkTrack track))
+				{
+					next = track;
+				}
+				else
+				{
+					Console.WriteLine("Empty queue.");
 
-				this.musicService.RemovePlayer(channel.Guild);
-				this.connection.Stop();
+					this.musicService.RemovePlayer(channel.Guild);
+					this.connection.Stop();
 
-				this.isPlaying = false;
-				this.textChannel = null;
+					this.isPlaying = false;
+					this.textChannel = null;
 
-				return;
+					return;
+				}
 			}
-
-			LavalinkTrack next = this.isLooping ? this.current : this.queue[0];
-			this.queue.RemoveAt(0);
 
 			this.connection.Play(next);
 			this.textChannel = textChannel;
 			this.current = next;
 			this.isPlaying = true;
 
-			await this.HandleTrackStart(next);
-
 			this.connection.PlaybackFinished -= HandleTrackFinish;
 			this.connection.PlaybackFinished += HandleTrackFinish;
 		}
 
-		private Nullable<LavalinkTrack> GetNextFromQueue(bool delete = false)
-		{
-			if (this.queue.Count == 0)
-				return null;
-
-			LavalinkTrack next = this.queue.ElementAt(0);
-			if (delete)
-				this.queue.RemoveAt(0);
-
-			return next;
-		}
-
-		private async Task HandleTrackStart(LavalinkTrack track)
-		{
-			DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-				.WithTitle("🎶 Now Playing")
-				.WithDescription($"[{track.Title}]({track.Uri})")
-				.WithColor(new DiscordColor(0xAA0099));
-
-			await this.textChannel.SendMessageAsync(embed: embed.Build());
-		}
-
 		private async Task HandleTrackFinish(TrackFinishEventArgs e)
 		{
-			if (this.GetNextFromQueue().Equals(null))
-				return;
-
 			await this.Play(e.Player.Channel, this.textChannel);
 		}
 	}
