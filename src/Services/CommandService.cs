@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Interactivity;
 
 namespace Arpa.Services
 {
@@ -14,6 +15,7 @@ namespace Arpa.Services
 	{
 		private readonly DiscordClient client;
 		private readonly CommandsNextExtension commands;
+		public InteractivityExtension interactivity;
 
 		public CommandService(
 			DiscordClient client,
@@ -28,11 +30,17 @@ namespace Arpa.Services
 				StringPrefixes = new string[] { "pls " },
 				Services = services
 			});
+
+			this.interactivity = client.UseInteractivity(new InteractivityConfiguration { });
 		}
 
 		public void InstallCommandsAsync()
 		{
-			this.commands.RegisterCommands(Assembly.GetEntryAssembly());
+			try
+			{
+				this.commands.RegisterCommands(Assembly.GetEntryAssembly());
+			}
+			catch { }
 		}
 	}
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +16,7 @@ using Arpa.Structures;
 
 namespace Arpa.Commands
 {
-	[Description("Drop the beat.")]
-	public class Music : BaseCommandModule
+	public partial class Music : BaseCommandModule
 	{
 		[Command("play")]
 		public async Task PlayAsync(CommandContext ctx, params string[] input)
@@ -41,7 +39,7 @@ namespace Arpa.Commands
 
 			IPlayer player = musicService.GetPlayer(ctx.Guild);
 			LavalinkLoadResult result = await musicService.Resolve(query);
-			if (!result.Exception.Message.Equals(null))
+			if (result.LoadResultType == LavalinkLoadResultType.LoadFailed)
 			{
 				DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
 					.WithDescription($"An error occurred while loading the track.\n```{result.Exception.Message}```")
@@ -63,7 +61,8 @@ namespace Arpa.Commands
 
 				displayName = result.PlaylistInfo.Name;
 			}
-			else if (result.LoadResultType == LavalinkLoadResultType.TrackLoaded)
+			else if (result.LoadResultType == LavalinkLoadResultType.TrackLoaded
+					|| result.LoadResultType == LavalinkLoadResultType.SearchResult)
 			{
 				LavalinkTrack track = tracks.ElementAt(0);
 
@@ -76,7 +75,7 @@ namespace Arpa.Commands
 			if ((player as Player).isPlaying)
 			{
 				DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-					.WithDescription($"Added [{displayName}]({displayLink}) to the queue.")
+					.WithDescription($"Added **[{displayName}]({displayLink})** to the queue.")
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp);
 
@@ -85,21 +84,7 @@ namespace Arpa.Commands
 			else
 			{
 				await player.Play(channel, ctx.Channel);
-
-				DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-					.WithTitle("🎶 Now Playing")
-					.WithDescription($"[{displayName}]({displayLink})")
-					.WithColor(new DiscordColor(0x2F3136))
-					.WithTimestamp(ctx.Message.Timestamp);
-
-				await ctx.RespondAsync(embed: embed.Build());
 			}
-		}
-
-		private bool IsValidLink(string link)
-		{
-			IPHostEntry host = Dns.GetHostEntry(link);
-			return (host.HostName == "http://youtube.com") || (host.HostName == "http://youtu.be");
 		}
 	}
 }

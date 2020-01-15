@@ -9,6 +9,7 @@ using DSharpPlus.Lavalink;
 using DSharpPlus.Lavalink.EventArgs;
 
 using Arpa.Services;
+using Arpa.Utilities;
 
 namespace Arpa.Structures
 {
@@ -53,7 +54,7 @@ namespace Arpa.Structures
 				return;
 			}
 
-			this.connection = this.connection ?? await this.nodeConnection.ConnectAsync(channel);
+			this.connection = await this.ConnectAsync(channel);
 
 			LavalinkTrack next;
 			if (this.isLooping)
@@ -61,19 +62,10 @@ namespace Arpa.Structures
 			else
 			{
 				if (this.queue.TryDequeue(out LavalinkTrack track))
-				{
 					next = track;
-				}
 				else
 				{
-					Console.WriteLine("Empty queue.");
-
-					this.musicService.RemovePlayer(channel.Guild);
-					this.connection.Stop();
-
-					this.isPlaying = false;
-					this.textChannel = null;
-
+					this.Stop();
 					return;
 				}
 			}
@@ -83,12 +75,55 @@ namespace Arpa.Structures
 			this.current = next;
 			this.isPlaying = true;
 
-			this.connection.PlaybackFinished -= HandleTrackFinish;
-			this.connection.PlaybackFinished += HandleTrackFinish;
+			await this.HandleTrackStart(next);
+		}
+
+		public void Skip()
+		{
+			this.connection.Stop();
+		}
+
+		public void Stop()
+		{
+			this.musicService.RemovePlayer(this.connection.Guild);
+			this.connection.Stop();
+			this.connection.Disconnect();
+
+			this.isPlaying = false;
+			this.textChannel = null;
+			this.connection = null;
+		}
+
+		private async Task<LavalinkGuildConnection> ConnectAsync(DiscordChannel channel)
+		{
+			if (this.connection != null)
+				return this.connection;
+			else
+			{
+				connection = await this.nodeConnection.ConnectAsync(channel);
+				connection.PlaybackFinished -= HandleTrackFinish;
+				connection.PlaybackFinished += HandleTrackFinish;
+
+				return connection;
+			}
+		}
+
+		private async Task HandleTrackStart(LavalinkTrack track)
+		{
+			DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+					.WithTitle("🎶 Now Playing")
+					.WithDescription($"**[{track.Title.Escape()}]({track.Uri})**")
+					.WithColor(new DiscordColor(0x2F3136))
+					.WithTimestamp(new DateTimeOffset(DateTime.Now));
+
+			await this.textChannel.SendMessageAsync(embed: embed.Build());
 		}
 
 		private async Task HandleTrackFinish(TrackFinishEventArgs e)
 		{
+			if (connection == null || !connection.IsConnected)
+				return;
+
 			await this.Play(e.Player.Channel, this.textChannel);
 		}
 	}
