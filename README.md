@@ -4,6 +4,7 @@
 <p align="center">
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/made-with-c-sharp.svg">
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/built-with-love.svg">
+	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/gluten-free.svg">
 </p>
 
 ## 📦 Getting Started
