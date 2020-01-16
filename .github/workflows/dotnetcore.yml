@@ -13,6 +13,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.100 
+        
+    - name: Setup Nuget.exe
+      uses: warrenbuckley/Setup-Nuget@v1
     - name: Setup NuGet Sources
       run: nuget sources add -name "SlimGet" -Source "https://nuget.emzi0767.com/api/v3/index.json"
     - name: Build with dotnet
