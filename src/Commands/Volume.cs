@@ -16,8 +16,9 @@ namespace Arpa.Commands
 {
 	public partial class Music : BaseCommandModule
 	{
-		[Command("skip")]
-		public async Task SkipAsync(CommandContext ctx)
+		[Command("volume")]
+		[Aliases("vol")]
+		public async Task VolumeAsync(CommandContext ctx, int volume)
 		{
 			MusicService musicService = ctx.Services.GetRequiredService<MusicService>();
 			Player player = musicService.GetPlayer(ctx.Guild) as Player;
@@ -43,13 +44,24 @@ namespace Arpa.Commands
 				return;
 			}
 
+			if (volume > 100 || volume < 0)
+			{
+				await ctx.RespondAsync(embed: new DiscordEmbedBuilder()
+					.WithDescription($"Volume must be between 0 and 100.")
+					.WithColor(new DiscordColor(0x2F3136))
+					.WithTimestamp(ctx.Message.Timestamp)
+					.Build()).ConfigureAwait(false);
+
+				return;
+			}
+
 			await ctx.RespondAsync(embed: new DiscordEmbedBuilder()
-				.WithDescription("Skipping current song...")
+				.WithDescription($"Volume set to {volume}%")
 				.WithColor(new DiscordColor(0x2F3136))
 				.WithTimestamp(ctx.Message.Timestamp)
 				.Build()).ConfigureAwait(false);
 
-			player.Skip();
+			player.connection.SetVolume(volume);
 		}
 	}
 }

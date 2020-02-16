@@ -29,7 +29,7 @@ namespace Arpa.Commands
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp);
 
-				await ctx.RespondAsync(embed: embed.Build());
+				await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 			}
 
 			string query = string.Join(" ", input);
@@ -79,11 +79,11 @@ namespace Arpa.Commands
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp);
 
-				await ctx.RespondAsync(embed: embed.Build());
+				await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 			}
 			else
 			{
-				await player.Play(channel, ctx.Channel);
+				await player.Play(channel, ctx.Channel).ConfigureAwait(false);
 			}
 		}
 	}

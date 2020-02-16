@@ -12,6 +12,11 @@ using Arpa.Structures;
 
 namespace Arpa.Services
 {
+	public interface IDatabaseService
+	{
+		void Initialize();
+	}
+
 	public class DatabaseService : IDatabaseService
 	{
 		IMongoClient connection;
@@ -23,23 +28,32 @@ namespace Arpa.Services
 
 		public void Initialize()
 		{
-			IMongoClient connection = new MongoClient(new MongoClientSettings
-			{
-				Server = new MongoServerAddress("localhost", 27017),
-				UseTls = true
-			});
+			IMongoClient connection = new MongoClient("mongodb://localhost:27017");
 			this.connection = connection;
 		}
 
-		public GuildSettings GetGuildSettingsAsync(ulong guildId)
+		public async Task<GuildSettings> GetGuildSettingsAsync(ulong guildId)
 		{
 			IMongoDatabase db = this.connection.GetDatabase("arpa");
 			IMongoCollection<GuildSettings> collection = db.GetCollection<GuildSettings>("GuildSettings");
 
-			var filter = Builders<GuildSettings>.Filter.Eq("guild_id", guildId);
-			var found = collection.Find(filter).FirstOrDefault();
+			return await collection.Find(x => x.guild_id == guildId.ToString()).FirstOrDefaultAsync();
+		}
 
-			return found;
+		public async Task<GuildSettings> CreateGuildSettingsAsync(ulong guildId, string prefix = "pls ")
+		{
+			IMongoDatabase db = this.connection.GetDatabase("arpa");
+			IMongoCollection<GuildSettings> collection = db.GetCollection<GuildSettings>("GuildSettings");
+
+			GuildSettings settings = new GuildSettings
+			{
+				guild_id = guildId.ToString(),
+				prefix = prefix
+			};
+
+			await collection.InsertOneAsync(settings);
+
+			return settings;
 		}
 	}
 }

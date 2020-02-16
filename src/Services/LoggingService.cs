@@ -5,6 +5,11 @@ using DSharpPlus;
 
 namespace Arpa.Services
 {
+	public interface ILoggingService
+	{
+		Task LogAsync(string log);
+	}
+
 	public class LoggingService : ILoggingService
 	{
 		public Task LogAsync(string log)

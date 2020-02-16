@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -57,13 +58,13 @@ namespace Arpa.Commands
 				.WithTitle("🎶 Now Playing")
 				.WithColor(new DiscordColor(0xAA0099))
 				.WithDescription(
-					$"**[{current.Title.TruncateAndEscape(30)}]({current.Uri})**"
-					+ $"\n{remainingTime} remaining.\n\n"
+					$"**[{current.Title.TruncateAndEscape()}]({current.Uri})**"
+					+ $"\n`{remainingTime}` remaining.\n\n"
 					+ firstTracks
 				)
 				.WithFooter($"{slider}  {elapsedTime} / {totalTime}");
 
-			await ctx.RespondAsync(embed: embed.Build());
+			await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 
 		}
 
@@ -72,7 +73,7 @@ namespace Arpa.Commands
 			if (queue.Count() == 0)
 				return "";
 
-			List<string> s = new List<string>();
+			StringBuilder s = new StringBuilder();
 
 			int elapsed = 0;
 			foreach (LavalinkTrack track in queue)
@@ -80,54 +81,28 @@ namespace Arpa.Commands
 				if (elapsed >= 5)
 					break;
 
-				s.Add($"{++elapsed}. [{track.Title.TruncateAndEscape(30)}]({track.Uri})");
+				s.Append($"{++elapsed}. [{track.Title.TruncateAndEscape()}]({track.Uri})");
+				s.Append("\n");
 			}
 
 			int remaining = queue.Count - elapsed;
 			if (queue.Count() > 5)
-				s.Add($"and {remaining} more track{(remaining > 1 ? "s" : "")}...");
+				s.Append($"and {remaining} more track{(remaining > 1 ? "s" : "")}...");
 
-			return string.Join("\n", s.ToArray()) ?? "";
+			return s.ToString();
 		}
 
 		private string GenerateSlider(LavalinkTrack track, int position)
 		{
-			List<string> slider = new List<string>();
+			StringBuilder slider = new StringBuilder();
 			for (int i = 0; i <= 19; i++)
-				slider.Add("▬");
+				slider.Append("▬");
 
 			double sliderPosition = position * 20 / track.Length.TotalSeconds;
 			int roundSliderPosition = (int)Math.Floor(sliderPosition);
 			slider.Insert((roundSliderPosition <= 0) ? 0 : roundSliderPosition - 1, "🔵");
 
-			return string.Join("", slider.ToArray());
-		}
-
-		private string ToHumanReadableTimeSpan(long milliseconds)
-		{
-			if (milliseconds == 0) return "0ms";
-
-			List<string> tsparts = new List<string>();
-			Action<int, string, int> add = (val, displayunit, zeroplaceholder) =>
-			{
-				if (val <= 0)
-					return;
-
-				tsparts.Add(
-					string.Format(
-						"{0:DL}X".Replace("X", displayunit).Replace("L", zeroplaceholder.ToString()), val
-					)
-				);
-			};
-
-			TimeSpan t = TimeSpan.FromMilliseconds(milliseconds);
-
-			add(t.Days, "d", 1);
-			add(t.Hours, "h", 1);
-			add(t.Minutes, "m", 1);
-			add(t.Seconds, "s", 1);
-
-			return string.Join(" ", tsparts);
+			return slider.ToString();
 		}
 	}
 }

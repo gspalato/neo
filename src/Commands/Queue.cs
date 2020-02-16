@@ -33,7 +33,7 @@ namespace Arpa.Commands
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp);
 
-				await ctx.RespondAsync(embed: embed.Build());
+				await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 				return;
 			}
 
@@ -44,7 +44,7 @@ namespace Arpa.Commands
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp);
 
-				await ctx.RespondAsync(embed: embed.Build());
+				await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 				return;
 			}
 
@@ -56,27 +56,24 @@ namespace Arpa.Commands
 			IEnumerable<IEnumerable<LavalinkTrack>> splitQueue = player.queue.Split(7);
 			List<Page> pages = new List<Page>();
 
+			int trackIndex = 1;
 			int pageIndex = 1;
 			foreach (IEnumerable<LavalinkTrack> split in splitQueue)
 			{
-				int trackIndex = 1;
 				string content = "";
 				foreach (LavalinkTrack track in split)
 				{
-					content += $"\n{trackIndex}. [{track.Title.TruncateAndEscape(30)}]({track.Uri})";
-					trackIndex++;
+					content += $"\n{trackIndex++}. [{track.Title.TruncateAndEscape()}]({track.Uri})";
 				}
 
 				DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-					.WithTitle($"🎼 Queue | Page {pageIndex}/{splitQueue.Count()}")
+					.WithTitle($"🎼 Queue | Page {pageIndex++}/{splitQueue.Count()}")
 					.WithDescription(content.Trim())
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp);
 
 				Page page = new Page(embed: embed);
 				pages.Add(page);
-
-				pageIndex++;
 			}
 
 			PaginationEmojis emojis = new PaginationEmojis
@@ -85,7 +82,7 @@ namespace Arpa.Commands
 				Right = DiscordEmoji.FromUnicode("▶")
 			};
 
-			await ctx.Channel.SendPaginatedMessageAsync(ctx.User, pages.ToArray(), emojis);
+			await ctx.Channel.SendPaginatedMessageAsync(ctx.User, pages.ToArray(), emojis).ConfigureAwait(false);
 		}
 	}
 }

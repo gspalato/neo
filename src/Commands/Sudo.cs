@@ -8,16 +8,17 @@ using DSharpPlus.Entities;
 
 namespace Arpa.Commands
 {
-	public class Moderation : BaseCommandModule
+	public partial class Moderation : BaseCommandModule
 	{
 		[Command("sudo")]
 		[Description("Executes a command as another user.")]
 		[Hidden]
 		[RequireOwner]
-		public void Sudo(CommandContext ctx,
+		public Task Sudo(CommandContext ctx,
 			[Description("Member to execute as.")] DiscordMember member,
 			[RemainingText, Description("Command text to execute.")] string command)
 		{
+			return Task.CompletedTask;
 		}
 	}
 }

@@ -29,7 +29,7 @@ namespace Arpa.Commands
 					.WithDescription($"You're not connected to the voice channel.")
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp)
-					.Build());
+					.Build()).ConfigureAwait(false);
 				return;
 			}
 
@@ -39,7 +39,7 @@ namespace Arpa.Commands
 					.WithDescription("Nothing is playing.")
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp)
-					.Build());
+					.Build()).ConfigureAwait(false);
 				return;
 			}
 

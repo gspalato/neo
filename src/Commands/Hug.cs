@@ -13,7 +13,6 @@ using Arpa;
 
 namespace Arpa.Commands
 {
-	[Description("🎉")]
 	public partial class Fun : BaseCommandModule
 	{
 		[Command("hug")]
@@ -33,7 +32,7 @@ namespace Arpa.Commands
 				.WithColor(new DiscordColor(0x2A8EF4))
 				.WithImageUrl(this.GetHugGif(ctx.Services.GetRequiredService<Random>()));
 
-			await ctx.RespondAsync(embed: embed.Build());
+			await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 		}
 
 		private string GetHugGif(Random random)
@@ -49,7 +48,11 @@ namespace Arpa.Commands
 				"https://i.imgur.com/anqcRxv.gif"
 			};
 
-			int index = random.Next(1, links.Length + 1);
+			int index;
+			lock (random)
+			{
+				index = random.Next(1, links.Length + 1);
+			}
 			return links[index];
 		}
 	}

@@ -16,8 +16,8 @@ namespace Arpa.Commands
 {
 	public partial class Music : BaseCommandModule
 	{
-		[Command("skip")]
-		public async Task SkipAsync(CommandContext ctx)
+		[Command("seek")]
+		public async Task SeekAsync(CommandContext ctx, int position)
 		{
 			MusicService musicService = ctx.Services.GetRequiredService<MusicService>();
 			Player player = musicService.GetPlayer(ctx.Guild) as Player;
@@ -43,13 +43,22 @@ namespace Arpa.Commands
 				return;
 			}
 
+			TimeSpan span = TimeSpan.FromSeconds(position);
+			TimeSpan correctedPosition = (position < 0)
+				? TimeSpan.FromSeconds(0)
+				: (span > player.current.Length)
+					? player.current.Length
+					: span;
+
+			string readableSpan = this.ToHumanReadableTimeSpan((long)correctedPosition.TotalMilliseconds);
+
 			await ctx.RespondAsync(embed: new DiscordEmbedBuilder()
-				.WithDescription("Skipping current song...")
+				.WithDescription($"Seeking to `{readableSpan}`.")
 				.WithColor(new DiscordColor(0x2F3136))
 				.WithTimestamp(ctx.Message.Timestamp)
 				.Build()).ConfigureAwait(false);
 
-			player.Skip();
+			player.connection.Seek(correctedPosition);
 		}
 	}
 }

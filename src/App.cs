@@ -9,7 +9,9 @@ using DSharpPlus;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Lavalink;
 
+using Arpa;
 using Arpa.Services;
+using Arpa.Structures;
 
 
 namespace Arpa
@@ -50,16 +52,23 @@ namespace Arpa
 			}
 		}
 
-		private void RegisterEvents(ServiceProvider services)
+		private async Task InitializeServices(IServiceProvider services)
+		{
+			DatabaseService databaseService = services.GetRequiredService<DatabaseService>();
+			databaseService.Initialize();
+
+			CommandService commandService = services.GetRequiredService<CommandService>();
+			commandService.InstallCommandsAsync();
+
+			MusicService musicService = services.GetRequiredService<MusicService>();
+			await musicService.Initialize(this.Client.UseLavalink());
+		}
+
+		private void RegisterEvents(IServiceProvider services)
 		{
 			this.Client.Ready += async (ReadyEventArgs args) =>
 			{
-				CommandService commandService = services.GetRequiredService<CommandService>();
-				commandService.InstallCommandsAsync();
-
-				MusicService musicService = services.GetRequiredService<MusicService>();
-				await musicService.Initialize(this.Client.UseLavalink());
-
+				await this.InitializeServices(services);
 				await services.GetRequiredService<LoggingService>().LogAsync("Ready!");
 			};
 

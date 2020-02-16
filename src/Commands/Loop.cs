@@ -16,7 +16,6 @@ using Arpa.Utilities;
 
 namespace Arpa.Commands
 {
-	[Description("Drop the beat.")]
 	public partial class Music : BaseCommandModule
 	{
 		[Command("loop")]
@@ -32,7 +31,7 @@ namespace Arpa.Commands
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp);
 
-				await ctx.RespondAsync(embed: embed.Build());
+				await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 				return;
 			}
 
@@ -46,7 +45,7 @@ namespace Arpa.Commands
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp);
 
-				await ctx.RespondAsync(embed: embed.Build());
+				await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 			}
 			else
 			{
@@ -54,11 +53,11 @@ namespace Arpa.Commands
 
 				LavalinkTrack track = player.current;
 				DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-					.WithDescription($"Looping **[{track.Title.TruncateAndEscape(30)}]({track.Uri})**")
+					.WithDescription($"Looping **[{track.Title.TruncateAndEscape(20)}]({track.Uri})**")
 					.WithColor(new DiscordColor(0x2F3136))
 					.WithTimestamp(ctx.Message.Timestamp);
 
-				await ctx.RespondAsync(embed: embed.Build());
+				await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 			}
 		}
 	}

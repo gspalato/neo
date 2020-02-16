@@ -11,6 +11,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Lavalink;
 
 using Arpa;
+using Arpa.Structures;
 
 
 namespace Arpa.Commands
@@ -25,7 +26,7 @@ namespace Arpa.Commands
 			DiscordUser user = ctx.User;
 
 			sw.Start();
-			DiscordMessage msg = await ctx.RespondAsync(content: "Measuring...");
+			DiscordMessage msg = await ctx.RespondAsync(content: "Measuring...").ConfigureAwait(false);
 			sw.Stop();
 
 			try
@@ -36,9 +37,7 @@ namespace Arpa.Commands
 				embed.AddField("API Latency", "```" + ctx.Client.Ping + "ms```", true);
 				embed.AddField("Bot Latency", "```" + sw.ElapsedMilliseconds + "ms```", true);
 
-				Console.WriteLine(embed == null);
-
-				await msg.ModifyAsync(content: null, embed: embed.Build());
+				await msg.ModifyAsync(content: null, embed: embed.Build()).ConfigureAwait(false);
 			}
 			catch (Exception e)
 			{
