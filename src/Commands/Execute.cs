@@ -10,10 +10,10 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 
-using Arpa;
-using Arpa.Structures;
+using Muon;
+using Muon.Core.Structures;
 
-namespace Arpa.Commands
+namespace Muon.Commands
 {
 	public partial class Admin : BaseCommandModule
 	{

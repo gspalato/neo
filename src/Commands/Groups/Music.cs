@@ -4,10 +4,10 @@ using System.Text;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 
-using Arpa;
-using Arpa.Structures;
+using Muon;
+using Muon.Core.Structures;
 
-namespace Arpa.Commands
+namespace Muon.Commands
 {
 	[Category("Music")]
 	[Description("Drop the beat.")]
@@ -19,7 +19,7 @@ namespace Arpa.Commands
 				return "0s";
 
 			StringBuilder total = new StringBuilder();
-			Action<int, string, int> add = (val, displayunit, zeroplaceholder) =>
+			Action<int, string, int> Add = (val, displayunit, zeroplaceholder) =>
 			{
 				if (val <= 0)
 					return;
@@ -30,10 +30,10 @@ namespace Arpa.Commands
 
 			TimeSpan t = TimeSpan.FromMilliseconds(milliseconds);
 
-			add(t.Days, "d", 1);
-			add(t.Hours, "h", 1);
-			add(t.Minutes, "m", 1);
-			add(t.Seconds, "s", 1);
+			Add(t.Days, "d", 1);
+			Add(t.Hours, "h", 1);
+			Add(t.Minutes, "m", 1);
+			Add(t.Seconds, "s", 1);
 
 			return total.ToString().Trim();
 		}

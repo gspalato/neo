@@ -3,10 +3,10 @@ using System;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 
-using Arpa;
-using Arpa.Structures;
+using Muon;
+using Muon.Core.Structures;
 
-namespace Arpa.Commands
+namespace Muon.Commands
 {
 	[Category("Miscellaneous")]
 	[Description("Special snowflakes that don't fit on other groups.")]

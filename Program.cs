@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
 
 using DSharpPlus;
 
+using Muon.Core;
 
-namespace Arpa
+namespace Muon
 {
 	internal sealed class Program
 	{

@@ -8,8 +8,8 @@ using DSharpPlus.Entities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 
-using Arpa;
-using Arpa.Utilities;
+using Muon;
+using Muon.Core.Utilities;
 
 
 namespace Arpa.Commands

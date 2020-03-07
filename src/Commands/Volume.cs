@@ -8,11 +8,12 @@ using DSharpPlus.Entities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 
-using Arpa.Services;
-using Arpa.Structures;
+using Muon.Core.Structures;
+using Muon.Services;
 
 
-namespace Arpa.Commands
+
+namespace Muon.Commands
 {
 	public partial class Music : BaseCommandModule
 	{
@@ -61,7 +62,7 @@ namespace Arpa.Commands
 				.WithTimestamp(ctx.Message.Timestamp)
 				.Build()).ConfigureAwait(false);
 
-			player.connection.SetVolume(volume);
+			await player.connection.SetVolumeAsync(volume);
 		}
 	}
 }

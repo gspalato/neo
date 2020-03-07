@@ -11,12 +11,11 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Lavalink;
 
-using Arpa.Services;
-using Arpa.Structures;
-using Arpa.Utilities;
+using Muon.Core.Structures;
+using Muon.Core.Utilities;
+using Muon.Services;
 
-
-namespace Arpa.Commands
+namespace Muon.Commands
 {
 	public partial class Music : BaseCommandModule
 	{

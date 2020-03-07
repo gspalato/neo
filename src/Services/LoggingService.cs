@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using DSharpPlus;
 
-namespace Arpa.Services
+namespace Muon.Services
 {
 	public interface ILoggingService
 	{

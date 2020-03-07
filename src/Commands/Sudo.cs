@@ -6,7 +6,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 
-namespace Arpa.Commands
+namespace Muon.Commands
 {
 	public partial class Moderation : BaseCommandModule
 	{

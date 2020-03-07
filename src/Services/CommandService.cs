@@ -10,11 +10,11 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 
-using Arpa;
-using Arpa.Services;
-using Arpa.Structures;
+using Muon;
+using Muon.Core.Structures;
+using Muon.Services;
 
-namespace Arpa.Services
+namespace Muon.Services
 {
 	public class CommandService
 	{

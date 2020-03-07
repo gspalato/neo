@@ -7,10 +7,10 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 
-using Arpa;
-using Arpa.Structures;
+using Muon;
+using Muon.Core.Structures;
 
-namespace Arpa.Services
+namespace Muon.Services
 {
 	public class MusicService
 	{
@@ -65,9 +65,9 @@ namespace Arpa.Services
 		public async Task<LavalinkLoadResult> Resolve(string s)
 		{
 			if (this.IsValidLink(s))
-				return await this.nodeConnection.GetTracksAsync(new Uri(s));
+				return await this.nodeConnection.Rest.GetTracksAsync(new Uri(s));
 			else
-				return await this.nodeConnection.GetTracksAsync(s);
+				return await this.nodeConnection.Rest.GetTracksAsync(s);
 		}
 
 		private bool IsValidLink(string item)

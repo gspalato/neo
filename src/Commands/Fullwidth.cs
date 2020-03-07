@@ -6,7 +6,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 
-namespace Arpa.Commands
+namespace Muon.Commands
 {
     public partial class Miscellaneous : BaseCommandModule
     {

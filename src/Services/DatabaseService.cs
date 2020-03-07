@@ -8,9 +8,9 @@ using MongoDB.Driver;
 
 using DSharpPlus;
 
-using Arpa.Structures;
+using Muon.Core.Structures;
 
-namespace Arpa.Services
+namespace Muon.Services
 {
 	public interface IDatabaseService
 	{

@@ -8,11 +8,11 @@ using DSharpPlus.Entities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 
-using Arpa.Services;
-using Arpa.Structures;
+using Muon.Services;
+using Muon.Core.Structures;
 
 
-namespace Arpa.Commands
+namespace Muon.Commands
 {
 	public partial class Music : BaseCommandModule
 	{
