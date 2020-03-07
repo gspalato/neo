@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 using DSharpPlus;
 using DSharpPlus.EventArgs;
@@ -30,7 +31,7 @@ namespace Muon.Core
 				new DiscordConfiguration
 				{
 					TokenType = TokenType.Bot,
-					Token = Configuration["Environment:PROD:TOKEN"],
+					Token = Configuration.GetValue<string>("Environment:PROD:TOKEN"),
 
 					UseInternalLogHandler = true
 				}
@@ -51,14 +52,11 @@ namespace Muon.Core
 
 		private async Task InitializeServices(IServiceProvider services)
 		{
-			DatabaseService databaseService = services.GetRequiredService<DatabaseService>();
-			databaseService.Initialize();
+			services.GetRequiredService<DatabaseService>().Initialize();
 
-			CommandService commandService = services.GetRequiredService<CommandService>();
-			commandService.InstallCommandsAsync();
+			services.GetRequiredService<CommandService>().InstallCommandsAsync();
 
-			MusicService musicService = services.GetRequiredService<MusicService>();
-			await musicService.Initialize(this.Client.UseLavalink());
+			await services.GetRequiredService<MusicService>().Initialize(this.Client.UseLavalink());
 		}
 
 		private void RegisterEvents(IServiceProvider services)

@@ -15,35 +15,34 @@ namespace Muon.Services
 	public interface IDatabaseService
 	{
 		void Initialize();
+		Task<GuildSettings> GetGuildSettingsAsync(ulong guildId);
+		Task<GuildSettings> CreateGuildSettingsAsync(ulong guildId, string prefix = "pls ");
 	}
 
 	public class DatabaseService : IDatabaseService
 	{
 		IMongoClient connection;
+		IMongoDatabase database;
 
 		public DatabaseService()
-		{
-
-		}
+		{ }
 
 		public void Initialize()
 		{
-			IMongoClient connection = new MongoClient("mongodb://localhost:27017");
-			this.connection = connection;
+			this.connection = new MongoClient("mongodb://localhost:27017");
+			this.database = this.connection.GetDatabase("muon");
 		}
 
 		public async Task<GuildSettings> GetGuildSettingsAsync(ulong guildId)
 		{
-			IMongoDatabase db = this.connection.GetDatabase("arpa");
-			IMongoCollection<GuildSettings> collection = db.GetCollection<GuildSettings>("GuildSettings");
+			IMongoCollection<GuildSettings> collection = database.GetCollection<GuildSettings>("GuildSettings");
 
 			return await collection.Find(x => x.guild_id == guildId.ToString()).FirstOrDefaultAsync();
 		}
 
 		public async Task<GuildSettings> CreateGuildSettingsAsync(ulong guildId, string prefix = "pls ")
 		{
-			IMongoDatabase db = this.connection.GetDatabase("arpa");
-			IMongoCollection<GuildSettings> collection = db.GetCollection<GuildSettings>("GuildSettings");
+			IMongoCollection<GuildSettings> collection = database.GetCollection<GuildSettings>("GuildSettings");
 
 			GuildSettings settings = new GuildSettings
 			{

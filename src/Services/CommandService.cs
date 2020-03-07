@@ -37,7 +37,6 @@ namespace Muon.Services
 				EnableDefaultHelp = false,
 				EnableDms = false,
 				Services = services,
-
 			});
 
 			this.interactivity = client.UseInteractivity(new InteractivityConfiguration { });

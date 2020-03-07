@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Configuration;
+
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
@@ -15,15 +17,17 @@ namespace Muon.Services
 	public class MusicService
 	{
 		public readonly DiscordClient client;
+		public readonly IConfiguration configuration;
 
 		public LavalinkExtension lavalink;
 		public LavalinkNodeConnection nodeConnection;
 
 		private readonly Dictionary<ulong, IPlayer> players = new Dictionary<ulong, IPlayer>();
 
-		public MusicService(DiscordClient client)
+		public MusicService(DiscordClient client, IConfiguration configuration)
 		{
 			this.client = client;
+			this.configuration = configuration;
 		}
 
 		public async Task Initialize(LavalinkExtension lavalink)
@@ -35,7 +39,7 @@ namespace Muon.Services
 				Console.WriteLine("Trying to connect to Lavalink...");
 				this.nodeConnection = await this.lavalink.ConnectAsync(new LavalinkConfiguration
 				{
-					Password = "bluisthebestbotever"
+					Password = configuration.GetValue<string>("Environment:PROD:LAVALINK")
 				});
 			}
 			catch
@@ -82,6 +86,7 @@ namespace Muon.Services
 			{
 				HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(item);
 				request.Method = "HEAD";
+
 				using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
 				{
 					foreach (string domain in accepted)

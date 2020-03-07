@@ -10,7 +10,7 @@
         public static ReleaseType ReleaseType = ReleaseType.Development;
 
         public static System.Version DotnetVersion = new System.Version(Major, Minor, Patch, Hotfix);
-        public static string FullVersion = $"{Major}.{Minor}.{Patch}.{Hotfix}-{ReleaseType}";
+        public static string FullVersion = $"{Major}.{Minor}.{Patch}.{Hotfix}{(ReleaseType == ReleaseType.Development ? "DEV" : "PROD")}";
     }
 
     public enum ReleaseType
