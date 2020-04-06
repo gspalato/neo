@@ -17,7 +17,17 @@
 
 ### Installing
 
-Just clone the repository, restore and compile.
+* Clone the repository;
+* Restore;
+* Compile;
+* Create an `appsettings.json` file on the executable folder;
+```json
+{
+	"TOKEN": "", // Discord bot token.
+	"PREFIX": "", // Default prefix.
+	"LAVALINK": "" // Lavalink node password.
+}
+```
 
 ## 👨‍🏫 Authors
 
@@ -29,5 +39,5 @@ Unlicensed, you must not copy, modify, redistribute, sell, "remix" or share in a
 
 ## 👥 Acknowledgements
 
-- **Izumemori**
-- **trinitrotoluene**
+- [**Izumemori**](https://github.com/Izumemori)
+- [**trinitrotoluene**](https://github.com/trinitrotoluene)
