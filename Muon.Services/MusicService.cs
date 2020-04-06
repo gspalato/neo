@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Configuration;
 
-using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 
@@ -13,32 +12,42 @@ using Muon.Kernel.Structures;
 
 namespace Muon.Services
 {
-	public class MusicService
+	public interface IMusicService
 	{
-		public readonly DiscordClient client;
-		public readonly IConfiguration configuration;
+		public LavalinkExtension _lavalink { get; set; }
+		public LavalinkNodeConnection _nodeConnection { get; set; }
 
-		public LavalinkExtension lavalink;
-		public LavalinkNodeConnection nodeConnection;
+		public Task Initialize(LavalinkExtension lavalink);
+		public IPlayer GetPlayer(DiscordGuild guild);
+		public bool RemovePlayer(DiscordGuild guild);
+		public Task<LavalinkLoadResult> Resolve(string s);
+	}
+
+	public class MusicService : IMusicService
+	{
+		private readonly IConfiguration _configuration;
+
+		public LavalinkExtension _lavalink { get; set; }
+		public LavalinkNodeConnection _nodeConnection { get; set; }
 
 		private readonly Dictionary<ulong, IPlayer> players = new Dictionary<ulong, IPlayer>();
 
-		public MusicService(DiscordClient client, IConfiguration configuration)
+
+		public MusicService(IConfiguration configuration)
 		{
-			this.client = client;
-			this.configuration = configuration;
+			_configuration = configuration;
 		}
 
 		public async Task Initialize(LavalinkExtension lavalink)
 		{
-			this.lavalink = lavalink;
+			_lavalink = lavalink;
 
 			try
 			{
 				Console.WriteLine("Trying to connect to Lavalink...");
-				this.nodeConnection = await this.lavalink.ConnectAsync(new LavalinkConfiguration
+				_nodeConnection = await _lavalink.ConnectAsync(new LavalinkConfiguration
 				{
-					Password = configuration.GetValue<string>("LAVALINK")
+					Password = _configuration.GetValue<string>("LAVALINK")
 				});
 			}
 			catch
@@ -46,7 +55,7 @@ namespace Muon.Services
 				Console.WriteLine("Failed to connect. Trying again in 10 seconds.");
 
 				await Task.Delay(10000);
-				await this.Initialize(lavalink);
+				await this.Initialize(_lavalink);
 				return;
 			}
 		}
@@ -57,7 +66,7 @@ namespace Muon.Services
 				return player;
 			else
 			{
-				this.players.Add(guild.Id, new Player(this, this.nodeConnection, guild));
+				this.players.Add(guild.Id, new Player(this, _nodeConnection, guild));
 				return this.GetPlayer(guild);
 			}
 		}
@@ -68,14 +77,14 @@ namespace Muon.Services
 		public async Task<LavalinkLoadResult> Resolve(string s)
 		{
 			if (this.IsValidLink(s))
-				return await this.nodeConnection.Rest.GetTracksAsync(new Uri(s));
+				return await _nodeConnection.Rest.GetTracksAsync(new Uri(s));
 			else
-				return await this.nodeConnection.Rest.GetTracksAsync(s);
+				return await _nodeConnection.Rest.GetTracksAsync(s);
 		}
 
 		private bool IsValidLink(string item)
 		{
-			var accepted = new List<string>
+			var accepted = new string[]
 			{
 				"youtube.com",
 				"youtu.be",
@@ -90,13 +99,10 @@ namespace Muon.Services
 				{
 					foreach (string domain in accepted)
 					{
-						bool httpTest = response.ResponseUri
-							.ToString()
-							.Substring(0, domain.Length + 6) == "http://" + domain;
+						string uri = response.ResponseUri.ToString();
 
-						bool httpsTest = response.ResponseUri
-							.ToString()
-							.Substring(0, domain.Length + 7) == "https://" + domain;
+						bool httpTest = uri.Substring(0, domain.Length + 6) == "http://" + domain;
+						bool httpsTest = uri.Substring(0, domain.Length + 7) == "https://" + domain;
 
 						if (httpsTest || httpTest)
 							return true;
