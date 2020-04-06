@@ -19,7 +19,7 @@ namespace Muon.Kernel.Structures
 
 	public class Player : IPlayer
 	{
-		public readonly MusicService musicService;
+		private readonly MusicService _musicService;
 
 		public readonly ulong guildId;
 		public readonly ConcurrentQueue<LavalinkTrack> queue = new ConcurrentQueue<LavalinkTrack>();
@@ -34,9 +34,9 @@ namespace Muon.Kernel.Structures
 
 		public Player(MusicService musicService, LavalinkNodeConnection node, DiscordGuild guild)
 		{
-			this.guildId = guild.Id;
-			this.nodeConnection = node;
-			this.musicService = musicService;
+			guildId = guild.Id;
+			nodeConnection = node;
+			_musicService = musicService;
 		}
 
 		public void Push(LavalinkTrack track)
@@ -83,22 +83,22 @@ namespace Muon.Kernel.Structures
 
 		public void Stop()
 		{
-			this.musicService.RemovePlayer(this.connection.Guild);
-			this.connection.StopAsync();
-			this.connection.DisconnectAsync();
+			_musicService.RemovePlayer(this.connection.Guild);
+			connection.StopAsync();
+			connection.DisconnectAsync();
 
-			this.isPlaying = false;
-			this.textChannel = null;
-			this.connection = null;
+			isPlaying = false;
+			textChannel = null;
+			connection = null;
 		}
 
 		private async Task<LavalinkGuildConnection> ConnectAsync(DiscordChannel channel)
 		{
-			if (this.connection != null)
-				return this.connection;
+			if (connection != null)
+				return connection;
 			else
 			{
-				connection = await this.nodeConnection.ConnectAsync(channel);
+				connection = await nodeConnection.ConnectAsync(channel);
 				connection.PlaybackFinished -= HandleTrackFinish;
 				connection.PlaybackFinished += HandleTrackFinish;
 

@@ -16,22 +16,27 @@ using Muon.Services;
 
 namespace Muon.Services
 {
-	public class CommandService
+	public interface ICommandService
 	{
-		private readonly DiscordClient client;
-		private readonly CommandsNextExtension commands;
-		public InteractivityExtension interactivity;
+		public void InstallCommandsAsync();
+	}
 
-		private IServiceProvider services;
+	public class CommandService : ICommandService
+	{
+		public readonly InteractivityExtension _interactivity;
 
-		public CommandService(
-			DiscordClient client,
-			IServiceProvider services)
+		private readonly DiscordClient _client;
+		private readonly CommandsNextExtension _commands;
+
+		private readonly IDatabaseService _databaseService;
+
+		public CommandService(DiscordClient client,
+			IDatabaseService databaseService, IServiceProvider services)
 		{
-			this.client = client;
-			this.services = services;
+			_client = client;
+			_databaseService = databaseService;
 
-			this.commands = client.UseCommandsNext(new CommandsNextConfiguration
+			_commands = client.UseCommandsNext(new CommandsNextConfiguration
 			{
 				PrefixResolver = this.ParsePrefix,
 				EnableDefaultHelp = false,
@@ -39,15 +44,15 @@ namespace Muon.Services
 				Services = services,
 			});
 
-			this.interactivity = client.UseInteractivity(new InteractivityConfiguration { });
+			_interactivity = client.UseInteractivity(new InteractivityConfiguration { });
 		}
 
 		public void InstallCommandsAsync()
 		{
 			try
 			{
-				this.commands.RegisterCommands(Assembly.GetEntryAssembly());
-				this.commands.CommandErrored += this.HandleCommandError;
+				_commands.RegisterCommands(Assembly.GetEntryAssembly());
+				_commands.CommandErrored += this.HandleCommandError;
 			}
 			catch { }
 		}
@@ -65,11 +70,10 @@ namespace Muon.Services
 
 		private async Task<int> ParsePrefix(DiscordMessage msg)
 		{
-			DatabaseService databaseService = this.services.GetRequiredService<DatabaseService>();
 
-			GuildSettings settings = await databaseService.GetGuildSettingsAsync(msg.Channel.GuildId);
+			GuildSettings settings = await _databaseService.GetGuildSettingsAsync(msg.Channel.GuildId);
 			if (settings == null)
-				settings = await databaseService.CreateGuildSettingsAsync(msg.Channel.GuildId);
+				settings = await _databaseService.CreateGuildSettingsAsync(msg.Channel.GuildId);
 
 			string prefix = settings.prefix;
 
