@@ -3,9 +3,9 @@
     public static class Version
     {
         private static int Major = 0;
-        private static int Minor = 1;
+        private static int Minor = 2;
         private static int Patch = 0;
-        private static int Hotfix = 0;
+        private static int Hotfix = 2;
 
         public static ReleaseType ReleaseType = ReleaseType.Development;
 
