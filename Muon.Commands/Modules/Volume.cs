@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,7 +12,6 @@ using Muon.Kernel.Utilities;
 using Muon.Services;
 
 
-
 namespace Muon.Commands
 {
 	public partial class Music : BaseCommandModule
@@ -22,7 +20,7 @@ namespace Muon.Commands
 		[Aliases("vol")]
 		public async Task VolumeAsync(CommandContext ctx, int volume)
 		{
-			MusicService musicService = ctx.Services.GetRequiredService<MusicService>();
+			IMusicService musicService = ctx.Services.GetRequiredService<IMusicService>();
 			Player player = musicService.GetPlayer(ctx.Guild) as Player;
 
 			DiscordChannel channel = ctx.Member.VoiceState.Channel;
@@ -57,13 +55,13 @@ namespace Muon.Commands
 				return;
 			}
 
+			await player.connection.SetVolumeAsync(volume);
+
 			await ctx.RespondAsync(embed: new DiscordEmbedBuilder()
 				.WithDescription($"Volume set to {volume}%")
 				.WithDefaultColor()
 				.WithTimestamp(ctx.Message.Timestamp)
 				.Build()).ConfigureAwait(false);
-
-			await player.connection.SetVolumeAsync(volume);
 		}
 	}
 }

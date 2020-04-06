@@ -22,7 +22,7 @@ namespace Muon.Commands
 		[Command("queue")]
 		public async Task ShowQueueAsync(CommandContext ctx)
 		{
-			MusicService musicService = ctx.Services.GetRequiredService<MusicService>();
+			IMusicService musicService = ctx.Services.GetRequiredService<IMusicService>();
 			Player player = musicService.GetPlayer(ctx.Guild) as Player;
 
 			if (player.connection == null)

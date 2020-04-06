@@ -21,7 +21,7 @@ namespace Muon.Commands
 		[Command("skip")]
 		public async Task SkipAsync(CommandContext ctx)
 		{
-			MusicService musicService = ctx.Services.GetRequiredService<MusicService>();
+			IMusicService musicService = ctx.Services.GetRequiredService<IMusicService>();
 			Player player = musicService.GetPlayer(ctx.Guild) as Player;
 
 			DiscordChannel channel = ctx.Member.VoiceState.Channel;

@@ -21,7 +21,7 @@ namespace Muon.Commands
 		[Command("seek")]
 		public async Task SeekAsync(CommandContext ctx, int position)
 		{
-			MusicService musicService = ctx.Services.GetRequiredService<MusicService>();
+			IMusicService musicService = ctx.Services.GetRequiredService<IMusicService>();
 			Player player = musicService.GetPlayer(ctx.Guild) as Player;
 
 			DiscordChannel channel = ctx.Member.VoiceState.Channel;

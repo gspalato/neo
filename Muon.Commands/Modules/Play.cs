@@ -14,8 +14,6 @@ using Muon.Kernel.Structures;
 using Muon.Kernel.Utilities;
 using Muon.Services;
 
-
-
 namespace Muon.Commands
 {
 	public partial class Music : BaseCommandModule
@@ -23,7 +21,8 @@ namespace Muon.Commands
 		[Command("play")]
 		public async Task PlayAsync(CommandContext ctx, params string[] input)
 		{
-			DiscordChannel channel = ctx.Member.VoiceState.Channel;
+            // Check Voice Channel Connection
+            DiscordChannel channel = ctx.Member.VoiceState.Channel;
 			if (channel == null)
 			{
 				DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
@@ -34,10 +33,15 @@ namespace Muon.Commands
 				await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
 			}
 
-			string query = string.Join(" ", input);
+            string query = string.Join(" ", input);
 
-			MusicService musicService = ctx.Services
-				.GetRequiredService<MusicService>();
+			IMusicService musicService = ctx.Services.GetRequiredService<IMusicService>();
+
+			if (musicService._lavalink is null)
+			{
+				Console.WriteLine("Lavalink's not connected.");
+				return;
+			}
 
 			IPlayer player = musicService.GetPlayer(ctx.Guild);
 			LavalinkLoadResult result = await musicService.Resolve(query);
