@@ -1,10 +1,8 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using DSharpPlus;
 using DSharpPlus.EventArgs;
@@ -22,46 +20,61 @@ namespace Muon.Kernel
 
 	public class App : IApp, IHostedService
 	{
-		private DiscordClient client;
-		private IServiceProvider services;
+		private DiscordClient _client;
+		private ILogger<App> _logger;
+		
+		private IDatabaseService _databaseService;
+		private ICommandService _commandService;
+		private IMusicService _musicService;
 
-		public App(IServiceProvider services, DiscordClient client, IConfiguration configuration)
+		public App(DiscordClient client, ILogger<App> logger,
+			IDatabaseService database, ICommandService commands, IMusicService music)
 		{
-			this.client = client;
-			this.services = services;
+			_client = client;
+			_logger = logger;
+
+			_databaseService = database;
+			_commandService = commands;
+			_musicService = music;
 		}
 
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
 			this.RegisterEvents();
 
-			await client.ConnectAsync();
+			await _client.ConnectAsync();
 
 			await Task.Delay(-1);
 		}
 
 		public async Task StopAsync(CancellationToken cancellationToken)
 		{
-			await client.DisconnectAsync();
+			await _client.DisconnectAsync();
 		}
 
 		private void RegisterEvents()
 		{
-			client.Ready += async (ReadyEventArgs args) =>
+			_client.Ready += async (ReadyEventArgs args) =>
 			{
-				await this.InitializeServices();
-				await services.GetRequiredService<LoggingService>().LogAsync("Ready!");
+				this.InitializeServices();
+				_logger.LogInformation("Ready!");
+
+				await Task.Run(() => true);
 			};
 
-			client.ClientErrored += (ClientErrorEventArgs args) =>
-				services.GetRequiredService<LoggingService>().LogAsync(args.Exception.ToString());
+			_client.ClientErrored += async (ClientErrorEventArgs args) =>
+			{
+				_logger.LogError(args.Exception, "{Exception}");
+
+				await Task.Run(() => true);
+			};
 		}
 
-		private async Task InitializeServices()
+		private void InitializeServices()
 		{
-			services.GetRequiredService<DatabaseService>().Initialize();
-			services.GetRequiredService<CommandService>().InstallCommandsAsync();
-			await services.GetRequiredService<MusicService>().Initialize(client.UseLavalink());
+			_databaseService.Initialize();
+			_commandService.InstallCommandsAsync();
+			_ = Task.Run(() => _musicService.Initialize(_client.UseLavalink()));
 		}
 	}
 
