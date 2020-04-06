@@ -9,7 +9,6 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 
-using Muon;
 using Muon.Kernel.Structures;
 
 namespace Muon.Services

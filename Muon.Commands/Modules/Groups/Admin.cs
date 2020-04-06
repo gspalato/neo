@@ -1,9 +1,6 @@
-using System;
-
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 
-using Muon;
 using Muon.Kernel.Structures;
 
 namespace Muon.Commands

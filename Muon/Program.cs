@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using DSharpPlus;
-using DSharpPlus.EventArgs;
-using DSharpPlus.Lavalink;
 
 using Muon.Kernel;
 using Muon.Services;
@@ -38,7 +35,6 @@ namespace Muon
 					})
 				.AddSingleton<DiscordClient>()
 				.AddSingleton<Random>()
-				.AddSingleton<LoggingService>()
 				.AddSingleton<DatabaseService>()
 				.AddSingleton<CommandService>()
 				.AddSingleton<MusicService>()
