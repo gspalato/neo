@@ -1,5 +1,6 @@
 ﻿using System;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -26,18 +27,18 @@ namespace Muon
 			.ConfigureServices((hostContext, services) =>
 			{
 				services
-				.AddScoped(services =>
+				.AddScoped(_ =>
 					new DiscordConfiguration
 					{
 						TokenType = TokenType.Bot,
-						Token = hostContext.Configuration.GetSection("TOKEN").Value,
+						Token = hostContext.Configuration.GetValue<string>("TOKEN"),
 						UseInternalLogHandler = true
 					})
 				.AddSingleton<DiscordClient>()
 				.AddSingleton<Random>()
-				.AddSingleton<DatabaseService>()
-				.AddSingleton<CommandService>()
-				.AddSingleton<MusicService>()
+				.AddSingleton<IDatabaseService, DatabaseService>()
+				.AddSingleton<ICommandService, CommandService>()
+				.AddSingleton<IMusicService, MusicService>()
 				.AddHostedService<App>();
 
 				services.AddLogging();
