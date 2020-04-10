@@ -1,22 +1,22 @@
-﻿using DSharpPlus.Entities;
+﻿using Discord;
 
 namespace Muon.Kernel.Utilities
 {
     public static class DiscordEmbedBuilderExtensions
     {
-        public static DiscordEmbedBuilder WithSuccess(this DiscordEmbedBuilder builder)
-            => builder.WithColor(new DiscordColor(0x00FF00));
+        public static EmbedBuilder WithSuccess(this EmbedBuilder builder)
+            => builder.WithColor(new Color(0, 255, 0));
 
-        public static DiscordEmbedBuilder WithInfo(this DiscordEmbedBuilder builder)
-            => builder.WithColor(new DiscordColor(0x2A8EF4));
+        public static EmbedBuilder WithInfo(this EmbedBuilder builder)
+            => builder.WithColor(new Color(42, 142, 244));
 
-        public static DiscordEmbedBuilder WithWarning(this DiscordEmbedBuilder builder)
-            => builder.WithColor(new DiscordColor(0x2F3136));
+        public static EmbedBuilder WithWarning(this EmbedBuilder builder)
+            => builder.WithColor(new Color(255, 165, 0));
 
-        public static DiscordEmbedBuilder WithError(this DiscordEmbedBuilder builder)
-            => builder.WithColor(new DiscordColor(0xFF0000));
+        public static EmbedBuilder WithError(this EmbedBuilder builder)
+            => builder.WithColor(new Color(255, 0, 0));
 
-        public static DiscordEmbedBuilder WithDefaultColor(this DiscordEmbedBuilder builder)
-            => builder.WithColor(new DiscordColor(0x2F3136));
+        public static EmbedBuilder WithDefaultColor(this EmbedBuilder builder)
+            => builder.WithColor(new Color(47, 49, 54));
     }
 }

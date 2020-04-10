@@ -2,7 +2,3 @@
 /obj
 /.vs
 /.vscode
-/.github
-
-/appsettings.json
-/appsettings.*.json

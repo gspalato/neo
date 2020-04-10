@@ -1,16 +1,17 @@
 using System;
 
-using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.Entities;
+using Discord;
+using Discord.WebSocket;
+
+using Muon.Commands;
 
 namespace Muon.Kernel.Structures
 {
 	public class RoslynVariables
 	{
-		public DiscordClient Client;
-		public DiscordMessage Message;
+		public DiscordSocketClient Client;
+		public SocketUserMessage Message;
 
-		public CommandContext Context;
+		public MuonContext Context;
 	}
 }

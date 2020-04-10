@@ -1,122 +1,113 @@
+using Discord;
+using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
+using Muon.Kernel.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
-
-using Microsoft.Extensions.Configuration;
-
-using DSharpPlus.Entities;
-using DSharpPlus.Lavalink;
-
-using Muon.Kernel.Structures;
+using Victoria;
+using Victoria.EventArgs;
 
 namespace Muon.Services
 {
 	public interface IMusicService
 	{
-		public LavalinkExtension _lavalink { get; set; }
-		public LavalinkNodeConnection _nodeConnection { get; set; }
-
-		public Task Initialize(LavalinkExtension lavalink);
-		public IPlayer GetPlayer(DiscordGuild guild);
-		public bool RemovePlayer(DiscordGuild guild);
-		public Task<LavalinkLoadResult> Resolve(string s);
+		public HashSet<ulong> VoteQueue { get; }
 	}
 
-	public class MusicService : IMusicService
+	public sealed class MusicService : IMusicService
 	{
-		private readonly IConfiguration _configuration;
+		private LavaNode _lavaNode { get; }
+		private ILogger _logger { get; }
+		public HashSet<ulong> VoteQueue { get; }
 
-		public LavalinkExtension _lavalink { get; set; }
-		public LavalinkNodeConnection _nodeConnection { get; set; }
-
-		private readonly Dictionary<ulong, IPlayer> players = new Dictionary<ulong, IPlayer>();
-
-
-		public MusicService(IConfiguration configuration)
+		public MusicService(DiscordSocketClient socketClient,
+			LavaNode lavaNode, ILogger<MusicService> logger)
 		{
-			_configuration = configuration;
+			socketClient.Ready += OnReady;
+			_lavaNode = lavaNode;
+			_logger = logger;
+			_lavaNode.OnLog += OnLog;
+			_lavaNode.OnPlayerUpdated += OnPlayerUpdated;
+			_lavaNode.OnStatsReceived += OnStatsReceived;
+			_lavaNode.OnTrackEnded += OnTrackEnded;
+			_lavaNode.OnTrackException += OnTrackException;
+			_lavaNode.OnTrackStuck += OnTrackStuck;
+			_lavaNode.OnWebSocketClosed += OnWebSocketClosed;
+
+			VoteQueue = new HashSet<ulong>();
 		}
 
-		public async Task Initialize(LavalinkExtension lavalink)
+		private Task OnLog(LogMessage arg)
 		{
-			_lavalink = lavalink;
+			Console.WriteLine(arg.Message+"\n"+arg.Exception?.ToString());
+			return Task.CompletedTask;
+		}
 
-			try
-			{
-				Console.WriteLine("Trying to connect to Lavalink...");
-				_nodeConnection = await _lavalink.ConnectAsync(new LavalinkConfiguration
-				{
-					Password = _configuration.GetValue<string>("LAVALINK")
-				});
-			}
-			catch
-			{
-				Console.WriteLine("Failed to connect. Trying again in 10 seconds.");
+		private Task OnPlayerUpdated(PlayerUpdateEventArgs arg)
+		{
+			_logger.LogInformation($"Player update received for {arg.Player.VoiceChannel.Name}.");
+			return Task.CompletedTask;
+		}
 
-				await Task.Delay(10000);
-				await this.Initialize(_lavalink);
+		private Task OnStatsReceived(StatsEventArgs arg)
+		{
+			_logger.LogInformation($"Lavalink Uptime {arg.Uptime}.");
+			return Task.CompletedTask;
+		}
+
+		private async Task OnTrackEnded(TrackEndedEventArgs args)
+		{
+			if (!args.Reason.ShouldPlayNext())
+				return;
+
+			var player = args.Player;
+			if (!player.Queue.TryDequeue(out var queueable))
+				return;
+
+			if (!(queueable is LavaTrack track))
+			{
+				_logger.LogWarning("Next item in queue is not a track.");
+
+				EmbedBuilder errorEmbed = new EmbedBuilder()
+					.WithTitle("Error")
+					.WithWarning()
+					.WithDescription($"An exception ocurred.\n`MU0001`");
+				await args.Player.TextChannel.SendMessageAsync(embed: errorEmbed.Build());
+
 				return;
 			}
+
+			await args.Player.PlayAsync(track);
+
+			EmbedBuilder embed = new EmbedBuilder()
+				.WithTitle(":notes: Now Playing")
+				.WithDefaultColor()
+				.WithDescription($"**[{track.Title.TruncateAndEscape()}]({track.Url})**");
+			await args.Player.TextChannel.SendMessageAsync(embed: embed.Build());
 		}
 
-		public IPlayer GetPlayer(DiscordGuild guild)
+		private Task OnTrackException(TrackExceptionEventArgs arg)
 		{
-			if (this.players.TryGetValue(guild.Id, out IPlayer player))
-				return player;
-			else
-			{
-				this.players.Add(guild.Id, new Player(this, _nodeConnection, guild));
-				return this.GetPlayer(guild);
-			}
+			_logger.LogCritical($"Track exception received for {arg.Track.Title}.");
+			return Task.CompletedTask;
 		}
 
-		public bool RemovePlayer(DiscordGuild guild) =>
-			this.players.Remove(guild.Id);
-
-		public async Task<LavalinkLoadResult> Resolve(string s)
+		private Task OnTrackStuck(TrackStuckEventArgs arg)
 		{
-			if (this.IsValidLink(s))
-				return await _nodeConnection.Rest.GetTracksAsync(new Uri(s));
-			else
-				return await _nodeConnection.Rest.GetTracksAsync(s);
+			_logger.LogError($"Track stuck received for {arg.Track.Title}.");
+			return Task.CompletedTask;
 		}
 
-		private bool IsValidLink(string item)
+		private Task OnWebSocketClosed(WebSocketClosedEventArgs arg)
 		{
-			var accepted = new string[]
-			{
-				"youtube.com",
-				"youtu.be",
-			};
+			_logger.LogCritical($"Discord WebSocket connection closed with following reason: {arg.Reason}");
+			return Task.CompletedTask;
+		}
 
-			try
-			{
-				HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(item);
-				request.Method = "HEAD";
-
-				using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-				{
-					foreach (string domain in accepted)
-					{
-						string uri = response.ResponseUri.ToString();
-
-						bool httpTest = uri.Substring(0, domain.Length + 6) == "http://" + domain;
-						bool httpsTest = uri.Substring(0, domain.Length + 7) == "https://" + domain;
-
-						if (httpsTest || httpTest)
-							return true;
-						else
-							continue;
-					}
-
-					return false;
-				}
-			}
-			catch
-			{
-				return false;
-			}
+		private async Task OnReady()
+		{
+			await _lavaNode.ConnectAsync();
 		}
 	}
 }

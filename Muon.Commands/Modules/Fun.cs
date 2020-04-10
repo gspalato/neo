@@ -1,41 +1,46 @@
+using Discord;
+using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
+using Muon.Kernel.Structures;
+using Muon.Kernel.Utilities;
+using Qmmands;
 using System;
 using System.Threading.Tasks;
 
-using Microsoft.Extensions.DependencyInjection;
-
-using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-
-using Muon.Kernel.Utilities;
-
 namespace Muon.Commands
 {
-	public partial class Fun : BaseCommandModule
+	[Category("Fun")]
+	[Description("🎉")]
+	public class Fun : MuonModule
 	{
 		[Command("hug")]
 		[Description("Hug someone! **(っ´▽`)っ**")]
-		public async Task HugAsync(CommandContext ctx, DiscordMember user)
+		[IgnoresExtraArguments]
+		public async Task HugAsync(SocketGuildUser user)
 		{
+			Console.WriteLine(user);
+
 			string who;
-			if (user.Id.Equals(ctx.User.Id))
+			if (user.Id == Context.User.Id)
 				who = "themself";
-			else if (user.Id.Equals(ctx.Client.CurrentUser.Id))
+			else if (user.Id == Context.Client.CurrentUser.Id)
 				who = "me";
 			else
 				who = user.Mention;
 
-			DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-				.WithDescription($"{ctx.User.Mention} hugged {who}! **(っ´▽`)っ**")
+			string image = this.GetHugGif();
+			EmbedBuilder embed = new EmbedBuilder()
+				.WithDescription($"{Context.User.Mention} hugged {who}! **(っ´▽`)っ**")
 				.WithInfo()
-				.WithImageUrl(this.GetHugGif(ctx.Services.GetRequiredService<Random>()));
+				.WithImageUrl(image);
 
-			await ctx.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
+			await SendEmbedAsync(embed);
 		}
 
-		private string GetHugGif(Random random)
+		private string GetHugGif()
 		{
+			Random random = Context.ServiceProvider.GetRequiredService<Random>();
+
 			string[] links = new string[] {
 				"https://media1.tenor.com/images/7db5f172665f5a64c1a5ebe0fd4cfec8/tenor.gif?itemid=9200935",
 				"https://media1.tenor.com/images/42922e87b3ec288b11f59ba7f3cc6393/tenor.gif?itemid=5634630",

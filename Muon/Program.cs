@@ -1,14 +1,14 @@
-﻿using System;
-
+﻿
+using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
-using DSharpPlus;
-
 using Muon.Kernel;
 using Muon.Services;
+using Qmmands;
+using System;
+using Victoria;
 
 namespace Muon
 {
@@ -27,18 +27,24 @@ namespace Muon
 			.ConfigureServices((hostContext, services) =>
 			{
 				services
-				.AddScoped(_ =>
-					new DiscordConfiguration
+				.AddSingleton<DiscordSocketClient>()
+				.AddSingleton(services =>
+					new CommandServiceConfiguration
 					{
-						TokenType = TokenType.Bot,
-						Token = hostContext.Configuration.GetValue<string>("TOKEN"),
-						UseInternalLogHandler = true
+						DefaultRunMode = RunMode.Parallel
 					})
-				.AddSingleton<DiscordClient>()
-				.AddSingleton<Random>()
-				.AddSingleton<IDatabaseService, DatabaseService>()
+				.AddSingleton(services =>
+					new LavaConfig
+					{
+						Authorization = hostContext.Configuration.GetValue<string>("LAVALINK")
+					})
+				.AddSingleton<LavaNode>()
+				.AddSingleton<CommandHandlingService>()
 				.AddSingleton<ICommandService, CommandService>()
+				.AddSingleton<IDatabaseService, DatabaseService>()
+				.AddSingleton<IEventService, EventService>()
 				.AddSingleton<IMusicService, MusicService>()
+				.AddSingleton<Random>()
 				.AddHostedService<App>();
 
 				services.AddLogging();
