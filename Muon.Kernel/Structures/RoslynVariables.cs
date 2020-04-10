@@ -1,8 +1,4 @@
-using System;
-
-using Discord;
 using Discord.WebSocket;
-
 using Muon.Commands;
 
 namespace Muon.Kernel.Structures

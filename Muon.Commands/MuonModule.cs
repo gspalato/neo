@@ -1,16 +1,9 @@
-﻿
-using System;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
-
-using Discord;
+﻿using Discord;
 using Discord.Rest;
-
-using Qmmands;
-
 using Muon.Kernel.Utilities;
 using Muon.Services;
+using Qmmands;
+using System.Threading.Tasks;
 
 namespace Muon.Commands
 {
@@ -22,7 +15,7 @@ namespace Muon.Commands
 
 		public MuonModule() : base()
 		{
-			
+
 		}
 
 		protected async Task<RestUserMessage> SendOkAsync(string content = null)

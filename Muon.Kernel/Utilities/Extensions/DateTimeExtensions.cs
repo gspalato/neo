@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Muon.Kernel.Utilities
@@ -34,7 +33,7 @@ namespace Muon.Kernel.Utilities
                 }
                 else
                     if (duration.Milliseconds > 0)
-                        builder.Append($"{duration.Milliseconds}ms ");
+                    builder.Append($"{duration.Milliseconds}ms ");
 
             if (builder.Length <= 1)
                 builder.Append(" <1ms ");
