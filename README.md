@@ -24,8 +24,8 @@
 ```json
 {
 	"TOKEN": "lmao.u.gay",
-	"PREFIX": "pls ",
-	"LAVALINK": "plsconnectibegu"
+	"PREFIX": "",
+	"LAVALINK": ""
 }
 ```
 
