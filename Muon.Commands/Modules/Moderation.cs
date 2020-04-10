@@ -4,6 +4,7 @@ using Muon.Kernel.Structures;
 using Muon.Kernel.Utilities;
 using Qmmands;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,47 +14,54 @@ namespace Muon.Commands
 	[Description("Le ban hammer")]
 	public sealed class Moderation : MuonModule
 	{
-		[Command("whois")]
-		public async Task WhoIsAsync(SocketGuildUser member)
+		[Command("purge")]
+		[IgnoresExtraArguments]
+		public async Task PurgeAsync(int number)
 		{
-			try
-			{
-				string escapedUsername = member.Username.Escape();
-				string escapedNickname = member.Nickname?.Escape();
+			ITextChannel channel = Context.Channel;
+			IEnumerable<IMessage> messages = Context.Channel.GetMessagesAsync(number) as IEnumerable<IMessage>;
 
-				string totalName = $"{escapedUsername} {(escapedNickname is null ? "" : $"({escapedNickname})")}";
+			await channel.DeleteMessagesAsync(messages);
 
-				string status = string.IsNullOrEmpty(member.GetStatus())
-					? ""
-					: $"> {member.GetStatus()}";
+			IMessage ok = await SendOkAsync($"Purged {messages.Count()} messages.");
+			await Task.Delay(5000);
+			await ok.DeleteAsync();
+		}
 
-				Console.WriteLine(status);
+		[Command("whois")]
+		public async Task WhoIsAsync(IGuildUser target)
+		{
+			SocketGuildUser member = target as SocketGuildUser;
 
-				var rolesList = member.Roles
-					.OrderByDescending((role) => role.Position)
-					.Select((role) => $"`{role.Name.Escape()}`");
+			string escapedUsername = member.Username.Escape();
+			string escapedNickname = member.Nickname?.Escape();
 
-				EmbedBuilder embed = new EmbedBuilder()
-					.WithAuthor(member.Username + "#" + member.Discriminator, null, member.GetAvatarUrl())
-					.WithDescription(status)
-					.WithColor(member.Id == Context.Client.CurrentUser.Id
-						? new Color(0x2A8EF4)
-						: member.GetHighestColor(new Color()))
-					.AddField("Name", totalName, true)
-					.AddField("Discriminator", "#" + member.Discriminator, true)
-					.AddField("ID", member.Id.ToString(), true)
-					.AddField("Bot?", member.IsBot ? "Yes" : "No", true)
-					.AddField("Status", member.Status.ToString(), true)
-					.AddField("Joined", member.JoinedAt?.ToUniversalTime().ToString().Substring(1, 18), true)
-					.AddField("Roles", string.Join(", ", rolesList))
-					.WithThumbnailUrl(member.GetAvatarUrl());
+			string totalName = $"{escapedUsername} {(escapedNickname is null ? "" : $"({escapedNickname})")}";
 
-				await SendEmbedAsync(embed);
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine($"{e.Message}\n{e.StackTrace}");
-			}
+			string status = string.IsNullOrEmpty(member.GetStatus())
+				? ""
+				: $"> {member.GetStatus()}";
+
+			var rolesList = member.Roles
+				.OrderByDescending((role) => role.Position)
+				.Select((role) => $"`{role.Name.Escape()}`");
+
+			EmbedBuilder embed = new EmbedBuilder()
+				.WithAuthor(member.Username + "#" + member.Discriminator, null, member.GetAvatarUrl())
+				.WithDescription(status)
+				.WithColor(member.Id == Context.Client.CurrentUser.Id
+					? new Color(0x2A8EF4)
+					: member.GetHighestColor(new Color()))
+				.AddField("Name", totalName, true)
+				.AddField("Discriminator", "#" + member.Discriminator, true)
+				.AddField("ID", member.Id.ToString(), true)
+				.AddField("Bot?", member.IsBot ? "Yes" : "No", true)
+				.AddField("Status", member.Status.ToString(), true)
+				.AddField("Joined", member.JoinedAt?.ToUniversalTime().ToString().Substring(1, 18), true)
+				.AddField("Roles", string.Join(", ", rolesList))
+				.WithThumbnailUrl(member.GetAvatarUrl());
+
+			await SendEmbedAsync(embed);
 		}
 	}
 }

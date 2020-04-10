@@ -23,9 +23,9 @@
 * Create an `appsettings.json` file on the executable folder;
 ```json
 {
-	"TOKEN": "", // Discord bot token.
-	"PREFIX": "", // Default prefix.
-	"LAVALINK": "" // Lavalink node password.
+	"TOKEN": "lmao.u.gay", // Discord bot token.
+	"PREFIX": "pls ", // Default prefix.
+	"LAVALINK": "plsconnectibegu" // Lavalink node password.
 }
 ```
 
@@ -39,5 +39,7 @@ Unlicensed, you must not copy, modify, redistribute, sell, "remix" or share in a
 
 ## 👥 Acknowledgements
 
-- [**Izumemori**](https://github.com/Izumemori)
-- [**trinitrotoluene**](https://github.com/trinitrotoluene)
+- [**foxbot**](https://github.com/foxbot) and others \- Developer(s) of Discord.NET
+- [**Quahu**](https://github.com/Quahu) \- Developing Qmmands;
+- [**Izumemori**](https://github.com/Izumemori) \- Helping me understand C# concepts and fixing my crap;
+- [**trinitrotoluene**](https://github.com/trinitrotoluene) \- Emotional support (or lack thereof);

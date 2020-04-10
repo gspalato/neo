@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Muon.Kernel;
+using Muon.Kernel.Structures;
 using Muon.Services;
 using Qmmands;
 using System;

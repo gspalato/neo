@@ -182,7 +182,7 @@ namespace Muon.Commands.Modules
 
 			if (player.PlayerState == PlayerState.Stopped)
 			{
-				await Context.ReplyAsync("The song's already stopped!");
+				await SendDefaultEmbedAsync("The song's already stopped!");
 				return;
 			}
 
@@ -212,7 +212,7 @@ namespace Muon.Commands.Modules
 			var voiceChannel = (Context.User as IVoiceState).VoiceChannel ?? player.VoiceChannel;
 			if (voiceChannel == null)
 			{
-				await SendDefaultEmbedAsync("I'm not on any voice channel...?");
+				await SendDefaultEmbedAsync("I'm not connected to a voice channel.");
 				return;
 			}
 
@@ -244,26 +244,12 @@ namespace Muon.Commands.Modules
 				return;
 			}
 
-			var voiceChannelUsers = (player.VoiceChannel as SocketVoiceChannel).Users.Where(x => !x.IsBot).ToArray();
-			if (_musicService.VoteQueue.Contains(Context.User.Id))
-			{
-				await Context.ReplyAsync("You can't vote again.");
-				return;
-			}
-
-			_musicService.VoteQueue.Add(Context.User.Id);
-			var percentage = _musicService.VoteQueue.Count / voiceChannelUsers.Length * 100;
-			if (percentage < 85)
-			{
-				await SendDefaultEmbedAsync("You need more than 85% votes to skip this song.");
-				return;
-			}
-
 			try
 			{
-				var oldTrack = player.Track;
-				var currenTrack = await player.SkipAsync();
-				await Context.ReplyAsync($"Skipped: {oldTrack.Title}\nNow Playing: {currenTrack.Title}");
+				var currentTrack = await player.SkipAsync();
+
+				await SendDefaultEmbedAsync(":notes: Now Playing",
+					$"**[{currentTrack.Title.TruncateAndEscape()}]({currentTrack.Url})**");
 			}
 			catch (Exception exception)
 			{

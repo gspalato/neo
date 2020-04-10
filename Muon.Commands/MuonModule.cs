@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Rest;
 using Muon.Kernel.Utilities;
 using Muon.Services;
 using Qmmands;
@@ -14,11 +13,9 @@ namespace Muon.Commands
 		public IMusicService musicService { get; set; }
 
 		public MuonModule() : base()
-		{
+		{ }
 
-		}
-
-		protected async Task<RestUserMessage> SendOkAsync(string content = null)
+		protected async Task<IUserMessage> SendOkAsync(string content = null)
 		{
 			EmbedBuilder embed = new EmbedBuilder()
 			.WithSuccess()
@@ -32,7 +29,7 @@ namespace Muon.Commands
 			return await SendEmbedAsync(embed);
 		}
 
-		protected async Task<RestUserMessage> SendErrorAsync(string content = null)
+		protected async Task<IUserMessage> SendErrorAsync(string content = null)
 		{
 			EmbedBuilder embed = new EmbedBuilder()
 			.WithError()
@@ -46,20 +43,21 @@ namespace Muon.Commands
 			return await SendEmbedAsync(embed);
 		}
 
-		protected async Task<RestUserMessage> SendDefaultEmbedAsync(string title, string content = null)
+		protected async Task<IUserMessage> SendDefaultEmbedAsync(string title, string content = null)
 		{
 			EmbedBuilder embed = new EmbedBuilder()
+			.WithTitle(title)
 			.WithDefaultColor()
 			.WithDescription(content ?? string.Empty);
 
 			return await SendEmbedAsync(embed);
 		}
-		protected async Task<RestUserMessage> SendDefaultEmbedAsync(string description) =>
+		protected async Task<IUserMessage> SendDefaultEmbedAsync(string description) =>
 			await SendDefaultEmbedAsync("", description);
 
-		protected async Task<RestUserMessage> SendEmbedAsync(Embed embed) =>
+		protected async Task<IUserMessage> SendEmbedAsync(Embed embed) =>
 			await Context.Channel.SendMessageAsync(embed: embed);
-		protected async Task<RestUserMessage> SendEmbedAsync(EmbedBuilder embed) =>
+		protected async Task<IUserMessage> SendEmbedAsync(EmbedBuilder embed) =>
 			await Context.Channel.SendMessageAsync(embed: embed.Build());
 	}
 }

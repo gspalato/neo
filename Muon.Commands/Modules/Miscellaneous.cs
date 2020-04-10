@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Rest;
 using Muon.Kernel.Structures;
 using Muon.Kernel.Utilities;
 using Qmmands;
@@ -16,7 +15,7 @@ namespace Muon.Commands
 	{
 		[Command("echo", "say")]
 		public async Task EchoAsync([Remainder] string text) =>
-			await Context.ReplyAsync(text).ConfigureAwait(false);
+			await Context.ReplyAsync(text);
 
 		[Command("fw", "fullwidth")]
 		public async Task FullwidthAsync([Remainder] string text)
@@ -41,7 +40,7 @@ namespace Muon.Commands
 			Stopwatch sw = new Stopwatch();
 
 			sw.Start();
-			RestUserMessage msg = await Context.ReplyAsync(content: "Measuring...");
+			IUserMessage msg = await Context.ReplyAsync(content: "Measuring...");
 			sw.Stop();
 
 			try

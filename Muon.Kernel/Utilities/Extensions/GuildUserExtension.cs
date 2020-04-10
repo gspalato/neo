@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Muon.Kernel.Utilities
 {
-	public static class SocketGuildUserExtension
+	public static class GuildUserExtension
 	{
 		public static string GetStatus(this SocketGuildUser member)
 		{

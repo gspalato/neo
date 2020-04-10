@@ -9,24 +9,24 @@ using System.Threading.Tasks;
 
 namespace Muon.Kernel.Structures
 {
-    public class SocketGuildUserParser : BaseTypeParser<SocketGuildUser>
+    public class SocketGuildUserParser : BaseTypeParser<IGuildUser>
     {
-        public override ValueTask<TypeParserResult<SocketGuildUser>> ParseAsync(Parameter parameter, string value,
+        public override ValueTask<TypeParserResult<IGuildUser>> ParseAsync(Parameter parameter, string value,
             MuonContext context, IServiceProvider provider = null)
         {
+            SocketGuild guild = context.Guild as SocketGuild;
+
             if (MentionUtils.TryParseUser(value, out var id))
-                if (context.Guild.GetUser(id) is SocketGuildUser user)
-                    return TypeParserResult<SocketGuildUser>.Successful(user);
-            //: TypeParserResult<SocketGuildUser>.Unsuccessful("Couldn't parse text channel");
+                if (guild.GetUser(id) is SocketGuildUser user)
+                    return TypeParserResult<IGuildUser>.Successful(user);
 
             if (ulong.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out id))
-                if (context.Guild.GetUser(id) is SocketGuildUser user)
-                    return TypeParserResult<SocketGuildUser>.Successful(user);
-            //: TypeParserResult<SocketGuildUser>.Unsuccessful("Couldn't parse text channel");
+                if (guild.GetUser(id) is SocketGuildUser user)
+                    return TypeParserResult<IGuildUser>.Successful(user);
 
-            return context.Guild.Users.FirstOrDefault(x => x.Username.ToLower().StartsWith(value.ToLower())) is SocketGuildUser userCheck
-                ? TypeParserResult<SocketGuildUser>.Successful(userCheck)
-                : TypeParserResult<SocketGuildUser>.Unsuccessful("Couldn't parse user.");
+            return guild.Users.FirstOrDefault(x => x.Username.ToLower().StartsWith(value.ToLower())) is SocketGuildUser userCheck
+                ? TypeParserResult<IGuildUser>.Successful(userCheck)
+                : TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
         }
     }
 }

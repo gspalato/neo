@@ -2,7 +2,6 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Muon.Kernel.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Victoria;
@@ -11,15 +10,12 @@ using Victoria.EventArgs;
 namespace Muon.Services
 {
 	public interface IMusicService
-	{
-		public HashSet<ulong> VoteQueue { get; }
-	}
+	{ }
 
 	public sealed class MusicService : IMusicService
 	{
 		private LavaNode _lavaNode { get; }
 		private ILogger _logger { get; }
-		public HashSet<ulong> VoteQueue { get; }
 
 		public MusicService(DiscordSocketClient socketClient,
 			LavaNode lavaNode, ILogger<MusicService> logger)
@@ -27,6 +23,7 @@ namespace Muon.Services
 			socketClient.Ready += OnReady;
 			_lavaNode = lavaNode;
 			_logger = logger;
+
 			_lavaNode.OnLog += OnLog;
 			_lavaNode.OnPlayerUpdated += OnPlayerUpdated;
 			_lavaNode.OnStatsReceived += OnStatsReceived;
@@ -34,13 +31,11 @@ namespace Muon.Services
 			_lavaNode.OnTrackException += OnTrackException;
 			_lavaNode.OnTrackStuck += OnTrackStuck;
 			_lavaNode.OnWebSocketClosed += OnWebSocketClosed;
-
-			VoteQueue = new HashSet<ulong>();
 		}
 
 		private Task OnLog(LogMessage arg)
 		{
-			Console.WriteLine(arg.Message+"\n"+arg.Exception?.ToString());
+			_logger.LogInformation(arg.Message);
 			return Task.CompletedTask;
 		}
 
@@ -73,18 +68,21 @@ namespace Muon.Services
 					.WithTitle("Error")
 					.WithWarning()
 					.WithDescription($"An exception ocurred.\n`MU0001`");
-				await args.Player.TextChannel.SendMessageAsync(embed: errorEmbed.Build());
+				await args.Player.TextChannel.SendMessageAsync(embed: errorEmbed.Build())
+					.ConfigureAwait(false);
 
 				return;
 			}
 
-			await args.Player.PlayAsync(track);
+			await args.Player.PlayAsync(track)
+				.ConfigureAwait(false);
 
 			EmbedBuilder embed = new EmbedBuilder()
 				.WithTitle(":notes: Now Playing")
 				.WithDefaultColor()
 				.WithDescription($"**[{track.Title.TruncateAndEscape()}]({track.Url})**");
-			await args.Player.TextChannel.SendMessageAsync(embed: embed.Build());
+			await args.Player.TextChannel.SendMessageAsync(embed: embed.Build())
+				.ConfigureAwait(false);
 		}
 
 		private Task OnTrackException(TrackExceptionEventArgs arg)
@@ -107,7 +105,8 @@ namespace Muon.Services
 
 		private async Task OnReady()
 		{
-			await _lavaNode.ConnectAsync();
+			await _lavaNode.ConnectAsync()
+				.ConfigureAwait(false);
 		}
 	}
 }

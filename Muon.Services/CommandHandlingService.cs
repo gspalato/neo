@@ -1,4 +1,5 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.WebSocket;
 using Muon.Commands;
 using Muon.Kernel.Structures;
 using Qmmands;
@@ -51,7 +52,7 @@ namespace Muon.Services
 			_commandService.AddTypeParser(new SocketGuildUserParser());
 		}
 
-		private async Task OnMessageReceivedAsync(SocketMessage msg)
+		private async Task OnMessageReceivedAsync(IMessage msg)
 		{
 			if (!(msg is SocketUserMessage))
 				return;

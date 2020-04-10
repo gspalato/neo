@@ -1,59 +1,53 @@
-﻿using System;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
-
-using Discord;
-using Discord.Net;
-using Discord.Rest;
+﻿using Discord;
 using Discord.WebSocket;
-
-using Qmmands;
-
+using Microsoft.Extensions.DependencyInjection;
 using Muon.Kernel.Utilities;
+using Qmmands;
+using System;
+using System.Threading.Tasks;
 
 namespace Muon.Commands
 {
 	public class MuonContext : CommandContext
 	{
 		public readonly DiscordSocketClient Client;
-		public readonly SocketGuild Guild;
-		public readonly SocketTextChannel Channel;
-		public readonly SocketGuildUser User;
-		public readonly SocketUserMessage Message;
+		public readonly IGuild Guild;
+		public readonly ITextChannel Channel;
+		public readonly IGuildUser User;
+		public readonly IUserMessage Message;
 		public readonly DateTimeOffset Now;
 
-		public MuonContext(SocketMessage msg, IServiceProvider services) : base(services)
+		public MuonContext(IMessage msg, IServiceProvider services) : base(services)
 		{
 			Console.WriteLine(services.ToString());
 
 			Client = services.GetRequiredService<DiscordSocketClient>();
-			Guild = ((SocketTextChannel)msg.Channel)?.Guild;
-			Channel = (SocketTextChannel)msg.Channel;
-			User = (SocketGuildUser)msg.Author;
-			Message = (SocketUserMessage)msg;
+			Guild = ((ITextChannel)msg.Channel)?.Guild;
+			Channel = (ITextChannel)msg.Channel;
+			User = (IGuildUser)msg.Author;
+			Message = (IUserMessage)msg;
 			Now = DateTimeOffset.UtcNow;
 		}
 
-		public Embed CreateEmbed(string content) => 
+		public Embed CreateEmbed(string content) =>
 			new EmbedBuilder()
 			.WithSuccess()
 			.WithAuthor(User)
 			.WithDescription(content).Build();
 
-		public EmbedBuilder CreateEmbedBuilder(string content = null) => 
+		public EmbedBuilder CreateEmbedBuilder(string content = null) =>
 			new EmbedBuilder()
 			.WithSuccess()
 			.WithAuthor(User)
 			.WithDescription(content ?? string.Empty);
 
-		public async Task<RestUserMessage> ReplyAsync(string content) =>
+		public async Task<IUserMessage> ReplyAsync(string content) =>
 			await Channel.SendMessageAsync(content);
 
-		public async Task<RestUserMessage> ReplyAsync(Embed embed) =>
+		public async Task<IUserMessage> ReplyAsync(Embed embed) =>
 			await Channel.SendMessageAsync(embed: embed);
 
-		public async Task<RestUserMessage> ReplyAsync(EmbedBuilder embed) =>
+		public async Task<IUserMessage> ReplyAsync(EmbedBuilder embed) =>
 		   await ReplyAsync(embed.Build());
 
 		public Task ReactAsync(string unicode) => Message.AddReactionAsync(new Emoji(unicode));

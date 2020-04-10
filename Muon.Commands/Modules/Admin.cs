@@ -21,7 +21,7 @@ namespace Muon.Commands
 		[RequireOwner]
 		public async Task EvalAsync([Remainder] string code)
 		{
-			SocketUserMessage msg = Context.Message;
+			IUserMessage msg = Context.Message;
 
 			var cs1 = code.IndexOf("```") + 3;
 			cs1 = code.IndexOf('\n', cs1) + 1;
