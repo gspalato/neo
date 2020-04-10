@@ -20,12 +20,12 @@
 * Clone the repository;
 * Restore;
 * Compile;
-* Create an `appsettings.json` file on the executable folder;
+* Create an `appsettings.json` file on the executable folder:
 ```json
 {
-	"TOKEN": "lmao.u.gay", // Discord bot token.
-	"PREFIX": "pls ", // Default prefix.
-	"LAVALINK": "plsconnectibegu" // Lavalink node password.
+	"TOKEN": "lmao.u.gay",
+	"PREFIX": "pls ",
+	"LAVALINK": "plsconnectibegu"
 }
 ```
 
@@ -39,7 +39,7 @@ Unlicensed, you must not copy, modify, redistribute, sell, "remix" or share in a
 
 ## 👥 Acknowledgements
 
-- [**foxbot**](https://github.com/foxbot) and others \- Developer(s) of Discord.NET
+- [**foxbot**](https://github.com/foxbot) and others \- Developer(s) of Discord.NET;
 - [**Quahu**](https://github.com/Quahu) \- Developing Qmmands;
 - [**Izumemori**](https://github.com/Izumemori) \- Helping me understand C# concepts and fixing my crap;
 - [**trinitrotoluene**](https://github.com/trinitrotoluene) \- Emotional support (or lack thereof);
