@@ -19,12 +19,12 @@ namespace Muon.Commands
 		public async Task PurgeAsync(int number)
 		{
 			ITextChannel channel = Context.Channel;
-			IEnumerable<IMessage> messages = Context.Channel.GetMessagesAsync(number) as IEnumerable<IMessage>;
+			var messages = await Context.Channel.GetMessagesAsync(number).ElementAtAsync(1);
 
 			await channel.DeleteMessagesAsync(messages);
 
 			IMessage ok = await SendOkAsync($"Purged {messages.Count()} messages.");
-			await Task.Delay(5000);
+			await Task.Delay(3000);
 			await ok.DeleteAsync();
 		}
 
@@ -38,17 +38,13 @@ namespace Muon.Commands
 
 			string totalName = $"{escapedUsername} {(escapedNickname is null ? "" : $"({escapedNickname})")}";
 
-			string status = string.IsNullOrEmpty(member.GetStatus())
-				? ""
-				: $"> {member.GetStatus()}";
-
 			var rolesList = member.Roles
 				.OrderByDescending((role) => role.Position)
 				.Select((role) => $"`{role.Name.Escape()}`");
 
 			EmbedBuilder embed = new EmbedBuilder()
-				.WithAuthor(member.Username + "#" + member.Discriminator, null, member.GetAvatarUrl())
-				.WithDescription(status)
+				.WithAuthor(member.Username + "#" + member.Discriminator, member.GetAvatarUrl())
+				.WithDescription(member.GetStatus())
 				.WithColor(member.Id == Context.Client.CurrentUser.Id
 					? new Color(0x2A8EF4)
 					: member.GetHighestColor(new Color()))
