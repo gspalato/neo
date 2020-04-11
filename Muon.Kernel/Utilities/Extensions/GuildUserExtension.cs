@@ -20,6 +20,14 @@ namespace Muon.Kernel.Utilities
 				default:
 					return "";
 
+				case ActivityType.CustomStatus:
+					{
+						var game = activity as CustomStatusGame;
+						var emote = game.Emote is null ? "" : $"{game.Emote} ";
+
+						return $"> {emote}{(activity as CustomStatusGame).State}";
+					}
+
 				case ActivityType.Playing:
 					return $"**Playing** {activity.Name}";
 
