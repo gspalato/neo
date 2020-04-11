@@ -19,10 +19,11 @@ namespace Muon.Kernel.Structures
 			get { return array.Length; }
 		}
 
-		public bool Contains(T value)
-			=> this.array.Contains(value); // Contains value
-		public bool Contains(Set<T> set)
-			=> (set % this) == set; // Contains set
+		public bool Contains(T value) // Contains value
+			=> this.array.Contains(value);
+
+		public bool Contains(Set<T> set) // Contains set
+			=> (set % this) == set;
 
 		public static Set<T> operator +(Set<T> first, Set<T> second) // Union
 		{
