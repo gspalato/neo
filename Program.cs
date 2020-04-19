@@ -1,7 +1,6 @@
 ﻿using System;
 using Discord;
 using Discord.WebSocket;
-using Interactivity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -37,7 +36,6 @@ namespace Muon
 					Authorization = hostContext.Configuration.GetValue<string>("LAVALINK"),
 					LogSeverity = LogSeverity.Debug
 				})
-				.AddSingleton<InteractivityService>()
 				.AddSingleton<DiscordSocketClient>()
 				.AddSingleton<CommandHandlingService>()
 				.AddSingleton<ICommandService, CommandService>()

@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
-using Interactivity;
 using Microsoft.Extensions.DependencyInjection;
 using Muon.Kernel.Structures.Attributes;
 using Muon.Kernel.Utilities;
@@ -22,14 +21,14 @@ namespace Muon.Commands.Modules
 	[Description("Feel the vibe. B)")]
 	public sealed class Music : MuonModule
 	{
-		private readonly InteractivityService _interactivity;
+		// private readonly InteractivityService _interactivity;
 		private readonly LavaNode _lavaNode;
 		private readonly IMusicService _musicService;
 		private static readonly IEnumerable<int> Range = Enumerable.Range(1900, 2000);
 
 		public Music(IServiceProvider services)
 		{
-			_interactivity = services.GetRequiredService<InteractivityService>();
+			// _interactivity = services.GetRequiredService<InteractivityService>();
 			_lavaNode = services.GetRequiredService<LavaNode>();
 			_musicService = services.GetRequiredService<IMusicService>();
 		}

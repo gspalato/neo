@@ -1,11 +1,7 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Interactivity;
-using Interactivity.Confirmation;
-using Microsoft.Extensions.DependencyInjection;
 using Muon.Kernel.Structures.Attributes;
 using Muon.Kernel.Utilities;
 using Qmmands;
@@ -16,6 +12,7 @@ namespace Muon.Commands.Modules
 	[Description("Le ban hammer")]
 	public sealed class Moderation : MuonModule
 	{
+		/*
 		private InteractivityService Interactivity { get; }
 
 		public Moderation(IServiceProvider services)
@@ -71,6 +68,7 @@ namespace Muon.Commands.Modules
 				}
 			}
 		}
+		*/
 
 		[Command("purge")]
 		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
