@@ -2,10 +2,10 @@
 {
 	public static class Version
 	{
-		private static int Major = 0;
-		private static int Minor = 3;
-		private static int Patch = 5;
-		private static int Hotfix = 1;
+		private const int Major = 0;
+		private const int Minor = 3;
+		private const int Patch = 5;
+		private const int Hotfix = 1;
 
 		public static ReleaseType ReleaseType = ReleaseType.Development;
 
