@@ -27,7 +27,11 @@
 {
 	"TOKEN": "lmao.u.gay",
 	"PREFIX": "",
-	"LAVALINK": ""
+	"LAVALINK": "",
+	"MongoDB": {
+    	"Database": "muon",
+    	"ConnectionStrings": "mongodb://localhost:27017"
+	}
 }
 ```
 
