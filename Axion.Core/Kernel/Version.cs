@@ -1,0 +1,21 @@
+﻿namespace Axion.Kernel
+{
+	public static class Version
+	{
+		private const int Major = 0;
+		private const int Minor = 4;
+		private const int Patch = 0;
+		private const int Hotfix = 0;
+
+		public static ReleaseType ReleaseType = ReleaseType.Development;
+
+		public static System.Version DotnetVersion = new System.Version(Major, Minor, Patch, Hotfix);
+		public static string FullVersion => $"{Major}.{Minor}.{Patch}.{Hotfix}{(ReleaseType == ReleaseType.Development ? "DEV" : "PROD")}";
+	}
+
+	public enum ReleaseType
+	{
+		Development,
+		Production
+	}
+}
