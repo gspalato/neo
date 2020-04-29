@@ -7,6 +7,7 @@ riderModule.iml
 
 # Specific locations
 /Axion.Docker/Lavalink/application.yml
+appsettings.json
 
 *.dtbcache
 *.lock

@@ -74,7 +74,7 @@ namespace Axion.Commands.Modules
 					{
 						props.Embed = new EmbedBuilder()
 							.WithSuccess()
-							.WithDescription(result.ReturnValue.ToString())
+							.WithDescription($"```json\n{result.ReturnValue.ToString().Escape('`')}\n```")
 							.Build();
 					});
 				}

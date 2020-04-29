@@ -1,0 +1,12 @@
+version: "2"
+services:
+  database:
+    image: mongo
+    network_mode: "host"
+    ports:
+      - "27017:27017"
+  lavalink:
+    build: "./Axion.Docker/Lavalink"
+    network_mode: "host"
+    ports:
+      - "2333:2333"

@@ -10,14 +10,14 @@ namespace Axion.Kernel.Utilities
 			return s != null && s.Length > maxLength ? s.Substring(0, maxLength) + "..." : s;
 		}
 
-		public static string Escape(this string s)
+		public static string Escape(this string s, char[] chars = null)
 		{
-			List<char> requireEscaping = new List<char> { '*', '_', '~', '|', '`' };
+			chars ??= new char[] { '*', '_', '~', '|', '`' };
 
 			string escaped = "";
 			foreach (char character in s)
 			{
-				if (requireEscaping.Any((char c) => c == character))
+				if (chars.Any((char c) => c == character))
 					escaped += "\\" + character;
 				else
 					escaped += character;
@@ -25,6 +25,8 @@ namespace Axion.Kernel.Utilities
 
 			return escaped;
 		}
+		public static string Escape(this string s, char c) =>
+			s.Escape(new char[] { c });
 
 		public static string TruncateAndEscape(this string s, int maxLength = 40)
 		{

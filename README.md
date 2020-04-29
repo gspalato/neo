@@ -22,7 +22,7 @@
 * Clone the repository;
 * Restore;
 * Compile;
-* Create an `appsettings.json` file on the executable folder:
+* Create an `appsettings.json` file on the root folder:
 ```json
 {
 	"TOKEN": "lmao.u.gay",
@@ -33,6 +33,18 @@
     	"ConnectionStrings": "mongodb://localhost:27017"
 	}
 }
+```
+
+#### With Docker
+* Refer to the **Installing** step.
+* Pull a MongoDB docker image and configure it accordingly;
+* Make a custom lavalink image with the proper configuration file at `Axion.Docker`;
+* Make the bot's image through `docker build .`;
+* Running the bot should be close to this resumed command:
+```bash
+docker run -d -p 27017:27017 --network host --name g_db mongo             # Run the database
+docker run -d -p 2333:2333   --network host --name g_ll gspalato/lavalink # Run Lavalink
+docker run -d                --network host --name g_axion gspalato/axion # And then run the bot.
 ```
 
 ## 👨‍🏫 Authors

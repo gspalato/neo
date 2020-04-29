@@ -57,12 +57,12 @@ namespace Axion.Services
 			_commandService.AddTypeParser(new UserParser());
 		}
 
-		private async Task OnMessageReceivedAsync(IMessage msg)
+		private async Task OnMessageReceivedAsync(IMessage m)
 		{
-			if (!(msg is IUserMessage))
+			if (!(m is IUserMessage msg))
 				return;
 
-			var guild = ((IGuildChannel)msg.Channel).Guild;
+			var guild = ((ITextChannel)msg.Channel).Guild;
 
 			var settings = await _guildSettingsRepository.GetOrCreateForGuildAsync(guild.Id);
 

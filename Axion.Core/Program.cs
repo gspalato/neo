@@ -20,6 +20,8 @@ namespace Axion
 
 		private static IHostBuilder CreateHostBuilder(string[] args)
 			=> Host.CreateDefaultBuilder(args)
+			.ConfigureAppConfiguration((hostContext, configBuilder) =>
+				configBuilder.AddJsonFile("appsettings.json"))
 			.ConfigureLogging((hostContext, configLogging) =>
 				configLogging
 				.AddConsole()
