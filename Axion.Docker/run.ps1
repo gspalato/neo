@@ -24,7 +24,8 @@ function PromptLoop() {
         } elseif ($latestStatus -eq $false) {
             Write-Host -NoNewline "$([char]10008) " -ForegroundColor Red
         }
-        $prompt = Read-Host -Prompt "<adu> "
+        Write-Host "<adu> " -NoNewline -ForegroundColor DarkGray
+        $prompt = Read-Host
 
         if ($prompt -like 'run*') {
             $latestStatus = $true
