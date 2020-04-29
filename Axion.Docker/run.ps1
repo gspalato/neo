@@ -6,26 +6,19 @@ function Execute-Run {
     docker-compose up -d
 
     Write-Host "> Starting main namespace..." -ForegroundColor Blue
-    docker run -d --network host --name g_axion gspalato/axion
+    docker run -d --network host --name axion gspalato/axion
     Write-Host -NoNewline "`n"
 }
 
 function Execute-Build {
     Write-Host -NoNewline "`n"
     Write-Host "> Starting build..." -ForegroundColor Blue
-    cd ..
-    docker build . -t gspalato/axion
-    cd Axion.Docker
+    docker build ../ -t gspalato/axion
     Write-Host -NoNewline "`n"
 }
 
-function Prompt() {
+function PromptLoop() {
     do {
-        Write-Host "[Axion Docker Utility]" -ForegroundColor Cyan
-        Write-Host "Type 'run' to start, 'build' to create an image." -ForegroundColor Cyan
-
-        #✓✘
-
         if ($latestStatus -eq $true) {
             Write-Host -NoNewline "$([char]10003) " -ForegroundColor Green
         } elseif ($latestStatus -eq $false) {
@@ -54,4 +47,6 @@ function Prompt() {
     exit
 }
 
-Prompt
+Write-Host "[Axion Docker Utility]" -ForegroundColor Cyan
+Write-Host "Type 'run' to start, 'build' to create an image." -ForegroundColor Cyan
+PromptLoop
