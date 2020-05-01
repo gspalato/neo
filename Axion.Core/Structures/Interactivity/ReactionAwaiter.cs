@@ -30,7 +30,7 @@ namespace Axion.Core.Structures.Interactivity
 			_shouldDeleteReaction = shouldDeleteReaction;
 		}
 
-		public LazyObject<SocketReaction> Wait(int millisecondsTimeout = 10000)
+		public LazyObject<SocketReaction> Wait(int millisecondsTimeout = 180000)
 		{
 			_client.ReactionAdded += HandleReaction;
 
