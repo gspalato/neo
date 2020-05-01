@@ -105,10 +105,6 @@ namespace Axion.Commands.Modules
 				props.Content = "";
 				props.Embed = embed.Build();
 			}).ConfigureAwait(false);
-
-			var result = await Context.Channel.AwaitMessage(Context.Client, m => m.Author.Id == Context.User.Id);
-			if (!result.isTimedout)
-				Console.WriteLine(result.Result.Content);
 		}
 
 		[Command("fw", "fullwidth")]

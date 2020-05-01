@@ -1,22 +1,39 @@
-﻿namespace Axion.Core.Structures.Interactivity
+﻿using System.Threading.Tasks;
+
+namespace Axion.Core.Structures.Interactivity
 {
 	public class LazyObject<T>
 	{
-		public readonly bool isCompleted;
-		public readonly bool isTimedout;
-		public readonly T Result;
+		public readonly TaskCompletionSource<T> TaskSource = new TaskCompletionSource<T>();
 
-		public LazyObject(bool completed, bool timedout, T result = default)
+		public bool IsCompleted => Result.IsCompleted;
+		public bool IsTimedout { get; private set; }
+		public Task<T> Result { get; private set; }
+
+		public LazyObject(bool isTimedout, T result = default)
 		{
-			isCompleted = completed;
-			isTimedout = timedout;
-			Result = result;
+			IsTimedout = isTimedout;
+			Result = TaskSource.Task;
+
+			if (!(result is null))
+				Finish(result);
 		}
 
-		public static LazyObject<T> FromResult(T result) =>
-			new LazyObject<T>(true, false, result);
+		public LazyObject()
+		{
+			Result = TaskSource.Task;
+		}
 
-		public static LazyObject<T> Timedout() =>
-			new LazyObject<T>(false, true);
+		public void Finish(T result)
+		{
+			IsTimedout = false;
+			TaskSource.SetResult(result);
+		}
+
+		public void Timeout()
+		{
+			IsTimedout = true;
+			TaskSource.SetResult(default);
+		}
 	}
 }

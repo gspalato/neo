@@ -7,6 +7,7 @@ using Discord.WebSocket;
 using Qmmands;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 
 namespace Axion.Commands.Modules
 {
@@ -23,15 +24,12 @@ namespace Axion.Commands.Modules
 			var msg = await SendDefaultEmbedAsync("Confirmation",
 				$"Are you sure you want to ban {member.Mention} for `{reason.TruncateAndEscape()}`");
 
-			_ = Task.Run(async () =>
-			{
-				await msg.AddReactionAsync(new Emoji("✅"));
-				await msg.AddReactionAsync(new Emoji("❌"));
-			});
+			_ = msg.AddReactionsAsync(new[] { new Emoji("✅"), new Emoji("❌") });
 
-			var lazyReaction = await Context.Message.AwaitReaction(Context.Client, (r) => r.UserId == Context.Message.Author.Id);
+			var lazyReaction = msg.AwaitReaction(Context.Client, (r) => r.UserId == Context.Message.Author.Id);
+			var result = await lazyReaction.Result;
 
-			if (!lazyReaction.isCompleted || lazyReaction.isTimedout)
+			if (!lazyReaction.IsCompleted || lazyReaction.IsTimedout)
 			{
 				var embed = CreateDefaultEmbed("Aborted", $"Reaction timedout.");
 				await msg.ModifyAsync(props =>
@@ -42,7 +40,7 @@ namespace Axion.Commands.Modules
 				return;
 			}
 
-			if (lazyReaction.Result.Emote.Name == "✅")
+			if (result.Emote.Name == "✅")
 			{
 				try
 				{
@@ -63,7 +61,7 @@ namespace Axion.Commands.Modules
 					});
 				}
 			}
-			else if (lazyReaction.Result.Emote.Name == "❌")
+			else if (result.Emote.Name == "❌")
 			{
 				var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
 				await msg.ModifyAsync(props =>

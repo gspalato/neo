@@ -14,7 +14,7 @@ namespace Axion.Core.Structures.Interactivity
 		public readonly ITextChannel Channel;
 		public readonly Func<IMessage, bool> Filter;
 
-		private TaskCompletionSource<IMessage> _task = new TaskCompletionSource<IMessage>();
+		private LazyObject<IMessage> _lazyResult;
 
 		public MessageAwaiter(DiscordSocketClient client,
 			ITextChannel channel, Func<IMessage, bool> filter)
@@ -25,24 +25,27 @@ namespace Axion.Core.Structures.Interactivity
 			Filter = filter;
 		}
 
-		public async Task<LazyObject<IMessage>> Wait(int millisecondsTimeout = 180000)
+		public LazyObject<IMessage> Wait(int millisecondsTimeout = 180000)
 		{
 			_client.MessageReceived += HandleMessage;
 
-			var messageTask = _task.Task;
-			var finishedFirst = await Task.WhenAny(messageTask, Task.Delay(millisecondsTimeout));
+			_lazyResult = new LazyObject<IMessage>();
 
-			if (finishedFirst == messageTask)
-				return LazyObject<IMessage>.FromResult(messageTask.Result);
-			else
-				return LazyObject<IMessage>.Timedout();
+			_ = Task.Run(async () =>
+			{
+				var finished = await Task.WhenAny(_lazyResult.Result, Task.Delay(millisecondsTimeout));
+				if (finished != _lazyResult.Result)
+					_lazyResult.Timeout();
+			});
+
+			return _lazyResult;
 		}
 
 		private Task HandleMessage(SocketMessage message)
 		{
 			if (Filter(message))
 			{
-				_task.SetResult(message);
+				_lazyResult.Finish(message);
 				Dispose();
 			}
 
