@@ -9,7 +9,7 @@ namespace Axion.Core.Utilities
 			return s != null && s.Length > maxLength ? s.Substring(0, maxLength) + "..." : s;
 		}
 
-		public static string Escape(this string s, char[] chars = null)
+		public static string Escape(this string s, char[] chars = null, bool useWhitespace = false)
 		{
 			chars ??= new char[] { '*', '_', '~', '|', '`' };
 
@@ -17,15 +17,15 @@ namespace Axion.Core.Utilities
 			foreach (char character in s)
 			{
 				if (chars.Any(c => c == character))
-					escaped += "\\" + character;
+					escaped += (useWhitespace ? "\u200B" : "\\") + character;
 				else
 					escaped += character;
 			}
 
 			return escaped;
 		}
-		public static string Escape(this string s, char c) =>
-			s.Escape(new char[] { c });
+		public static string Escape(this string s, char c, bool useWhitespace = false) =>
+			s.Escape(new char[] { c }, useWhitespace);
 
 		public static string TruncateAndEscape(this string s, int maxLength = 40)
 		{

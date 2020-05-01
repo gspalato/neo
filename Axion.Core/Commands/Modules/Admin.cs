@@ -19,18 +19,15 @@ namespace Axion.Commands.Modules
 		[Command("eval", "$", "roslyn")]
 		[Description("Evaluates C# code.")]
 		[RequireOwner]
-		public async Task EvalAsync([Remainder] string code)
+		public async Task EvalAsync([Remainder] string text)
 		{
-			var match = Regex.Match(code, @"(?<=```(csharp\n)?)(.*)(?=```)");
+			var match = Regex.Match(text, @"(?<=```(csharp\n)?|\n?)(.*)(?=```)");
 			if (!match.Success)
 				throw new ArgumentException("You need to wrap the code into a code block.");
 
-			var cs = match.Value;
+			var code = match.Value;
 
-			var evalMessage = await Context.ReplyAsync(new EmbedBuilder()
-				.WithColor(new Color(0xFF007F))
-				.WithDescription("Evaluating...")
-				.Build()).ConfigureAwait(false);
+			var evalMessage = await SendDefaultEmbedAsync("Evaluating...");
 
 			try
 			{
@@ -54,14 +51,13 @@ namespace Axion.Commands.Modules
 						"Discord.Rest",
 						"Discord.WebSocket",
 						"Axion",
-						"Axion",
 						"Axion.Core.Structures",
 						"Axion.Core.Utilities",
 						"Axion.Core.Services")
 					.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
 					.Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 
-				var script = CSharpScript.Create(cs, options, typeof(RoslynVariables));
+				var script = CSharpScript.Create(code, options, typeof(RoslynVariables));
 				script.Compile();
 
 				var result = await script.RunAsync(globals).ConfigureAwait(false);
@@ -70,20 +66,14 @@ namespace Axion.Commands.Modules
 				{
 					await evalMessage.ModifyAsync(props =>
 					{
-						props.Embed = new EmbedBuilder()
-							.WithSuccess()
-							.WithDescription($"```json\n{result.ReturnValue.ToString().Escape('`')}\n```")
-							.Build();
+						props.Embed = CreateDefaultEmbed($"```json\n{result.ReturnValue.ToString().Escape('`', true)}\n```").Build();
 					});
 				}
 				else
 				{
 					await evalMessage.ModifyAsync(props =>
 					{
-						props.Embed = new EmbedBuilder()
-							.WithSuccess()
-							.WithDescription("No result was returned.")
-							.Build();
+						props.Embed = CreateDefaultEmbed("No result was returned.").Build();
 					});
 				}
 			}
@@ -92,10 +82,7 @@ namespace Axion.Commands.Modules
 				var error = string.Concat("**", ex.GetType().ToString(), "**: ", ex.Message);
 				await evalMessage.ModifyAsync(props =>
 				{
-					props.Embed = new EmbedBuilder()
-						.WithError()
-						.WithDescription(error)
-						.Build();
+					props.Embed = CreateErrorEmbed(error).Build();
 				});
 			}
 		}

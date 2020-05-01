@@ -24,6 +24,8 @@ namespace Axion.Commands
 				})
 				.WithDescription(content ?? string.Empty);
 		}
+		protected EmbedBuilder CreateOkEmbed(string content = null) =>
+			CreateOkEmbed("", content);
 
 		protected EmbedBuilder CreateErrorEmbed(string title, string content = null)
 		{
@@ -37,14 +39,18 @@ namespace Axion.Commands
 				})
 				.WithDescription(content ?? string.Empty);
 		}
+		protected EmbedBuilder CreateErrorEmbed(string content = null) =>
+			CreateErrorEmbed("", content);
 
-		protected EmbedBuilder CreateDefaultEmbed(string title, string content)
+		protected EmbedBuilder CreateDefaultEmbed(string title, string content = null)
 		{
 			return new EmbedBuilder()
 				.WithTitle(title)
 				.WithDefaultColor()
 				.WithDescription(content ?? string.Empty);
 		}
+		protected EmbedBuilder CreateDefaultEmbed(string content = null) =>
+			CreateDefaultEmbed("", content);
 
 		protected async Task<IUserMessage> SendOkAsync(string title, string content = null) =>
 			await SendEmbedAsync(CreateOkEmbed(title, content));
