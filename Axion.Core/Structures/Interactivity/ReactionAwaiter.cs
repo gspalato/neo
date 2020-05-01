@@ -64,7 +64,7 @@ namespace Axion.Core.Structures.Interactivity
 			{
 				_task.SetResult(reaction);
 				if (_shouldDeleteReaction)
-					Message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+					await Message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
 
 				Dispose();
 			}
