@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Axion.Structures.TypeParsers
+namespace Axion.Core.Structures.TypeParsers
 {
     public class MessageParser : BaseTypeParser<IMessage>
     {

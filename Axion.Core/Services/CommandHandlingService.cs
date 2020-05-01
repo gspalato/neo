@@ -1,5 +1,5 @@
 ﻿using Axion.Commands;
-using Axion.Structures.TypeParsers;
+using Axion.Core.Structures.TypeParsers;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;

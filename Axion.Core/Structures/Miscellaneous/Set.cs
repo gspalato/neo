@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Axion.Structures.Miscellaneous
+namespace Axion.Core.Structures.Miscellaneous
 {
 	public class Set<T> : IEnumerable<T>
 	{

@@ -2,7 +2,7 @@ using Canducci.MongoDB.Repository.MongoAttribute;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Axion.Structures.Database
+namespace Axion.Core.Structures.Database
 {
 	public interface IGuildSettings
 	{

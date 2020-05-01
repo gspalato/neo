@@ -1,4 +1,4 @@
-﻿using Axion.Structures.Database;
+﻿using Axion.Core.Structures.Database;
 using Canducci.MongoDB.Repository.Connection;
 using Canducci.MongoDB.Repository.Contracts;
 using Microsoft.Extensions.Configuration;

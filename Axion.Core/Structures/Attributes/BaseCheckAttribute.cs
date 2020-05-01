@@ -3,7 +3,7 @@ using Qmmands;
 using System;
 using System.Threading.Tasks;
 
-namespace Axion.Structures.Attributes
+namespace Axion.Core.Structures.Attributes
 {
 	public abstract class BaseCheckAttribute : CheckAttribute
 	{

@@ -1,13 +1,12 @@
-﻿using Axion.Structures.Attributes;
-using Axion.Core.Structures.Interactivity;
+﻿using Axion.Core.Structures.Attributes;
 using Axion.Core.Utilities;
 using Axion.Core.Utilities.Extensions;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
 
 namespace Axion.Commands.Modules
 {
@@ -19,14 +18,15 @@ namespace Axion.Commands.Modules
 		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
 		[RequireGuildBotPermissions(GuildPermission.BanMembers)]
 		[RequireGuildUserPermissions(GuildPermission.BanMembers)]
-		public async Task BanAsync(IGuildUser member, [Remainder] string reason = "")
+		public async Task BanAsync(IGuildUser member, [Remainder] string reason = "Unspecified reason.")
 		{
 			var msg = await SendDefaultEmbedAsync("Confirmation",
 				$"Are you sure you want to ban {member.Mention} for `{reason.TruncateAndEscape()}`");
 
 			_ = msg.AddReactionsAsync(new[] { new Emoji("✅"), new Emoji("❌") });
 
-			var lazyReaction = msg.AwaitReaction(Context.Client, (r) => r.UserId == Context.Message.Author.Id);
+			var lazyReaction = msg.AwaitReaction(Context.Client, (r) =>
+				r.UserId == Context.Message.Author.Id && (new[] { "✅", "❌" }).Contains(r.Emote.Name));
 			var result = await lazyReaction.Result;
 
 			if (!lazyReaction.IsCompleted || lazyReaction.IsTimedout)
@@ -40,34 +40,105 @@ namespace Axion.Commands.Modules
 				return;
 			}
 
-			if (result.Emote.Name == "✅")
+			switch (result.Emote.Name)
 			{
-				try
-				{
-					await member.BanAsync(reason: reason);
+				case "✅":
+					{
+						try
+						{
+							await member.BanAsync(reason: reason);
 
-					var embed = CreateOkEmbed("Success", $"Banned {member.Mention} for `{reason.TruncateAndEscape()}`");
-					await msg.ModifyAsync(props =>
+							var embed = CreateOkEmbed("Success", $"Banned {member.Mention} for `{reason.TruncateAndEscape()}`");
+							await msg.ModifyAsync(props =>
+							{
+								props.Embed = embed.Build();
+							});
+						}
+						catch
+						{
+							var embed = CreateErrorEmbed("Error", $"Couldn't ban {member.Mention}. Check if I have enough permissions.");
+							await msg.ModifyAsync(props =>
+							{
+								props.Embed = embed.Build();
+							});
+						}
+					}
+					break;
+
+				case "❌":
 					{
-						props.Embed = embed.Build();
-					});
-				}
-				catch
-				{
-					var embed = CreateErrorEmbed("Error", $"Couldn't ban {member.Mention}. Check if I have enough permissions.");
-					await msg.ModifyAsync(props =>
-					{
-						props.Embed = embed.Build();
-					});
-				}
+						var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
+						await msg.ModifyAsync(props =>
+						{
+							props.Embed = embed.Build();
+						});
+					}
+					break;
 			}
-			else if (result.Emote.Name == "❌")
+
+			await msg.RemoveAllReactionsAsync();
+		}
+
+		[Command("kick")]
+		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
+		[RequireGuildBotPermissions(GuildPermission.KickMembers)]
+		[RequireGuildUserPermissions(GuildPermission.KickMembers)]
+		public async Task KickAsync(IGuildUser member, [Remainder] string reason = "Unspecified reason.")
+		{
+			var msg = await SendDefaultEmbedAsync("Confirmation",
+				$"Are you sure you want to kick {member.Mention} for `{reason.TruncateAndEscape()}`");
+
+			_ = msg.AddReactionsAsync(new[] { new Emoji("✅"), new Emoji("❌") });
+
+			var lazyReaction = msg.AwaitReaction(Context.Client, (r) =>
+				r.UserId == Context.Message.Author.Id && (new[] { "✅", "❌" }).Contains(r.Emote.Name));
+			var result = await lazyReaction.Result;
+
+			if (!lazyReaction.IsCompleted || lazyReaction.IsTimedout)
 			{
-				var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
+				var embed = CreateDefaultEmbed("Aborted", $"Reaction timedout.");
 				await msg.ModifyAsync(props =>
 				{
 					props.Embed = embed.Build();
 				});
+
+				return;
+			}
+
+			switch (result.Emote.Name)
+			{
+				case "✅":
+					{
+						try
+						{
+							await member.KickAsync(reason: reason);
+
+							var embed = CreateOkEmbed("Success", $"Kicked {member.Mention} for `{reason.TruncateAndEscape()}`");
+							await msg.ModifyAsync(props =>
+							{
+								props.Embed = embed.Build();
+							});
+						}
+						catch
+						{
+							var embed = CreateErrorEmbed("Error", $"Couldn't kick {member.Mention}. Check if I have enough permissions.");
+							await msg.ModifyAsync(props =>
+							{
+								props.Embed = embed.Build();
+							});
+						}
+					}
+					break;
+
+				case "❌":
+					{
+						var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
+						await msg.ModifyAsync(props =>
+						{
+							props.Embed = embed.Build();
+						});
+					}
+					break;
 			}
 
 			await msg.RemoveAllReactionsAsync();

@@ -1,5 +1,5 @@
-using Axion.Structures.Attributes;
-using Axion.Structures.Miscellaneous;
+using Axion.Core.Structures.Attributes;
+using Axion.Core.Structures.Miscellaneous;
 using Axion.Core.Utilities;
 using Discord;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using Qmmands;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Axion.Commands.Modules
@@ -20,14 +21,11 @@ namespace Axion.Commands.Modules
 		[RequireOwner]
 		public async Task EvalAsync([Remainder] string code)
 		{
-			var cs1 = code.IndexOf("```csharp", StringComparison.Ordinal) + 9;
-			cs1 = code.IndexOf('\n', cs1) + 1;
-			var cs2 = code.LastIndexOf("```", StringComparison.Ordinal);
-
-			if (cs1 == -1 || cs2 == -1)
+			var match = Regex.Match(code, @"(?<=```(csharp\n)?)(.*)(?=```)");
+			if (!match.Success)
 				throw new ArgumentException("You need to wrap the code into a code block.");
 
-			var cs = code.Substring(cs1, cs2 - cs1);
+			var cs = match.Value;
 
 			var evalMessage = await Context.ReplyAsync(new EmbedBuilder()
 				.WithColor(new Color(0xFF007F))
@@ -57,7 +55,7 @@ namespace Axion.Commands.Modules
 						"Discord.WebSocket",
 						"Axion",
 						"Axion",
-						"Axion.Structures",
+						"Axion.Core.Structures",
 						"Axion.Core.Utilities",
 						"Axion.Services")
 					.WithReferences(AppDomain.CurrentDomain.GetAssemblies()

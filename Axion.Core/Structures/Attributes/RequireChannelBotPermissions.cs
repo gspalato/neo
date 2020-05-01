@@ -4,7 +4,7 @@ using Qmmands;
 using System;
 using System.Threading.Tasks;
 
-namespace Axion.Structures.Attributes
+namespace Axion.Core.Structures.Attributes
 {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 	public class RequireChannelBotPermissionsAttribute : CheckAttribute

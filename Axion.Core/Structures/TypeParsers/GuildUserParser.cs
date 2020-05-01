@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Axion.Structures.TypeParsers
+namespace Axion.Core.Structures.TypeParsers
 {
     public class GuildUserParser : BaseTypeParser<IGuildUser>
     {

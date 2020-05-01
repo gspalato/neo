@@ -1,4 +1,4 @@
-using Axion.Structures.Attributes;
+using Axion.Core.Structures.Attributes;
 using Axion.Core.Utilities;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;

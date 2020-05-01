@@ -1,4 +1,4 @@
-﻿using Axion.Structures.Attributes;
+﻿using Axion.Core.Structures.Attributes;
 using Axion.Core.Structures.Interactivity;
 using Axion.Core.Utilities;
 using Discord;
@@ -458,7 +458,7 @@ namespace Axion.Commands.Modules
 				for (var chunkNumber = 0; chunkNumber < chunks.Count(); chunkNumber++)
 				{
 					var chunk = chunks.ElementAt(chunkNumber);
-					var description = "";
+					var description = new StringBuilder();
 
 					if (chunk is null)
 						break;
@@ -468,13 +468,13 @@ namespace Axion.Commands.Modules
 						if (!(chunk.ElementAt(trackNumber) is LavaTrack track))
 							return;
 
-						description += $"{++totalTrackNumber}. [**{track.Title.TruncateAndEscape()}**]({track.Url})\n";
+						description.Append($"{++totalTrackNumber}. [**{track.Title.TruncateAndEscape()}**]({track.Url})\n");
 					}
 
 					var embed = new EmbedBuilder()
 						.WithTitle($":musical_score:  Queue | Page {chunkNumber + 1}/{chunks.Count()}")
 						.WithDefaultColor()
-						.WithDescription(description)
+						.WithDescription(description.ToString())
 						.Build();
 
 					pages.Add(embed);

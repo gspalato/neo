@@ -1,7 +1,5 @@
-﻿using Axion.Structures.Attributes;
-using Axion.Core.Structures.Interactivity;
+﻿using Axion.Core.Structures.Attributes;
 using Axion.Core.Utilities;
-using Axion.Core.Utilities.Extensions;
 using Discord;
 using Qmmands;
 using System;

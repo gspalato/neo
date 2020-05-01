@@ -2,7 +2,7 @@ using Axion.Commands;
 using Discord;
 using Discord.WebSocket;
 
-namespace Axion.Structures.Miscellaneous
+namespace Axion.Core.Structures.Miscellaneous
 {
 	public class RoslynVariables
 	{
