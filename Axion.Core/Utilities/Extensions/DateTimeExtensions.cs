@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Axion.Utilities
+namespace Axion.Core.Utilities
 {
     public static class DateTimeExtensions
     {

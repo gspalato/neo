@@ -3,7 +3,7 @@ using Discord.WebSocket;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Axion.Utilities
+namespace Axion.Core.Utilities
 {
 	public static class GuildUserExtension
 	{

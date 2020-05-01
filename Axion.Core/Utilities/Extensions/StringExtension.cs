@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace Axion.Utilities
+namespace Axion.Core.Utilities
 {
 	public static class StringExtensions
 	{

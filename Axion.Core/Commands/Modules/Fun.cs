@@ -1,11 +1,11 @@
 using Axion.Structures.Attributes;
-using Axion.Utilities;
+using Axion.Core.Utilities;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using System;
 using System.Threading.Tasks;
-using Utils = Axion.Utilities;
+using Utils = Axion.Core.Utilities;
 
 namespace Axion.Commands.Modules
 {

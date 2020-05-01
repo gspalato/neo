@@ -15,7 +15,8 @@ namespace Axion.Core.Structures.Interactivity
 		public readonly Func<SocketReaction, bool> Filter;
 
 		private TaskCompletionSource<SocketReaction> _task = new TaskCompletionSource<SocketReaction>();
-		private bool _shouldDeleteReaction = true;
+
+		private bool _shouldDeleteReaction;
 
 		public ReactionAwaiter(DiscordSocketClient client,
 			IUserMessage message, Func<SocketReaction, bool> filter,
@@ -29,7 +30,7 @@ namespace Axion.Core.Structures.Interactivity
 			_shouldDeleteReaction = shouldDeleteReaction;
 		}
 
-		public async Task<LazyObject<SocketReaction>> Run(int millisecondsTimeout = 180000)
+		public async Task<LazyObject<SocketReaction>> Wait(int millisecondsTimeout = 180000)
 		{
 			_client.ReactionAdded += HandleReaction;
 
@@ -74,6 +75,11 @@ namespace Axion.Core.Structures.Interactivity
 		{
 			_client.ReactionAdded -= HandleReaction;
 			isDisposed = true;
+		}
+
+		~ReactionAwaiter()
+		{
+			Dispose();
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using Axion.Structures.Attributes;
 using Axion.Core.Structures.Interactivity;
-using Axion.Utilities;
+using Axion.Core.Utilities;
+using Axion.Core.Utilities.Extensions;
 using Discord;
 using Qmmands;
 using System;
@@ -104,6 +105,10 @@ namespace Axion.Commands.Modules
 				props.Content = "";
 				props.Embed = embed.Build();
 			}).ConfigureAwait(false);
+
+			var result = await Context.Channel.AwaitMessage(Context.Client, m => m.Author.Id == Context.User.Id);
+			if (!result.isTimedout)
+				Console.WriteLine(result.Result.Content);
 		}
 
 		[Command("fw", "fullwidth")]

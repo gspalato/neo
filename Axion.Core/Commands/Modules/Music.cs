@@ -1,6 +1,6 @@
 ﻿using Axion.Structures.Attributes;
 using Axion.Core.Structures.Interactivity;
-using Axion.Utilities;
+using Axion.Core.Utilities;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -13,7 +13,7 @@ using Victoria;
 using Victoria.Enums;
 using Victoria.Interfaces;
 using Victoria.Responses.Rest;
-using Utils = Axion.Utilities;
+using Utils = Axion.Core.Utilities;
 using System.Collections.Generic;
 
 namespace Axion.Commands.Modules

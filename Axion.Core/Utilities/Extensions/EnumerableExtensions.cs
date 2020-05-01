@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Axion.Utilities
+namespace Axion.Core.Utilities
 {
     public static class EnumerableExtensions
     {

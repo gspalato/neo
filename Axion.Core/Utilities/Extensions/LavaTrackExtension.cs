@@ -2,7 +2,7 @@
 using System.Text;
 using Victoria;
 
-namespace Axion.Utilities
+namespace Axion.Core.Utilities
 {
 	public static class LavaTrackExtension
 	{

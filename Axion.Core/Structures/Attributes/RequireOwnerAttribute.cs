@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Axion.Structures.Attributes
 {
-	public class RequireOwnerAttribute : AxionCheckBase
+	public class RequireOwnerAttribute : BaseCheckAttribute
 	{
 		public override async ValueTask<CheckResult> CheckAsync(AxionContext context, IServiceProvider provider)
 		{

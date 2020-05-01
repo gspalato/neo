@@ -3,7 +3,7 @@ using System.Text;
 using Victoria;
 using Victoria.Interfaces;
 
-namespace Axion.Utilities
+namespace Axion.Core.Utilities
 {
 	public static class CommandUtilities
 	{

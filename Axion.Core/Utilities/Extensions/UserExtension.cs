@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Discord;
 
-namespace Axion.Utilities
+namespace Axion.Core.Utilities
 {
 	public static class UserExtension
 	{

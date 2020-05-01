@@ -1,6 +1,7 @@
 ﻿using Axion.Structures.Attributes;
 using Axion.Core.Structures.Interactivity;
-using Axion.Utilities;
+using Axion.Core.Utilities;
+using Axion.Core.Utilities.Extensions;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
@@ -22,15 +23,17 @@ namespace Axion.Commands.Modules
 			var msg = await SendDefaultEmbedAsync("Confirmation",
 				$"Are you sure you want to ban {member.Mention} for `{reason.TruncateAndEscape()}`");
 
-			await msg.AddReactionAsync(new Emoji("✅"));
-			await msg.AddReactionAsync(new Emoji("❌"));
+			_ = Task.Run(async () =>
+			{
+				await msg.AddReactionAsync(new Emoji("✅"));
+				await msg.AddReactionAsync(new Emoji("❌"));
+			});
 
-			var awaiter = new ReactionAwaiter(Context.Client, msg, (r) => r.UserId == Context.Message.Author.Id);
-			var lazyReaction = await awaiter.Run();
+			var lazyReaction = await Context.Message.AwaitReaction(Context.Client, (r) => r.UserId == Context.Message.Author.Id);
 
 			if (!lazyReaction.isCompleted || lazyReaction.isTimedout)
 			{
-				var embed = CreateDefaultEmbed("Aborted", $"Aborted ban because of timeout.");
+				var embed = CreateDefaultEmbed("Aborted", $"Reaction timedout.");
 				await msg.ModifyAsync(props =>
 				{
 					props.Embed = embed.Build();
@@ -68,6 +71,8 @@ namespace Axion.Commands.Modules
 					props.Embed = embed.Build();
 				});
 			}
+
+			await msg.RemoveAllReactionsAsync();
 		}
 
 		[Command("purge")]

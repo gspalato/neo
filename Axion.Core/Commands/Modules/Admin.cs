@@ -1,6 +1,6 @@
 using Axion.Structures.Attributes;
 using Axion.Structures.Miscellaneous;
-using Axion.Utilities;
+using Axion.Core.Utilities;
 using Discord;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
@@ -58,7 +58,7 @@ namespace Axion.Commands.Modules
 						"Axion",
 						"Axion",
 						"Axion.Structures",
-						"Axion.Utilities",
+						"Axion.Core.Utilities",
 						"Axion.Services")
 					.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
 					.Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
