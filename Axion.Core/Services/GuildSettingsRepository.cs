@@ -4,7 +4,7 @@ using Canducci.MongoDB.Repository.Contracts;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 
-namespace Axion.Services
+namespace Axion.Core.Services
 {
     public interface IGuildSettingsRepository : IRepository<GuildSettings>
     {

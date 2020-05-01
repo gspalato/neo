@@ -4,7 +4,7 @@ using Discord;
 using Discord.WebSocket;
 using Victoria;
 
-namespace Axion.Services
+namespace Axion.Core.Services
 {
     public interface IEventService
     {

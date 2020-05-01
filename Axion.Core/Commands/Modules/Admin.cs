@@ -57,7 +57,7 @@ namespace Axion.Commands.Modules
 						"Axion",
 						"Axion.Core.Structures",
 						"Axion.Core.Utilities",
-						"Axion.Services")
+						"Axion.Core.Services")
 					.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
 					.Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 

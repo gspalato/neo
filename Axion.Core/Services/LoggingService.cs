@@ -2,7 +2,7 @@
 using Discord;
 using Pastel;
 
-namespace Axion.Services
+namespace Axion.Core.Services
 {
     public interface ILoggingService
     {

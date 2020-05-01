@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Victoria;
 using Victoria.EventArgs;
 
-namespace Axion.Services
+namespace Axion.Core.Services
 {
 	public interface IMusicService
 	{ }

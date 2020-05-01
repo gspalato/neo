@@ -1,4 +1,4 @@
-using Axion.Services;
+using Axion.Core.Services;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;

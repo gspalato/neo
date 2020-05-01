@@ -7,7 +7,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Axion.Services
+namespace Axion.Core.Services
 {
 	public interface ICommandHandlingService
 	{ }
