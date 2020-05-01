@@ -17,7 +17,7 @@ namespace Axion.Commands.Modules
 		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
 		[RequireGuildBotPermissions(GuildPermission.BanMembers)]
 		[RequireGuildUserPermissions(GuildPermission.BanMembers)]
-		public async Task BanAsync(IGuildUser member, string reason = "")
+		public async Task BanAsync(IGuildUser member, [Remainder] string reason = "")
 		{
 			var msg = await SendDefaultEmbedAsync("Confirmation",
 				$"Are you sure you want to ban {member.Mention} for `{reason.TruncateAndEscape()}`");
