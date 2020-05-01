@@ -1,0 +1,14 @@
+version: "3"
+services:
+  axion:
+    container_name: axion
+    build:
+      context: ../..
+      dockerfile: ./Dockerfile
+    image: gspalato/axion:latest
+  lavalink:
+    container_name: lavalink
+    build:
+      context: ../Lavalink
+      dockerfile: ../Lavalink/Dockerfile
+    image: 

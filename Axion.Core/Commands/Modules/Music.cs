@@ -1,5 +1,6 @@
-﻿using Axion.Kernel.Structures.Attributes;
-using Axion.Kernel.Utilities;
+﻿using Axion.Structures.Attributes;
+using Axion.Core.Structures.Interactivity;
+using Axion.Utilities;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -12,7 +13,8 @@ using Victoria;
 using Victoria.Enums;
 using Victoria.Interfaces;
 using Victoria.Responses.Rest;
-using Utils = Axion.Kernel.Utilities;
+using Utils = Axion.Utilities;
+using System.Collections.Generic;
 
 namespace Axion.Commands.Modules
 {
@@ -426,46 +428,64 @@ namespace Axion.Commands.Modules
 		[IgnoresExtraArguments]
 		public async Task QueueAsync()
 		{
-			if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
+			try
 			{
-				await SendDefaultEmbedAsync("I'm not connected to a voice channel.");
-				return;
-			}
-
-			if (player.PlayerState != PlayerState.Playing)
-			{
-				await SendDefaultEmbedAsync("Nothing's playing right now.");
-				return;
-			}
-
-			Embed[] pages = { };
-
-			var queue = player.Queue.Items.Chunk(7);
-
-			var totalTrackNumber = 0;
-			var chunks = queue as IQueueable[][] ?? queue.ToArray();
-
-			for (var chunkNumber = 0; chunkNumber < chunks.Count(); chunkNumber++)
-			{
-				var chunk = chunks.ElementAt(chunkNumber);
-				var description = "";
-
-				for (var trackNumber = 0; trackNumber < chunk.Count(); trackNumber++)
+				if (!_lavaNode.TryGetPlayer(Context.Guild, out var player))
 				{
-					if (!(chunk.ElementAt(trackNumber) is LavaTrack track))
-						return;
-
-					description += $"{totalTrackNumber}. [**{track.Title.TruncateAndEscape()}**]({track.Url})";
-					totalTrackNumber++;
+					await SendDefaultEmbedAsync("I'm not connected to a voice channel.");
+					return;
 				}
 
-				var embed = new EmbedBuilder()
-					.WithTitle($":musical_score:  Queue | Page {chunkNumber}/{chunks.Count()}")
-					.WithDefaultColor()
-					.WithDescription(description)
-					.Build();
+				if (player.PlayerState != PlayerState.Playing)
+				{
+					await SendDefaultEmbedAsync("Nothing's playing right now.");
+					return;
+				}
 
-				_ = pages.Append(embed);
+				IList<Embed> pages = new List<Embed>();
+
+				var queue = player.Queue.Items.Chunk(7);
+
+				var totalTrackNumber = 0;
+				var chunks = queue as IQueueable[][] ?? queue.ToArray();
+
+				if (chunks.Count() == 0)
+				{
+					await SendDefaultEmbedAsync("There are no tracks next.");
+					return;
+				}
+
+				for (var chunkNumber = 0; chunkNumber < chunks.Count(); chunkNumber++)
+				{
+					var chunk = chunks.ElementAt(chunkNumber);
+					var description = "";
+
+					if (chunk is null)
+						break;
+
+					for (var trackNumber = 0; trackNumber < chunk.Count(); trackNumber++)
+					{
+						if (!(chunk.ElementAt(trackNumber) is LavaTrack track))
+							return;
+
+						description += $"{++totalTrackNumber}. [**{track.Title.TruncateAndEscape()}**]({track.Url})\n";
+					}
+
+					var embed = new EmbedBuilder()
+						.WithTitle($":musical_score:  Queue | Page {chunkNumber + 1}/{chunks.Count()}")
+						.WithDefaultColor()
+						.WithDescription(description)
+						.Build();
+
+					pages.Add(embed);
+				}
+
+				var pagedMessage = new PaginatedMessage(Context.Client, Context.Message.Author, pages.ToArray());
+				await pagedMessage.Send(Context.Channel);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"{e.Message}\n{e.StackTrace}");
 			}
 		}
 

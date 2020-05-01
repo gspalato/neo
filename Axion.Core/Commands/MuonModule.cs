@@ -1,4 +1,4 @@
-﻿using Axion.Kernel.Utilities;
+﻿using Axion.Utilities;
 using Axion.Services;
 using Discord;
 using Qmmands;
@@ -11,43 +11,53 @@ namespace Axion.Commands
 		public ICommandService CommandService { get; }
 		public IMusicService MusicService { get; set; }
 
+
+		protected EmbedBuilder CreateOkEmbed(string title, string content = null)
+		{
+			return new EmbedBuilder()
+				.WithTitle(title)
+				.WithSuccess()
+				.WithFooter(new EmbedFooterBuilder
+				{
+					IconUrl = Context.User.GetAvatarUrl(),
+					Text = Context.User.Username
+				})
+				.WithDescription(content ?? string.Empty);
+		}
+
+		protected EmbedBuilder CreateErrorEmbed(string title, string content = null)
+		{
+			return new EmbedBuilder()
+				.WithTitle(title)
+				.WithError()
+				.WithFooter(new EmbedFooterBuilder
+				{
+					IconUrl = Context.User.GetAvatarUrl(),
+					Text = Context.User.Username
+				})
+				.WithDescription(content ?? string.Empty);
+		}
+
+		protected EmbedBuilder CreateDefaultEmbed(string title, string content)
+		{
+			return new EmbedBuilder()
+				.WithTitle(title)
+				.WithDefaultColor()
+				.WithDescription(content ?? string.Empty);
+		}
+
+		protected async Task<IUserMessage> SendOkAsync(string title, string content = null) =>
+			await SendEmbedAsync(CreateOkEmbed(title, content));
 		protected async Task<IUserMessage> SendOkAsync(string content = null)
-		{
-			var embed = new EmbedBuilder()
-			.WithSuccess()
-			.WithFooter(new EmbedFooterBuilder
-			{
-				IconUrl = Context.User.GetAvatarUrl(),
-				Text = Context.User.Username
-			})
-			.WithDescription(content ?? string.Empty);
+			=> await SendOkAsync("", content);
 
-			return await SendEmbedAsync(embed);
-		}
-
+		protected async Task<IUserMessage> SendErrorAsync(string title, string content = null) =>
+			await SendEmbedAsync(CreateErrorEmbed(title, content));
 		protected async Task<IUserMessage> SendErrorAsync(string content = null)
-		{
-			var embed = new EmbedBuilder()
-			.WithError()
-			.WithFooter(new EmbedFooterBuilder
-			{
-				IconUrl = Context.User.GetAvatarUrl(),
-				Text = Context.User.Username
-			})
-			.WithDescription(content ?? string.Empty);
+			=> await SendErrorAsync("", content);
 
-			return await SendEmbedAsync(embed);
-		}
-
-		protected async Task<IUserMessage> SendDefaultEmbedAsync(string title, string content)
-		{
-			var embed = new EmbedBuilder()
-			.WithTitle(title)
-			.WithDefaultColor()
-			.WithDescription(content ?? string.Empty);
-
-			return await SendEmbedAsync(embed);
-		}
+		protected async Task<IUserMessage> SendDefaultEmbedAsync(string title, string content) =>
+			await SendEmbedAsync(CreateDefaultEmbed(title, content));
 		protected async Task<IUserMessage> SendDefaultEmbedAsync(string description) =>
 			await SendDefaultEmbedAsync("", description);
 

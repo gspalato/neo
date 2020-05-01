@@ -1,4 +1,4 @@
-﻿using Axion.Kernel.Utilities;
+﻿using Axion.Utilities;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;

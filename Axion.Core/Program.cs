@@ -1,5 +1,4 @@
-﻿using Axion.Kernel;
-using Axion.Services;
+﻿using Axion.Services;
 using Canducci.MongoDB.Repository.Connection;
 using Discord;
 using Discord.WebSocket;
@@ -18,8 +17,8 @@ namespace Axion
 		private static void Main(string[] args) =>
 			CreateHostBuilder(args).Build().Run();
 
-		private static IHostBuilder CreateHostBuilder(string[] args)
-			=> Host.CreateDefaultBuilder(args)
+		private static IHostBuilder CreateHostBuilder(string[] args) =>
+			Host.CreateDefaultBuilder(args)
 			.ConfigureAppConfiguration((hostContext, configBuilder) =>
 				configBuilder.AddJsonFile("appsettings.json"))
 			.ConfigureLogging((hostContext, configLogging) =>

@@ -1,6 +1,6 @@
-using Axion.Kernel.Structures.Attributes;
-using Axion.Kernel.Structures.Miscellaneous;
-using Axion.Kernel.Utilities;
+using Axion.Structures.Attributes;
+using Axion.Structures.Miscellaneous;
+using Axion.Utilities;
 using Discord;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
@@ -56,9 +56,9 @@ namespace Axion.Commands.Modules
 						"Discord.Rest",
 						"Discord.WebSocket",
 						"Axion",
-						"Axion.Kernel",
-						"Axion.Kernel.Structures",
-						"Axion.Kernel.Utilities",
+						"Axion",
+						"Axion.Structures",
+						"Axion.Utilities",
 						"Axion.Services")
 					.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
 					.Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));

@@ -1,5 +1,6 @@
-﻿using Axion.Kernel.Structures.Attributes;
-using Axion.Kernel.Utilities;
+﻿using Axion.Structures.Attributes;
+using Axion.Core.Structures.Interactivity;
+using Axion.Utilities;
 using Discord;
 using Qmmands;
 using System;
@@ -21,7 +22,7 @@ namespace Axion.Commands.Modules
 			var embed = new EmbedBuilder()
 				.WithDescription("owo")
 				.WithInfo()
-				.WithFooter($"by hinoki_. v{Axion.Kernel.Version.FullVersion}");
+				.WithFooter($"by hinoki_. v{Axion.Version.FullVersion}");
 
 			foreach (Module m in CommandService.GetAllModules())
 			{
@@ -92,24 +93,17 @@ namespace Axion.Commands.Modules
 			var msg = await Context.ReplyAsync(content: "Measuring...");
 			sw.Stop();
 
-			try
-			{
-				var embed = new EmbedBuilder()
-					.WithTitle("🏓 Pong!")
-					.WithInfo()
-					.AddField("API Latency", "```" + Context.Client.Latency.ToString() + "ms```", true)
-					.AddField("Bot Latency", "```" + sw.ElapsedMilliseconds.ToString() + "ms```", true);
+			var embed = new EmbedBuilder()
+				.WithTitle("🏓 Pong!")
+				.WithInfo()
+				.AddField("API Latency", "```" + Context.Client.Latency.ToString() + "ms```", true)
+				.AddField("Bot Latency", "```" + sw.ElapsedMilliseconds.ToString() + "ms```", true);
 
-				await msg.ModifyAsync(props =>
-				{
-					props.Content = "";
-					props.Embed = embed.Build();
-				}).ConfigureAwait(false);
-			}
-			catch (Exception e)
+			await msg.ModifyAsync(props =>
 			{
-				Console.WriteLine(e);
-			}
+				props.Content = "";
+				props.Embed = embed.Build();
+			}).ConfigureAwait(false);
 		}
 
 		[Command("fw", "fullwidth")]

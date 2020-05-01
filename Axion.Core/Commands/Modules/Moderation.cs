@@ -1,5 +1,6 @@
-using Axion.Kernel.Structures.Attributes;
-using Axion.Kernel.Utilities;
+﻿using Axion.Structures.Attributes;
+using Axion.Core.Structures.Interactivity;
+using Axion.Utilities;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
@@ -12,63 +13,62 @@ namespace Axion.Commands.Modules
 	[Description("Le ban hammer")]
 	public sealed class Moderation : AxionModule
 	{
-		/*
-		private InteractivityService Interactivity { get; }
-
-		public Moderation(IServiceProvider services)
-		{
-			Interactivity = services.GetRequiredService<InteractivityService>();
-		}
-
 		[Command("ban")]
+		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
 		[RequireGuildBotPermissions(GuildPermission.BanMembers)]
 		[RequireGuildUserPermissions(GuildPermission.BanMembers)]
 		public async Task BanAsync(IGuildUser member, string reason = "")
 		{
-			var embed = new EmbedBuilder()
-				.WithTitle("Confirmation")
-				.WithDescription($"Are you sure you want to ban {member.Mention} for `{reason.TruncateAndEscape()}`")
-				.WithDefaultColor();
+			var msg = await SendDefaultEmbedAsync("Confirmation",
+				$"Are you sure you want to ban {member.Mention} for `{reason.TruncateAndEscape()}`");
 
-			var abortedEmbed = new EmbedBuilder()
-				.WithTitle("Aborted")
-				.WithDescription($"Aborted ban. You'll get away this time.")
-				.WithWarning();
+			await msg.AddReactionAsync(new Emoji("✅"));
+			await msg.AddReactionAsync(new Emoji("❌"));
 
-			var request = new ConfirmationBuilder()
-				.WithContent(embed: embed)
-				.WithCancelledEmbed(abortedEmbed)
-				.WithTimeoutedEmbed(abortedEmbed)
-				.WithUsers(Context.User as SocketUser)
-				.Build();
+			var awaiter = new ReactionAwaiter(Context.Client, msg, (r) => r.UserId == Context.Message.Author.Id);
+			var lazyReaction = await awaiter.Run();
 
-			var result = await Interactivity.SendConfirmationAsync(request, Context.Channel);
+			if (!lazyReaction.isCompleted || lazyReaction.isTimedout)
+			{
+				var embed = CreateDefaultEmbed("Aborted", $"Aborted ban because of timeout.");
+				await msg.ModifyAsync(props =>
+				{
+					props.Embed = embed.Build();
+				});
 
-			if (result.IsSuccess)
+				return;
+			}
+
+			if (lazyReaction.Result.Emote.Name == "✅")
 			{
 				try
 				{
 					await member.BanAsync(reason: reason);
 
-					var successEmbed = new EmbedBuilder()
-						.WithTitle("Success")
-						.WithDescription($"Banned {member.Mention} for `{reason.TruncateAndEscape()}`")
-						.WithSuccess();
-
-					await SendEmbedAsync(successEmbed);
+					var embed = CreateOkEmbed("Success", $"Banned {member.Mention} for `{reason.TruncateAndEscape()}`");
+					await msg.ModifyAsync(props =>
+					{
+						props.Embed = embed.Build();
+					});
 				}
 				catch
 				{
-					var errorEmbed = new EmbedBuilder()
-						.WithTitle("Error")
-						.WithDescription($"Couldn't ban {member.Mention}. Check if I have enough permissions.")
-						.WithError();
-
-					await SendEmbedAsync(errorEmbed);
+					var embed = CreateErrorEmbed("Error", $"Couldn't ban {member.Mention}. Check if I have enough permissions.");
+					await msg.ModifyAsync(props =>
+					{
+						props.Embed = embed.Build();
+					});
 				}
 			}
+			else if (lazyReaction.Result.Emote.Name == "❌")
+			{
+				var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
+				await msg.ModifyAsync(props =>
+				{
+					props.Embed = embed.Build();
+				});
+			}
 		}
-		*/
 
 		[Command("purge")]
 		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]

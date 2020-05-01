@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Axion.Kernel.Utilities;
+using Axion.Utilities;
 using System.Linq;
 
 namespace Axion.Tests
