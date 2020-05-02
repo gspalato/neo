@@ -62,11 +62,12 @@ namespace Axion.Core.Services
 			if (!(m is IUserMessage msg))
 				return;
 
-			var guild = ((ITextChannel)msg.Channel).Guild;
+			if (!(msg.Channel is ITextChannel textChannel))
+				return;
 
-			var settings = await _guildSettingsRepository.GetOrCreateForGuildAsync(guild.Id);
+			var settings = await _guildSettingsRepository.GetOrCreateForGuildAsync(textChannel.GuildId);
 
-			if (!CommandUtilities.HasPrefix(msg.Content, settings.prefix, out var output))
+			if (!CommandUtilities.HasPrefix(msg.Content, settings.Prefix, out var output))
 				return;
 
 			var result = await _commandService.ExecuteAsync(output, new AxionContext(msg, _services));
@@ -83,23 +84,49 @@ namespace Axion.Core.Services
 						var type = typeParse.Parameter.Type.Name;
 						var given = typeParse.Value;
 
+						var footer = new EmbedFooterBuilder()
+							.WithText(m.Author.Username)
+							.WithIconUrl(m.Author.GetAvatarUrl());
+
 						await m.Channel.SendMessageAsync(embed: new EmbedBuilder()
 							.WithTitle("⚠️ Huh?")
 							.WithColor(Color.Orange)
 							.WithDescription($"Wrong type given at `{name}`.\nExpected {type}, got\n{Format.Quote(given)}")
+							.WithFooter(footer)
+							.WithCurrentTimestamp()
 							.Build());
 					}
 					break;
 
 				case ParameterChecksFailedResult parameterChecks:
 					{
-						// need 2 handle this xd
+						var footer = new EmbedFooterBuilder()
+							.WithText(m.Author.Username)
+							.WithIconUrl(m.Author.GetAvatarUrl());
+
+						await m.Channel.SendMessageAsync(embed: new EmbedBuilder()
+							.WithTitle("⚠️ Huh?")
+							.WithColor(Color.Orange)
+							.WithDescription(parameterChecks.Reason)
+							.WithFooter(footer)
+							.WithCurrentTimestamp()
+							.Build());
 					}
 					break;
 
 				case OverloadsFailedResult overloads:
 					{
-						// need 2 handle this xd
+						var footer = new EmbedFooterBuilder()
+							.WithText(m.Author.Username)
+							.WithIconUrl(m.Author.GetAvatarUrl());
+
+						await m.Channel.SendMessageAsync(embed: new EmbedBuilder()
+							.WithTitle("⚠️ Huh?")
+							.WithColor(Color.Orange)
+							.WithDescription(overloads.Reason)
+							.WithFooter(footer)
+							.WithCurrentTimestamp()
+							.Build());
 					}
 					break;
 			}

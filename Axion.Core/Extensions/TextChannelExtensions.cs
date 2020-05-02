@@ -4,15 +4,15 @@ using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
 
-namespace Axion.Core.Utilities.Extensions
+namespace Axion.Core.Extensions
 {
     public static class TextChannelExtensions
     {
-        public static LazyObject<IMessage> AwaitMessage(this ITextChannel channel, DiscordSocketClient client,
+        public static Task<IMessage> AwaitMessage(this ITextChannel channel, DiscordSocketClient client,
             Func<IMessage, bool> filter) =>
             channel.GetMessageAwaiter(client, filter).Wait();
 
-        public static LazyObject<IMessage> AwaitNextMessage(this ITextChannel channel, DiscordSocketClient client) =>
+        public static Task<IMessage> AwaitNextMessage(this ITextChannel channel, DiscordSocketClient client) =>
             channel.GetMessageAwaiter(client, m => true).Wait();
 
         public static MessageAwaiter GetMessageAwaiter(this ITextChannel channel, DiscordSocketClient client,

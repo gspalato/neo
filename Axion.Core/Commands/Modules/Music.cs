@@ -471,13 +471,10 @@ namespace Axion.Commands.Modules
 						description.Append($"{++totalTrackNumber}. [**{track.Title.TruncateAndEscape()}**]({track.Url})\n");
 					}
 
-					var embed = new EmbedBuilder()
-						.WithTitle($":musical_score:  Queue | Page {chunkNumber + 1}/{chunks.Count()}")
-						.WithDefaultColor()
-						.WithDescription(description.ToString())
-						.Build();
+					var embed = CreateDefaultEmbed($":musical_score:  Queue | Page {chunkNumber + 1}/{chunks.Count()}",
+						description.ToString());
 
-					pages.Add(embed);
+					pages.Add(embed.Build());
 				}
 
 				var pagedMessage = new PaginatedMessage(Context.Client, Context.Message.Author, pages.ToArray());
@@ -537,14 +534,11 @@ namespace Axion.Commands.Modules
 			var elapsedTime = track.Position.ToHumanDuration();
 			var remainingTime = (track.Duration - track.Position).ToHumanDuration();
 
-			var embed = new EmbedBuilder()
-				.WithTitle("🎶 Now Playing")
-				.WithDefaultColor()
-				.WithDescription(
-					$"**[{track.Title.TruncateAndEscape()}]({track.Url})**"
+			var description = $"**[{track.Title.TruncateAndEscape()}]({track.Url})**"
 					+ $"\n`{remainingTime}` remaining.\n\n"
-					+ firstTracks
-				)
+					+ firstTracks;
+
+			var embed = CreateDefaultEmbed("🎶 Now Playing", description)
 				.WithFooter($"{slider}  {elapsedTime} / {totalTime}");
 
 			await SendEmbedAsync(embed: embed);

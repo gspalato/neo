@@ -1,14 +1,8 @@
-﻿using Axion.Core.Services;
-using Canducci.MongoDB.Repository.Connection;
-using Discord;
-using Discord.WebSocket;
+﻿using Axion.Core.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Qmmands;
-using System;
-using Victoria;
 
 namespace Axion
 {
@@ -20,36 +14,21 @@ namespace Axion
 		private static IHostBuilder CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
 			.ConfigureAppConfiguration((hostContext, configBuilder) =>
-				configBuilder.AddJsonFile("appsettings.json"))
+			{
+				configBuilder.AddJsonFile("appsettings.json");
+			})
 			.ConfigureLogging((hostContext, configLogging) =>
+			{
 				configLogging
-				.AddConsole()
-				.AddDebug()
-			)
+					.AddConsole()
+					.AddDebug();
+			})
 			.ConfigureServices((hostContext, services) =>
+			{
 				services
-				.AddSingleton(new CommandServiceConfiguration
-				{
-					DefaultRunMode = RunMode.Parallel
-				})
-				.AddSingleton(new LavaConfig
-				{
-					Authorization = hostContext.Configuration.GetValue<string>("LAVALINK"),
-					LogSeverity = LogSeverity.Debug
-				})
-				.AddSingleton<DiscordSocketClient>()
-				.AddSingleton<CommandHandlingService>()
-				.AddSingleton<ICommandService, CommandService>()
-				.AddSingleton<IEventService, EventService>()
-				.AddSingleton<IMusicService, MusicService>()
-				.AddSingleton<ILoggingService, LoggingService>()
-				.AddSingleton<LavaNode>()
-				.AddSingleton<Random>()
-				.AddScoped<IConfig, Config>()
-				.AddScoped<IConnect, Connect>()
-				.AddScoped<IGuildSettingsRepository, GuildSettingsRepository>()
-				.AddHostedService<App>()
-				.AddLogging()
-			);
+					.AddAxionCoreServices(hostContext)
+					.AddHostedService<App>()
+					.AddLogging();
+			});
 	}
 }

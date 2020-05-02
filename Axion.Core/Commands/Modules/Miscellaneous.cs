@@ -1,11 +1,15 @@
-﻿using Axion.Core.Structures.Attributes;
+﻿using Axion.Core.Services;
+using Axion.Core.Structures.Attributes;
 using Axion.Core.Utilities;
 using Discord;
+using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Axion.Commands.Modules
@@ -14,6 +18,13 @@ namespace Axion.Commands.Modules
 	[Description("Special snowflakes that don't fit on other groups.")]
 	public sealed class Miscellaneous : AxionModule
 	{
+		private IDocumentationService documentationService;
+
+		public Miscellaneous(IServiceProvider services)
+		{
+			documentationService = services.GetRequiredService<IDocumentationService>();
+		}
+
 		[Command("help")]
 		[Description("What you're seeing right now.")]
 		public async Task HelpAsync()
@@ -148,6 +159,55 @@ namespace Axion.Commands.Modules
 			var formatted = $"{significant} * 10{exponent}";
 
 			await Context.ReplyAsync($"```{formatted}```");
+		}
+
+		[Command("docs")]
+		[Description("Search for .NET Core documentation.")]
+		public async Task GetDocumentationAsync(
+			[Remainder] [Description("The term to search for in the documentation.")] string term)
+		{
+			Regex reg = new Regex("^[0-9A-Za-z.<>]$");
+			foreach (char c in term)
+			{
+				if (!reg.IsMatch(c.ToString()))
+				{
+					string s = (c == '\\') ? @"\\" : c.ToString();
+					await Context.ReplyAsync($" '{s}' character is not allowed in the search, please try again.");
+					return;
+				}
+			}
+
+			var response = await documentationService.GetDocumentationResultsAsync(term);
+
+			if (response.Count == 0)
+			{
+				await Context.ReplyAsync("Could not find documentation for your requested term.");
+				return;
+			}
+
+			var embedCount = 0;
+
+			var stringBuild = new StringBuilder();
+
+			foreach (var res in response.Results.Take(3))
+			{
+				embedCount++;
+				stringBuild.AppendLine($"> **[{res.ItemKind}: {res.DisplayName}]({res.Url})**");
+				stringBuild.AppendLine($"{res.Description}");
+				stringBuild.AppendLine();
+
+				if (embedCount == 3)
+				{
+					stringBuild.Append(
+						$"{embedCount}/{response.Results.Count} results shown ~ [Click here for more results](https://docs.microsoft.com/dotnet/api/?term={term})"
+					);
+				}
+			}
+			var buildEmbed = new EmbedBuilder()
+				.WithDescription(stringBuild.ToString())
+				.WithInfo();
+
+			var message = await SendEmbedAsync(buildEmbed);
 		}
 	}
 }

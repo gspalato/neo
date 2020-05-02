@@ -16,7 +16,7 @@ namespace Axion.Core.Structures.TypeParsers
         public override async ValueTask<TypeParserResult<IGuildUser>> ParseAsync(Parameter parameter, string value,
             AxionContext context, IServiceProvider provider)
         {
-            if (context.Guild == null)
+            if (context.Guild is null)
                 return TypeParserResult<IGuildUser>.Unsuccessful("You're not in a guild.");
 
             if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))

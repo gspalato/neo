@@ -28,8 +28,8 @@ namespace Axion.Core.Services
 
             var settings = new GuildSettings
             {
-                guild_id = guildId.ToString(),
-                prefix = prefix
+                GuildId = guildId.ToString(),
+                Prefix = prefix
             };
 
             await AddAsync(settings);
@@ -38,7 +38,7 @@ namespace Axion.Core.Services
         }
 
         public async Task<GuildSettings> GetForGuildAsync(ulong guildId) =>
-            await FindAsync(x => x.guild_id == guildId.ToString());
+            await FindAsync(x => x.GuildId == guildId.ToString());
 
         public async Task<GuildSettings> GetOrCreateForGuildAsync(ulong guildId, string prefix = null) =>
             await GetForGuildAsync(guildId) ?? await CreateForGuildAsync(guildId, prefix);

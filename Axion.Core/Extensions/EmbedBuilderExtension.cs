@@ -5,16 +5,16 @@ namespace Axion.Core.Utilities
     public static class DiscordEmbedBuilderExtensions
     {
         public static EmbedBuilder WithSuccess(this EmbedBuilder builder)
-            => builder.WithColor(new Color(0, 255, 0));
+            => builder.WithColor(Color.Green);
 
         public static EmbedBuilder WithInfo(this EmbedBuilder builder)
             => builder.WithColor(new Color(42, 142, 244));
 
         public static EmbedBuilder WithWarning(this EmbedBuilder builder)
-            => builder.WithColor(new Color(255, 165, 0));
+            => builder.WithColor(Color.Orange);
 
         public static EmbedBuilder WithError(this EmbedBuilder builder)
-            => builder.WithColor(new Color(255, 0, 0));
+            => builder.WithColor(Color.Red);
 
         public static EmbedBuilder WithDefaultColor(this EmbedBuilder builder)
             => builder.WithColor(new Color(47, 49, 54));

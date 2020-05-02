@@ -8,8 +8,8 @@ namespace Axion.Core.Structures.Database
 	{
 		ObjectId Id { get; set; }
 
-		string guild_id { get; set; }
-		string prefix { get; set; }
+		string GuildId { get; set; }
+		string Prefix { get; set; }
 	}
 
 	[MongoCollectionName("GuildSettings")]
@@ -20,10 +20,10 @@ namespace Axion.Core.Structures.Database
 
 		[BsonElement("guild_id")]
 		[BsonRequired()]
-		public string guild_id { get; set; }
+		public string GuildId { get; set; }
 
 		[BsonElement("prefix")]
 		[BsonRequired()]
-		public string prefix { get; set; }
+		public string Prefix { get; set; }
 	}
 }

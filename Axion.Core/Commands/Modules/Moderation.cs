@@ -1,6 +1,6 @@
 ﻿using Axion.Core.Structures.Attributes;
 using Axion.Core.Utilities;
-using Axion.Core.Utilities.Extensions;
+using Axion.Core.Extensions;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
@@ -27,15 +27,13 @@ namespace Axion.Commands.Modules
 
 			var lazyReaction = msg.AwaitReaction(Context.Client, (r) =>
 				r.UserId == Context.Message.Author.Id && (new[] { "✅", "❌" }).Contains(r.Emote.Name));
-			var result = await lazyReaction.Result;
+			var result = await lazyReaction;
 
-			if (!lazyReaction.IsCompleted || lazyReaction.IsTimedout)
+			if (!lazyReaction.IsCompleted || lazyReaction.IsCanceled)
 			{
 				var embed = CreateDefaultEmbed("Aborted", $"Reaction timedout.");
 				await msg.ModifyAsync(props =>
-				{
-					props.Embed = embed.Build();
-				});
+					props.Embed = embed.Build());
 
 				return;
 			}
@@ -50,17 +48,13 @@ namespace Axion.Commands.Modules
 
 							var embed = CreateOkEmbed("Success", $"Banned {member.Mention} for `{reason.TruncateAndEscape()}`");
 							await msg.ModifyAsync(props =>
-							{
-								props.Embed = embed.Build();
-							});
+								props.Embed = embed.Build());
 						}
 						catch
 						{
 							var embed = CreateErrorEmbed("Error", $"Couldn't ban {member.Mention}. Check if I have enough permissions.");
 							await msg.ModifyAsync(props =>
-							{
-								props.Embed = embed.Build();
-							});
+								props.Embed = embed.Build());
 						}
 					}
 					break;
@@ -69,9 +63,7 @@ namespace Axion.Commands.Modules
 					{
 						var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
 						await msg.ModifyAsync(props =>
-						{
-							props.Embed = embed.Build();
-						});
+							props.Embed = embed.Build());
 					}
 					break;
 			}
@@ -92,15 +84,13 @@ namespace Axion.Commands.Modules
 
 			var lazyReaction = msg.AwaitReaction(Context.Client, (r) =>
 				r.UserId == Context.Message.Author.Id && (new[] { "✅", "❌" }).Contains(r.Emote.Name));
-			var result = await lazyReaction.Result;
+			var result = await lazyReaction;
 
-			if (!lazyReaction.IsCompleted || lazyReaction.IsTimedout)
+			if (!lazyReaction.IsCompleted || lazyReaction.IsCanceled)
 			{
 				var embed = CreateDefaultEmbed("Aborted", $"Reaction timedout.");
 				await msg.ModifyAsync(props =>
-				{
-					props.Embed = embed.Build();
-				});
+					props.Embed = embed.Build());
 
 				return;
 			}
@@ -115,17 +105,13 @@ namespace Axion.Commands.Modules
 
 							var embed = CreateOkEmbed("Success", $"Kicked {member.Mention} for `{reason.TruncateAndEscape()}`");
 							await msg.ModifyAsync(props =>
-							{
-								props.Embed = embed.Build();
-							});
+								props.Embed = embed.Build());
 						}
 						catch
 						{
 							var embed = CreateErrorEmbed("Error", $"Couldn't kick {member.Mention}. Check if I have enough permissions.");
 							await msg.ModifyAsync(props =>
-							{
-								props.Embed = embed.Build();
-							});
+								props.Embed = embed.Build());
 						}
 					}
 					break;
@@ -134,9 +120,7 @@ namespace Axion.Commands.Modules
 					{
 						var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
 						await msg.ModifyAsync(props =>
-						{
-							props.Embed = embed.Build();
-						});
+							props.Embed = embed.Build());
 					}
 					break;
 			}
@@ -163,7 +147,8 @@ namespace Axion.Commands.Modules
 		[Command("whois")]
 		public async Task WhoIsAsync(IGuildUser target)
 		{
-			var member = (SocketGuildUser)target;
+			if (!(target is SocketGuildUser member))
+				return;
 
 			var escapedUsername = member.Username.Escape();
 			var escapedNickname = member.Nickname?.Escape();

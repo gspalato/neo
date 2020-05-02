@@ -14,7 +14,7 @@ namespace Axion.Core.Structures.Interactivity
 		public readonly IUserMessage Message;
 		public readonly Func<SocketReaction, bool> Filter;
 
-		private LazyObject<SocketReaction> _lazyResult;
+		private TaskCompletionSource<SocketReaction> _tcs;
 
 		private bool _shouldDeleteReaction;
 
@@ -27,23 +27,23 @@ namespace Axion.Core.Structures.Interactivity
 			Message = message;
 			Filter = filter;
 
+			_tcs = new TaskCompletionSource<SocketReaction>();
+
 			_shouldDeleteReaction = shouldDeleteReaction;
 		}
 
-		public LazyObject<SocketReaction> Wait(int millisecondsTimeout = 180000)
+		public Task<SocketReaction> Wait(int millisecondsTimeout = 180000)
 		{
 			_client.ReactionAdded += HandleReaction;
 
-			_lazyResult = new LazyObject<SocketReaction>();
-
 			_ = Task.Run(async () =>
 			{
-				var finished = await Task.WhenAny(_lazyResult.Result, Task.Delay(millisecondsTimeout));
-				if (finished != _lazyResult.Result)
-					_lazyResult.Timeout();
+				var finished = await Task.WhenAny(_tcs.Task, Task.Delay(millisecondsTimeout));
+				if (finished != _tcs.Task)
+					_tcs.SetCanceled();
 			});
 
-			return _lazyResult;
+			return _tcs.Task;
 		}
 
 		private async Task HandleReaction(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
@@ -66,7 +66,7 @@ namespace Axion.Core.Structures.Interactivity
 
 			if (Filter(reaction))
 			{
-				_lazyResult.Finish(reaction);
+				_tcs.SetResult(reaction);
 				if (_shouldDeleteReaction)
 					await Message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
 

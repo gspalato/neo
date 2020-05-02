@@ -54,13 +54,13 @@ namespace Axion.Commands
 
 		protected async Task<IUserMessage> SendOkAsync(string title, string content = null) =>
 			await SendEmbedAsync(CreateOkEmbed(title, content));
-		protected async Task<IUserMessage> SendOkAsync(string content = null)
-			=> await SendOkAsync("", content);
+		protected async Task<IUserMessage> SendOkAsync(string content = null) =>
+			await SendOkAsync("", content);
 
 		protected async Task<IUserMessage> SendErrorAsync(string title, string content = null) =>
 			await SendEmbedAsync(CreateErrorEmbed(title, content));
-		protected async Task<IUserMessage> SendErrorAsync(string content = null)
-			=> await SendErrorAsync("", content);
+		protected async Task<IUserMessage> SendErrorAsync(string content = null) =>
+			await SendErrorAsync("", content);
 
 		protected async Task<IUserMessage> SendDefaultEmbedAsync(string title, string content) =>
 			await SendEmbedAsync(CreateDefaultEmbed(title, content));
@@ -68,8 +68,8 @@ namespace Axion.Commands
 			await SendDefaultEmbedAsync("", description);
 
 		protected async Task<IUserMessage> SendEmbedAsync(Embed embed) =>
-			await Context.Channel.SendMessageAsync(embed: embed);
+			await Context.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
 		protected async Task<IUserMessage> SendEmbedAsync(EmbedBuilder embed) =>
-			await Context.Channel.SendMessageAsync(embed: embed.Build());
+			await Context.Channel.SendMessageAsync(embed: embed.Build()).ConfigureAwait(false);
 	}
 }
