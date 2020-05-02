@@ -4,8 +4,8 @@
 	{
 		private const int Major = 0;
 		private const int Minor = 4;
-		private const int Patch = 1;
-		private const int Hotfix = 2;
+		private const int Patch = 4;
+		private const int Hotfix = 1;
 
 #if (DEBUG)
 		public static ReleaseType ReleaseType = ReleaseType.Development;
