@@ -1,14 +1,18 @@
-using Axion.Core.Structures.Attributes;
+﻿using Axion.Core.Structures.Attributes;
 using Axion.Core.Structures.Miscellaneous;
 using Axion.Core.Utilities;
-using Discord;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Qmmands;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Discord;
+using System.Diagnostics;
+using System.Collections;
 
 namespace Axion.Commands.Modules
 {
@@ -18,10 +22,11 @@ namespace Axion.Commands.Modules
 	{
 		[Command("eval", "$", "roslyn")]
 		[Description("Evaluates C# code.")]
+		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
 		[RequireOwner]
 		public async Task EvalAsync([Remainder] string text)
 		{
-			var match = Regex.Match(text, @"(?<=```(csharp\n)?|\n?)(.*)(?=```)");
+			var match = Regex.Match(text, @"(?<=```(csharp\n)?(\n)?)(.*)(?=\n?```)");
 			if (!match.Success)
 				throw new ArgumentException("You need to wrap the code into a code block.");
 
@@ -55,25 +60,41 @@ namespace Axion.Commands.Modules
 						"Axion.Core.Utilities",
 						"Axion.Core.Services")
 					.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
-					.Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
+						.Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 
-				var script = CSharpScript.Create(code, options, typeof(RoslynVariables));
-				script.Compile();
+				var sw = Stopwatch.StartNew();
+				var result = await CSharpScript.EvaluateAsync(code, options, globals, typeof(RoslynVariables)).ConfigureAwait(false);
+				sw.Stop();
 
-				var result = await script.RunAsync(globals).ConfigureAwait(false);
-
-				if (result?.ReturnValue != null && !string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
+				if (result is null)
 				{
-					await evalMessage.ModifyAsync(props =>
-					{
-						props.Embed = CreateDefaultEmbed($"```json\n{result.ReturnValue.ToString().Escape('`', true)}\n```").Build();
-					});
+					await evalMessage.DeleteAsync();
+					await Context.Message.AddReactionAsync(new Emoji("✅"));
 				}
 				else
 				{
+					var jsonSettings = new JsonSerializerSettings()
+					{
+						Formatting = Formatting.Indented,
+						MaxDepth = 2,
+						NullValueHandling = NullValueHandling.Include,
+						PreserveReferencesHandling = PreserveReferencesHandling.None,
+						ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+					};
+
+					var res = result switch
+					{
+						string str => str,
+						IEnumerable enumerable => string.Join("\n", enumerable.Cast<object>().Select(x => $"{x}")),
+						_ => JsonConvert.SerializeObject(result, jsonSettings)
+					};
+
 					await evalMessage.ModifyAsync(props =>
 					{
-						props.Embed = CreateDefaultEmbed("No result was returned.").Build();
+						props.Embed = CreateDefaultEmbed(Format.Code(res, "json"))
+							.AddField("Took", $"{sw.Elapsed.ToHumanDuration()}", true)
+							.AddField("Returned", $"{result.GetType()}", true)
+							.Build();
 					});
 				}
 			}

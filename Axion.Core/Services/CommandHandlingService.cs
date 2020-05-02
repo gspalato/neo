@@ -70,8 +70,39 @@ namespace Axion.Core.Services
 				return;
 
 			var result = await _commandService.ExecuteAsync(output, new AxionContext(msg, _services));
-			if (result is FailedResult failedResult)
-				await msg.Channel.SendMessageAsync(failedResult.Reason);
+
+			switch (result)
+			{
+				default:
+				case CommandNotFoundResult notFound:
+					break;
+
+				case TypeParseFailedResult typeParse:
+					{
+						var name = typeParse.Parameter.Name;
+						var type = typeParse.Parameter.Type.Name;
+						var given = typeParse.Value;
+
+						await m.Channel.SendMessageAsync(embed: new EmbedBuilder()
+							.WithTitle("⚠️ Huh?")
+							.WithColor(Color.Orange)
+							.WithDescription($"Wrong type given at `{name}`.\nExpected {type}, got\n{Format.Quote(given)}")
+							.Build());
+					}
+					break;
+
+				case ParameterChecksFailedResult parameterChecks:
+					{
+						// need 2 handle this xd
+					}
+					break;
+
+				case OverloadsFailedResult overloads:
+					{
+						// need 2 handle this xd
+					}
+					break;
+			}
 		}
 	}
 }
