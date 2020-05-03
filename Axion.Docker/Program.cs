@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Axion.Docker
 {
-	internal static class AxionDocker
+	internal static class Program
 	{
 		private static void Main()
 		{
