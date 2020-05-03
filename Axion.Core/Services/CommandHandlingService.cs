@@ -1,5 +1,4 @@
 ﻿using Axion.Commands;
-using Axion.Core.Structures.Exceptions;
 using Axion.Core.Structures.TypeParsers;
 using Discord;
 using Discord.WebSocket;
@@ -43,14 +42,6 @@ namespace Axion.Core.Services
 		{
 			_commandService.CommandExecutionFailed += async (args) =>
 			{
-				if (args.Result.Exception is BaseCommandException exception)
-				{
-					if (!(args.Context is AxionContext context))
-						return;
-
-					await context.ReplyAsync(exception.Content, exception.Embed);
-				}
-
 				_loggingService.Error(args.Result.Reason, args.Result.Exception);
 				await Task.Delay(0);
 			};

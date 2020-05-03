@@ -16,7 +16,7 @@ namespace Axion.Core.Structures.Interactivity
 
 		protected bool _isDisposed = false;
 		protected readonly DiscordSocketClient _client;
-		protected TaskCompletionSource<T> _tcs = new TaskCompletionSource<T>();
+		protected readonly TaskCompletionSource<T> _tcs = new TaskCompletionSource<T>();
 
 		public EventAwaiter(DiscordSocketClient client, Func<T, bool> filter)
 		{
