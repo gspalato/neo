@@ -39,14 +39,14 @@ namespace Axion.Commands
 			.WithAuthor(User)
 			.WithDescription(content ?? string.Empty);
 
+		public async Task<IUserMessage> ReplyAsync(string content, Embed embed) =>
+			await Channel.SendMessageAsync(content, embed: embed);
 		public async Task<IUserMessage> ReplyAsync(string content) =>
-			await Channel.SendMessageAsync(content);
-
+			await ReplyAsync(content, null);
 		public async Task<IUserMessage> ReplyAsync(Embed embed) =>
-			await Channel.SendMessageAsync(embed: embed);
-
+			await ReplyAsync("", embed);
 		public async Task<IUserMessage> ReplyAsync(EmbedBuilder embed) =>
-			await ReplyAsync(embed.Build());
+			await ReplyAsync("", embed.Build());
 
 		public Task ReactAsync(string unicode) =>
 			Message.AddReactionAsync(new Emoji(unicode));

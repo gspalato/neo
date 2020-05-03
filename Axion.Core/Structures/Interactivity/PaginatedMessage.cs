@@ -11,11 +11,11 @@ namespace Axion.Core.Structures.Interactivity
 
 		private readonly DiscordSocketClient _client;
 
-		protected IUserMessage Message;
-		public readonly IUser Author;
-		public readonly Embed[] Pages;
+		public IUser Author { get; private set; }
+		public IUserMessage Message { get; private set; }
+		public Embed[] Pages { get; private set; }
 
-		private int _currentPage = 1;
+		public int CurrentPage { get; private set; } = 0;
 		private int _millisecondsTimeout;
 
 		public PaginatedMessage(DiscordSocketClient client, IUser author, Embed[] pages, int millisecondsTimeout = 180000)
@@ -78,14 +78,14 @@ namespace Axion.Core.Structures.Interactivity
 			if (reaction.UserId != Author.Id)
 				return;
 
-				if (!me.GetPermissions(textChannel).ManageMessages)
+			if (!me.GetPermissions(textChannel).ManageMessages)
 				throw new Exception("I lack permissions to manage messages.");
 
 			switch (reaction.Emote.Name)
 			{
 				case "⏪":
 					{
-						_currentPage = 0;
+						CurrentPage = 0;
 						await Message.ModifyAsync(props =>
 						{
 							props.Embed = Pages[0];
@@ -97,16 +97,16 @@ namespace Axion.Core.Structures.Interactivity
 
 				case "◀️":
 					{
-						if (_currentPage <= 0)
+						if (CurrentPage <= 0)
 						{
 							await Message.RemoveReactionAsync(reaction.Emote, Author);
 							return;
 						}
 
-						--_currentPage;
+						--CurrentPage;
 						await Message.ModifyAsync(props =>
 						{
-							props.Embed = Pages[_currentPage];
+							props.Embed = Pages[CurrentPage];
 						});
 
 						await Message.RemoveReactionAsync(reaction.Emote, Author);
@@ -122,16 +122,16 @@ namespace Axion.Core.Structures.Interactivity
 
 				case "▶️":
 					{
-						if (_currentPage >= Pages.Length - 1)
+						if (CurrentPage >= Pages.Length - 1)
 						{
 							await Message.RemoveReactionAsync(reaction.Emote, Author);
 							return;
 						}
 
-						++_currentPage;
+						++CurrentPage;
 						await Message.ModifyAsync(props =>
 						{
-							props.Embed = Pages[_currentPage];
+							props.Embed = Pages[CurrentPage];
 						});
 
 						await Message.RemoveReactionAsync(reaction.Emote, Author);
@@ -140,13 +140,13 @@ namespace Axion.Core.Structures.Interactivity
 
 				case "⏩":
 					{
-						if (_currentPage == Pages.Length - 1)
+						if (CurrentPage == Pages.Length - 1)
 							return;
 
-						_currentPage = Pages.Length - 1;
+						CurrentPage = Pages.Length - 1;
 						await Message.ModifyAsync(props =>
 						{
-							props.Embed = Pages[_currentPage];
+							props.Embed = Pages[CurrentPage];
 						});
 
 						await Message.RemoveReactionAsync(reaction.Emote, Author);

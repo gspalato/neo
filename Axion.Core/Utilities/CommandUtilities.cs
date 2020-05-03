@@ -20,7 +20,7 @@ namespace Axion.Core.Utilities
 				if (elapsed >= 5)
 					break;
 
-				s.Append($"{++elapsed}. [{track.Title.TruncateAndEscape()}]({track.Url})");
+				s.Append($"{++elapsed}. [{track.Title.TruncateAndSanitize()}]({track.Url})");
 				s.Append("\n");
 			}
 

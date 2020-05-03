@@ -5,45 +5,26 @@ using System.Threading.Tasks;
 
 namespace Axion.Core.Structures.Interactivity
 {
-	public class ReactionAwaiter : IDisposable
+	public class ReactionAwaiter : EventAwaiter<SocketReaction>, IEventAwaiter<SocketReaction>
 	{
-		protected bool isDisposed = false;
-
-		private readonly DiscordSocketClient _client;
-
 		public readonly IUserMessage Message;
-		public readonly Func<SocketReaction, bool> Filter;
-
-		private TaskCompletionSource<SocketReaction> _tcs;
 
 		private bool _shouldDeleteReaction;
 
 		public ReactionAwaiter(DiscordSocketClient client,
 			IUserMessage message, Func<SocketReaction, bool> filter,
-			bool shouldDeleteReaction = true)
+			bool shouldDeleteReaction = true) : base(client, filter)
 		{
-			_client = client;
-
 			Message = message;
-			Filter = filter;
-
-			_tcs = new TaskCompletionSource<SocketReaction>();
 
 			_shouldDeleteReaction = shouldDeleteReaction;
 		}
 
-		public Task<SocketReaction> Wait(int millisecondsTimeout = 180000)
+		public override Task<SocketReaction> Wait(int millisecondsTimeout = 180000)
 		{
 			_client.ReactionAdded += HandleReaction;
 
-			_ = Task.Run(async () =>
-			{
-				var finished = await Task.WhenAny(_tcs.Task, Task.Delay(millisecondsTimeout));
-				if (finished != _tcs.Task)
-					_tcs.SetCanceled();
-			});
-
-			return _tcs.Task;
+			return base.Wait(millisecondsTimeout);
 		}
 
 		private async Task HandleReaction(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
@@ -51,11 +32,13 @@ namespace Axion.Core.Structures.Interactivity
 			if (!(channel is ITextChannel textChannel))
 				return;
 
-			var message = cache.HasValue
-				? cache.Value
-				: reaction.Message.IsSpecified
-					? reaction.Message.Value
-					: await channel.GetMessageAsync(reaction.MessageId);
+			IUserMessage message;
+			if (cache.HasValue)
+				message = cache.Value;
+			else if (reaction.Message.IsSpecified)
+				message = reaction.Message.Value;
+			else
+				message = await channel.GetMessageAsync(reaction.MessageId) as IUserMessage;
 
 			var me = await textChannel.Guild.GetCurrentUserAsync();
 			if (reaction.UserId == me.Id)
@@ -74,10 +57,10 @@ namespace Axion.Core.Structures.Interactivity
 			}
 		}
 
-		public void Dispose()
+		public override void Dispose()
 		{
 			_client.ReactionAdded -= HandleReaction;
-			isDisposed = true;
+			base.Dispose();
 		}
 
 		~ReactionAwaiter()

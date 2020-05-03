@@ -1,4 +1,5 @@
 ﻿using Axion.Commands;
+using Axion.Core.Structures.Exceptions;
 using Axion.Core.Structures.TypeParsers;
 using Discord;
 using Discord.WebSocket;
@@ -42,8 +43,16 @@ namespace Axion.Core.Services
 		{
 			_commandService.CommandExecutionFailed += async (args) =>
 			{
+				if (args.Result.Exception is BaseCommandException exception)
+				{
+					if (!(args.Context is AxionContext context))
+						return;
+
+					await context.ReplyAsync(exception.Content, exception.Embed);
+				}
+
 				_loggingService.Error(args.Result.Reason, args.Result.Exception);
-				await Task.Run(() => { });
+				await Task.Delay(0);
 			};
 
 			_client.MessageReceived += OnMessageReceivedAsync;
@@ -91,7 +100,8 @@ namespace Axion.Core.Services
 						await m.Channel.SendMessageAsync(embed: new EmbedBuilder()
 							.WithTitle("⚠️ Huh?")
 							.WithColor(Color.Orange)
-							.WithDescription($"Wrong type given at `{name}`.\nExpected {type}, got\n{Format.Quote(given)}")
+							.WithDescription(
+								$"Wrong type given at `{name}`.\nExpected {type}, got\n{Format.Quote(Format.Sanitize(given))}")
 							.WithFooter(footer)
 							.WithCurrentTimestamp()
 							.Build());

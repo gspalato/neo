@@ -21,7 +21,7 @@ namespace Axion.Commands.Modules
 		public async Task BanAsync(IGuildUser member, [Remainder] string reason = "Unspecified reason.")
 		{
 			var msg = await SendDefaultEmbedAsync("Confirmation",
-				$"Are you sure you want to ban {member.Mention} for `{reason.TruncateAndEscape()}`");
+				$"Are you sure you want to ban {member.Mention} for `{reason.TruncateAndSanitize()}`");
 
 			_ = msg.AddReactionsAsync(new[] { new Emoji("✅"), new Emoji("❌") });
 
@@ -46,7 +46,7 @@ namespace Axion.Commands.Modules
 						{
 							await member.BanAsync(reason: reason);
 
-							var embed = CreateOkEmbed("Success", $"Banned {member.Mention} for `{reason.TruncateAndEscape()}`");
+							var embed = CreateOkEmbed("Success", $"Banned {member.Mention} for `{reason.TruncateAndSanitize()}`");
 							await msg.ModifyAsync(props =>
 								props.Embed = embed.Build());
 						}
@@ -78,7 +78,7 @@ namespace Axion.Commands.Modules
 		public async Task KickAsync(IGuildUser member, [Remainder] string reason = "Unspecified reason.")
 		{
 			var msg = await SendDefaultEmbedAsync("Confirmation",
-				$"Are you sure you want to kick {member.Mention} for `{reason.TruncateAndEscape()}`");
+				$"Are you sure you want to kick {member.Mention} for `{reason.TruncateAndSanitize()}`");
 
 			_ = msg.AddReactionsAsync(new[] { new Emoji("✅"), new Emoji("❌") });
 
@@ -103,7 +103,7 @@ namespace Axion.Commands.Modules
 						{
 							await member.KickAsync(reason: reason);
 
-							var embed = CreateOkEmbed("Success", $"Kicked {member.Mention} for `{reason.TruncateAndEscape()}`");
+							var embed = CreateOkEmbed("Success", $"Kicked {member.Mention} for `{reason.TruncateAndSanitize()}`");
 							await msg.ModifyAsync(props =>
 								props.Embed = embed.Build());
 						}
@@ -150,15 +150,15 @@ namespace Axion.Commands.Modules
 			if (!(target is SocketGuildUser member))
 				return;
 
-			var escapedUsername = member.Username.Escape();
-			var escapedNickname = member.Nickname?.Escape();
+			var escapedUsername = Format.Sanitize(member.Username);
+			var escapedNickname = Format.Sanitize(member.Nickname) ?? null;
 
 			var totalName = $"{escapedUsername} {(escapedNickname is null ? "" : $"({escapedNickname})")}";
 
 			var rolesList =
 				from role in member.Roles
 				orderby role.Position descending
-				select $"`{role.Name.Escape()}`";
+				select $"`{Format.Sanitize(role.Name)}`";
 
 			var embed = new EmbedBuilder()
 				.WithAuthor(member.Username + "#" + member.Discriminator, member.GetAvatarUrl())

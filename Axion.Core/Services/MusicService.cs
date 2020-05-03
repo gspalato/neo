@@ -85,7 +85,7 @@ namespace Axion.Core.Services
 			var embed = new EmbedBuilder()
 				.WithTitle(":notes: Now Playing")
 				.WithDefaultColor()
-				.WithDescription($"**[{track.Title.TruncateAndEscape()}]({track.Url})**");
+				.WithDescription($"**[{track.Title.TruncateAndSanitize()}]({track.Url})**");
 
 			await args.Player.TextChannel.SendMessageAsync(embed: embed.Build())
 				.ConfigureAwait(false);

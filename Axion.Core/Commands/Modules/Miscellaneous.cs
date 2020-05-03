@@ -30,7 +30,7 @@ namespace Axion.Commands.Modules
 		public async Task HelpAsync()
 		{
 			var embed = new EmbedBuilder()
-				.WithDescription("owo")
+				.WithDescription("")
 				.WithInfo()
 				.WithFooter($"by hinoki_. v{Axion.Version.FullVersion}");
 

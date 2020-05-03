@@ -16,16 +16,5 @@ namespace Axion.Tests
 
             Assert.AreEqual(expected, actual);
         }
-
-        [TestMethod]
-        public void Escape()
-        {
-            var initial = "|*~`_";
-            var expected = @"\|\*\~\`\_";
-
-            var actual = initial.Escape();
-
-            Assert.AreEqual(expected, actual);
-        }
     }
 }

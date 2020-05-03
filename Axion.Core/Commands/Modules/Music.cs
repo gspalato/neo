@@ -5,6 +5,7 @@ using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,7 +15,6 @@ using Victoria.Enums;
 using Victoria.Interfaces;
 using Victoria.Responses.Rest;
 using Utils = Axion.Core.Utilities;
-using System.Collections.Generic;
 
 namespace Axion.Commands.Modules
 {
@@ -41,7 +41,7 @@ namespace Axion.Commands.Modules
 
 			var voiceState = Context.User as IVoiceState;
 
-			if (voiceState?.VoiceChannel == null)
+			if (voiceState?.VoiceChannel is null)
 			{
 				await Context.ReplyAsync("You must be connected to a voice channel!");
 				return;
@@ -127,7 +127,7 @@ namespace Axion.Commands.Modules
 							foreach (var track in tracks)
 								player.Queue.Enqueue(track);
 
-							await SendDefaultEmbedAsync($"Queued **{search.Playlist.Name.TruncateAndEscape()}**");
+							await SendDefaultEmbedAsync($"Queued **{search.Playlist.Name.TruncateAndSanitize()}**");
 						}
 						else
 						{
@@ -138,8 +138,8 @@ namespace Axion.Commands.Modules
 								player.Queue.Enqueue(track);
 
 							await SendDefaultEmbedAsync(":notes: Now Playing",
-								$"**[{mainTrack.Title.TruncateAndEscape()}]({mainTrack.Url})**\n"
-								+ $"from playlist **{search.Playlist.Name.TruncateAndEscape()}**");
+								$"**[{mainTrack.Title.TruncateAndSanitize()}]({mainTrack.Url})**\n"
+								+ $"from playlist **{search.Playlist.Name.TruncateAndSanitize()}**");
 						}
 
 						break;
@@ -152,18 +152,18 @@ namespace Axion.Commands.Modules
 						if (track is null)
 							return;
 
-						if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused)
+						if (player.PlayerState is PlayerState.Playing || player.PlayerState is PlayerState.Paused)
 						{
 							player.Queue.Enqueue(track);
 
-							await SendDefaultEmbedAsync($"Queued **[{track.Title.TruncateAndEscape()}]({track.Url})**");
+							await SendDefaultEmbedAsync($"Queued **[{track.Title.TruncateAndSanitize()}]({track.Url})**");
 						}
 						else
 						{
 							await player.PlayAsync(track);
 
 							await SendDefaultEmbedAsync(":notes: Now Playing",
-								$"**[{track.Title.TruncateAndEscape()}]({track.Url})**");
+								$"**[{track.Title.TruncateAndSanitize()}]({track.Url})**");
 						}
 
 						break;
@@ -242,7 +242,7 @@ namespace Axion.Commands.Modules
 				return;
 			}
 
-			if (player.PlayerState == PlayerState.Stopped)
+			if (player.PlayerState is PlayerState.Stopped)
 			{
 				await SendDefaultEmbedAsync("The song's already stopped!");
 				return;
@@ -255,7 +255,7 @@ namespace Axion.Commands.Modules
 			}
 			catch (Exception exception)
 			{
-				await Context.ReplyAsync(exception.Message);
+				await Context.ReplyAsync(exception.Message, null);
 			}
 		}
 
@@ -271,7 +271,7 @@ namespace Axion.Commands.Modules
 			}
 
 			var voiceChannel = Context.User.VoiceChannel ?? player.VoiceChannel;
-			if (voiceChannel == null)
+			if (voiceChannel is null)
 			{
 				await SendDefaultEmbedAsync("I'm not connected to a voice channel.");
 				return;
@@ -283,7 +283,7 @@ namespace Axion.Commands.Modules
 			}
 			catch (Exception exception)
 			{
-				await Context.ReplyAsync(exception.Message);
+				await Context.ReplyAsync(exception.Message, null);
 			}
 		}
 
@@ -310,7 +310,7 @@ namespace Axion.Commands.Modules
 				var currentTrack = await player.SkipAsync();
 
 				await SendDefaultEmbedAsync(":notes: Now Playing",
-					$"**[{currentTrack.Title.TruncateAndEscape()}]({currentTrack.Url})**");
+					$"**[{currentTrack.Title.TruncateAndSanitize()}]({currentTrack.Url})**");
 			}
 			catch (Exception exception)
 			{
@@ -468,7 +468,7 @@ namespace Axion.Commands.Modules
 						if (!(chunk.ElementAt(trackNumber) is LavaTrack track))
 							return;
 
-						description.Append($"{++totalTrackNumber}. [**{track.Title.TruncateAndEscape()}**]({track.Url})\n");
+						description.Append($"{++totalTrackNumber}. [**{track.Title.TruncateAndSanitize()}**]({track.Url})\n");
 					}
 
 					var embed = CreateDefaultEmbed($":musical_score:  Queue | Page {chunkNumber + 1}/{chunks.Count()}",
@@ -534,7 +534,7 @@ namespace Axion.Commands.Modules
 			var elapsedTime = track.Position.ToHumanDuration();
 			var remainingTime = (track.Duration - track.Position).ToHumanDuration();
 
-			var description = $"**[{track.Title.TruncateAndEscape()}]({track.Url})**"
+			var description = $"**[{track.Title.TruncateAndSanitize()}]({track.Url})**"
 					+ $"\n`{remainingTime}` remaining.\n\n"
 					+ firstTracks;
 
