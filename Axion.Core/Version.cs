@@ -1,4 +1,4 @@
-﻿namespace Axion
+﻿namespace Axion.Core
 {
 	public static class Version
 	{

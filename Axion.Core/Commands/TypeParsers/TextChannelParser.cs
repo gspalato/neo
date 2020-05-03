@@ -1,5 +1,4 @@
-﻿using Axion.Commands;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Qmmands;
 using System;
@@ -8,10 +7,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Axion.Core.Structures.TypeParsers
+namespace Axion.Commands.TypeParsers
 {
 	public class TextChannelParser : BaseTypeParser<ITextChannel>
 	{
+		public static readonly TextChannelParser Instance = new TextChannelParser();
+
+		private TextChannelParser() { }
+
 		private readonly Regex _channelRegex = new Regex(@"^<#(\d+)>$", RegexOptions.ECMAScript | RegexOptions.Compiled);
 
 		public override async ValueTask<TypeParserResult<ITextChannel>> ParseAsync(Parameter parameter, string value,

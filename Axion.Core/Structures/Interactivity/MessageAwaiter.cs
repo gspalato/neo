@@ -17,12 +17,12 @@ namespace Axion.Core.Structures.Interactivity
 
 		public override Task<IMessage> Wait(int millisecondsTimeout = 180000)
 		{
-			_client.MessageReceived += HandleMessage;
+			_client.MessageReceived += HandleEvent;
 
 			return base.Wait(millisecondsTimeout);
 		}
 
-		private Task HandleMessage(SocketMessage message)
+		private Task HandleEvent(SocketMessage message)
 		{
 			if (Filter(message))
 			{
@@ -35,7 +35,7 @@ namespace Axion.Core.Structures.Interactivity
 
 		public override void Dispose()
 		{
-			_client.MessageReceived -= HandleMessage;
+			_client.MessageReceived -= HandleEvent;
 			base.Dispose();
 		}
 

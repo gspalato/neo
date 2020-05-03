@@ -3,7 +3,7 @@ using Qmmands;
 using System;
 using System.Threading.Tasks;
 
-namespace Axion.Core.Structures.TypeParsers
+namespace Axion.Commands.TypeParsers
 {
 	public abstract class BaseTypeParser<T> : Qmmands.TypeParser<T>
 	{

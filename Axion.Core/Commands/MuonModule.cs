@@ -1,5 +1,5 @@
-﻿using Axion.Core.Utilities;
-using Axion.Core.Services;
+﻿using Axion.Core.Services;
+using Axion.Core.Utilities;
 using Discord;
 using Qmmands;
 using System.Threading.Tasks;

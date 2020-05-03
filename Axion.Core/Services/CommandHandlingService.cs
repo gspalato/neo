@@ -1,5 +1,6 @@
 ﻿using Axion.Commands;
-using Axion.Core.Structures.TypeParsers;
+using Axion.Commands.ArgumentParsers;
+using Axion.Commands.TypeParsers;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
@@ -33,6 +34,8 @@ namespace Axion.Core.Services
 			_services = services;
 
 			LinkEvents();
+
+			AddArgumentParsers();
 			AddTypeParsers();
 
 			_commandService.AddModules(Assembly.GetExecutingAssembly());
@@ -49,12 +52,17 @@ namespace Axion.Core.Services
 			_client.MessageReceived += OnMessageReceivedAsync;
 		}
 
+		private void AddArgumentParsers()
+		{
+			_commandService.AddArgumentParser(UnixArgumentParser.Instance);
+		}
+
 		private void AddTypeParsers()
 		{
-			_commandService.AddTypeParser(new GuildUserParser());
-			_commandService.AddTypeParser(new MessageParser());
-			_commandService.AddTypeParser(new TextChannelParser());
-			_commandService.AddTypeParser(new UserParser());
+			_commandService.AddTypeParser(GuildUserParser.Instance);
+			_commandService.AddTypeParser(MessageParser.Instance);
+			_commandService.AddTypeParser(TextChannelParser.Instance);
+			_commandService.AddTypeParser(UserParser.Instance);
 		}
 
 		private async Task OnMessageReceivedAsync(IMessage m)
@@ -75,7 +83,7 @@ namespace Axion.Core.Services
 			switch (result)
 			{
 				default:
-				case CommandNotFoundResult notFound:
+				case CommandNotFoundResult _:
 					break;
 
 				case TypeParseFailedResult typeParse:

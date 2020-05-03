@@ -13,7 +13,7 @@ namespace Axion.Core.Extensions
             channel.GetMessageAwaiter(client, filter).Wait();
 
         public static Task<IMessage> AwaitNextMessage(this ITextChannel channel, DiscordSocketClient client) =>
-            channel.GetMessageAwaiter(client, m => true).Wait();
+            channel.GetMessageAwaiter(client, m => m.Channel.Id == channel.Id).Wait();
 
         public static MessageAwaiter GetMessageAwaiter(this ITextChannel channel, DiscordSocketClient client,
             Func<IMessage, bool> filter) =>

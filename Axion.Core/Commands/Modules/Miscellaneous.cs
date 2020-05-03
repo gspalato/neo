@@ -18,7 +18,7 @@ namespace Axion.Commands.Modules
 	[Description("Special snowflakes that don't fit on other groups.")]
 	public sealed class Miscellaneous : AxionModule
 	{
-		private IDocumentationService documentationService;
+		private readonly IDocumentationService documentationService;
 
 		public Miscellaneous(IServiceProvider services)
 		{
@@ -32,9 +32,9 @@ namespace Axion.Commands.Modules
 			var embed = new EmbedBuilder()
 				.WithDescription("")
 				.WithInfo()
-				.WithFooter($"by hinoki_. v{Axion.Version.FullVersion}");
+				.WithFooter($"by hinoki_. v{Axion.Core.Version.FullVersion}");
 
-			foreach (Module m in CommandService.GetAllModules())
+			foreach (var m in CommandService.GetAllModules())
 			{
 				var attribute = m.Attributes
 					.First(att => att is CategoryAttribute) as CategoryAttribute;
@@ -43,9 +43,6 @@ namespace Axion.Commands.Modules
 				var commands = m.Commands
 					.OrderBy(n => n)
 					.Select(c => $"`{c.Name}`");
-
-				if (commands.Any(x => x is null))
-					return;
 
 				embed.AddField(category, string.Join(", ", commands.Distinct().ToArray()));
 			}
@@ -103,11 +100,14 @@ namespace Axion.Commands.Modules
 			var msg = await Context.ReplyAsync(content: "Measuring...");
 			sw.Stop();
 
+			var uptime = DateTime.UtcNow - Process.GetCurrentProcess().StartTime.ToUniversalTime();
+
 			var embed = new EmbedBuilder()
 				.WithTitle("🏓 Pong!")
 				.WithInfo()
-				.AddField("API Latency", "```" + Context.Client.Latency.ToString() + "ms```", true)
-				.AddField("Bot Latency", "```" + sw.ElapsedMilliseconds.ToString() + "ms```", true);
+				.AddField("API Latency", Format.Code(Context.Client.Latency.ToString() + "ms", ""), true)
+				.AddField("Bot Latency", Format.Code(sw.ElapsedMilliseconds.ToString() + "ms", ""), true)
+				.AddField("Uptime", Format.Code(uptime.ToHumanDuration(), ""), true);
 
 			await msg.ModifyAsync(props =>
 			{
@@ -187,27 +187,30 @@ namespace Axion.Commands.Modules
 
 			var embedCount = 0;
 
+			var buildEmbed = new EmbedBuilder()
+				.WithInfo();
+
 			var stringBuild = new StringBuilder();
 
 			foreach (var res in response.Results.Take(3))
 			{
 				embedCount++;
-				stringBuild.AppendLine($"> **[{res.ItemKind}: {res.DisplayName}]({res.Url})**");
+				stringBuild.AppendLine($"\u2794 **[{res.ItemKind}: {res.DisplayName}]({res.Url})**");
 				stringBuild.AppendLine($"{res.Description}");
 				stringBuild.AppendLine();
 
 				if (embedCount == 3)
 				{
 					stringBuild.Append(
-						$"{embedCount}/{response.Results.Count} results shown ~ [Click here for more results](https://docs.microsoft.com/dotnet/api/?term={term})"
+						$"{embedCount}/{response.Results.Count} results shown | "
+						+ "[Click here for more results](https://docs.microsoft.com/dotnet/api/?term={term})"
 					);
 				}
 			}
-			var buildEmbed = new EmbedBuilder()
-				.WithDescription(stringBuild.ToString())
-				.WithInfo();
 
-			var message = await SendEmbedAsync(buildEmbed);
+			buildEmbed.WithDescription(stringBuild.ToString());
+
+			await SendEmbedAsync(buildEmbed);
 		}
 	}
 }

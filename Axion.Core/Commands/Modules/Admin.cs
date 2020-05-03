@@ -1,18 +1,19 @@
-﻿using Axion.Core.Structures.Attributes;
+﻿using Axion.Core.Extensions;
+using Axion.Core.Structures.Attributes;
 using Axion.Core.Structures.Miscellaneous;
 using Axion.Core.Utilities;
+using Discord;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Newtonsoft.Json;
 using Qmmands;
 using System;
-using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Discord;
-using System.Diagnostics;
-using System.Collections;
 
 namespace Axion.Commands.Modules
 {
@@ -86,26 +87,92 @@ namespace Axion.Commands.Modules
 					{
 						string str => str,
 						IEnumerable enumerable => string.Join("\n", enumerable.Cast<object>().Select(x => $"{x}")),
-						_ => JsonConvert.SerializeObject(result, jsonSettings)
+						_ => SerializeObject(result)
 					};
 
 					await evalMessage.ModifyAsync(props =>
 					{
-						props.Embed = CreateDefaultEmbed(Format.Code(res, "json"))
-							.AddField("Took", $"{sw.Elapsed.ToHumanDuration()}", true)
-							.AddField("Returned", $"{result.GetType()}", true)
+						props.Embed = CreateDefaultEmbed(Format.Code(code.EscapeCodeblock(), "csharp"))
+							.AddField($"Result: {result.GetType().Name}", Format.Code(res.EscapeCodeblock(), "js"))
+							.WithFooter(new EmbedFooterBuilder()
+								.WithText($"Took {sw.Elapsed.ToHumanDuration()} | React with ❌ to delete."))
 							.Build();
 					});
+
+					var reactionAwaiter = evalMessage.AwaitReaction(Context.Client, (r) =>
+						r.UserId == Context.Message.Author.Id && r.Emote.Name == "❌");
+					var reaction = await reactionAwaiter;
+
+					if (!reactionAwaiter.IsCompleted || reactionAwaiter.IsCanceled)
+						return;
+
+					if (reaction.Emote.Name == "❌")
+						await evalMessage.DeleteAsync();
 				}
 			}
 			catch (Exception ex)
 			{
 				var error = string.Concat("**", ex.GetType().ToString(), "**: ", ex.Message);
 				await evalMessage.ModifyAsync(props =>
-				{
-					props.Embed = CreateErrorEmbed(error).Build();
-				});
+					props.Embed = CreateErrorEmbed($"{error}\n{ex.StackTrace}").Build());
 			}
+		}
+
+		private string SerializeObject(object obj, bool serializeInner = true)
+		{
+			var type = obj.GetType();
+
+			if (type.IsPrimitive)
+				return obj.ToString();
+			else if (obj is string)
+				return $"\"{obj.ToString().Replace("\n", @"\n")}\"";
+			else if (obj is decimal)
+				return obj.ToString();
+
+			static string ReplaceIndex(string s)
+			{
+				var indexed = Regex.Match(s, @"(?<=([a-zA-Z]+)`)([0-9]+)");
+				if (indexed.Success)
+					return s.ReplaceAt(indexed.Index - 1, indexed.Length + 1, $"[{indexed.Value}]");
+				else
+					return s;
+			}
+
+			if (!serializeInner)
+				return $"[{ReplaceIndex(type.Name)}]";
+
+			var props = type.GetProperties();
+
+			var builder = new StringBuilder();
+			builder.AppendLine($"{type.Name} {{");
+
+			int total = 0;
+			foreach (var prop in props)
+			{
+				if (total >= 10)
+				{
+					builder.AppendLine("\t...");
+					break;
+				}
+
+				var value = prop.GetValue(obj);
+				string serialized;
+				if (value != null)
+					serialized = SerializeObject(value, false);
+				else
+					serialized = null;
+
+				string typeName = ReplaceIndex(prop.PropertyType.Name);
+
+				builder.Append($"\t<{typeName}> {prop.Name}");
+				builder.Append($": {serialized ?? "null"}\n");
+
+				total++;
+			}
+
+			builder.Append("}");
+
+			return builder.ToString();
 		}
 	}
 }

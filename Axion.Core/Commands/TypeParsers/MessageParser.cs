@@ -1,15 +1,18 @@
-﻿using Axion.Commands;
-using Discord;
+﻿using Discord;
 using Qmmands;
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Axion.Core.Structures.TypeParsers
+namespace Axion.Commands.TypeParsers
 {
     public class MessageParser : BaseTypeParser<IMessage>
     {
+        public static readonly MessageParser Instance = new MessageParser();
+
+        private MessageParser() { }
+
         private readonly Regex _messagePathRegex =
             new Regex(@"^\/channels\/(?<guild>(?:\d+|@me))\/(?<channel>\d+)\/(?<message>\d+)\/?$",
                 RegexOptions.ECMAScript | RegexOptions.Compiled);

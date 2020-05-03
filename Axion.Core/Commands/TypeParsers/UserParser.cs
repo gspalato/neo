@@ -1,5 +1,4 @@
-﻿using Axion.Commands;
-using Discord;
+﻿using Discord;
 using Qmmands;
 using System;
 using System.Globalization;
@@ -7,10 +6,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Axion.Core.Structures.TypeParsers
+namespace Axion.Commands.TypeParsers
 {
     public class UserParser : BaseTypeParser<IUser>
     {
+        public static readonly UserParser Instance = new UserParser();
+
+        private UserParser() { }
+
         private readonly Regex _userRegex = new Regex(@"^<@\!?(\d+?)>$", RegexOptions.ECMAScript | RegexOptions.Compiled);
 
         public override ValueTask<TypeParserResult<IUser>> ParseAsync(Parameter parameter, string value,

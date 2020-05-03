@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Axion
+namespace Axion.Core
 {
 	public interface IApp : IHostedService
 	{

@@ -6,15 +6,17 @@ namespace Axion.Core.Structures.Interactivity
 {
 	public interface IEventAwaiter<T> : IDisposable
 	{
+		Func<T, bool> Filter { get; }
+
 		Task<T> Wait(int millisecondsTimeout = 180000);
 		new void Dispose();
 	}
 
-	public class EventAwaiter<T> : IEventAwaiter<T>
+	public abstract class EventAwaiter<T> : IEventAwaiter<T>
 	{
 		public Func<T, bool> Filter { get; private set; }
 
-		protected bool _isDisposed = false;
+		private bool _isDisposed = false;
 		protected readonly DiscordSocketClient _client;
 		protected readonly TaskCompletionSource<T> _tcs = new TaskCompletionSource<T>();
 
@@ -31,7 +33,10 @@ namespace Axion.Core.Structures.Interactivity
 			{
 				var finished = await Task.WhenAny(_tcs.Task, Task.Delay(millisecondsTimeout));
 				if (finished != _tcs.Task)
+				{
 					_tcs.SetCanceled();
+					Dispose();
+				}
 			});
 
 			return _tcs.Task;

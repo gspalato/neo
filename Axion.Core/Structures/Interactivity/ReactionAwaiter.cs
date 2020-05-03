@@ -22,12 +22,12 @@ namespace Axion.Core.Structures.Interactivity
 
 		public override Task<SocketReaction> Wait(int millisecondsTimeout = 180000)
 		{
-			_client.ReactionAdded += HandleReaction;
+			_client.ReactionAdded += HandleEvent;
 
 			return base.Wait(millisecondsTimeout);
 		}
 
-		private async Task HandleReaction(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+		private async Task HandleEvent(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
 		{
 			if (!(channel is ITextChannel textChannel))
 				return;
@@ -59,7 +59,7 @@ namespace Axion.Core.Structures.Interactivity
 
 		public override void Dispose()
 		{
-			_client.ReactionAdded -= HandleReaction;
+			_client.ReactionAdded -= HandleEvent;
 			base.Dispose();
 		}
 
