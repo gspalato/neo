@@ -7,7 +7,7 @@
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <StartupObject>Axion.Program</StartupObject>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Canducci.MongoDB.Repository.Core" Version="1.1.1" />
     <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />

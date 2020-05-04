@@ -1,13 +1,14 @@
-﻿using Axion.Core.Services;
+﻿using System;
+using Axion.Core.Repositories;
+using Axion.Core.Services;
 using Canducci.MongoDB.Repository.Connection;
-using Discord.WebSocket;
-using Qmmands;
-using System;
-using Microsoft.Extensions.DependencyInjection;
-using Victoria;
 using Discord;
-using Microsoft.Extensions.Hosting;
+using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Qmmands;
+using Victoria;
 
 namespace Axion.Core.Extensions
 {

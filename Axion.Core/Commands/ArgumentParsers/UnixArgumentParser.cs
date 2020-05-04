@@ -75,7 +75,8 @@ namespace Axion.Commands.ArgumentParsers
                         break;
 
                     // If the argument name is interrupted,
-                    // check for a boolean (making sure not to overwrite a default value); otherwise return error.
+                    // check for a boolean (making sure not to overwrite a default value); 
+                    // otherwise return error.
                     case ' ' when state == UnixParserState.ArgumentName:
                         {
                             currentParameter = GetParameter(context, parameterName.ToString());
@@ -140,17 +141,20 @@ namespace Axion.Commands.ArgumentParsers
                             parameterName.Append(token);
                             break;
                         }
+
                         if (state == UnixParserState.ArgumentValue)
                         {
                             parameterValue.Append(token);
                             break;
                         }
+
                         break;
                 }
             }
 
             // Unclosed quote
-            if (inQuote) return UnixArgumentParserResult.UnclosedQuote(context, parameters, rawArguments.Length);
+            if (inQuote)
+                return UnixArgumentParserResult.UnclosedQuote(context, parameters, rawArguments.Length);
 
             foreach (var expectedParameter in context.Command.Parameters)
             {

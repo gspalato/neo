@@ -1,4 +1,4 @@
-﻿using Axion.Core.Utilities;
+﻿using Axion.Core.Extensions;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +26,9 @@ namespace Axion.Commands
 			Now = DateTimeOffset.UtcNow;
 			User = (IGuildUser)msg.Author;
 		}
+
+		public T GetService<T>() =>
+			this.ServiceProvider.GetRequiredService<T>();
 
 		public Embed CreateEmbed(string content) =>
 			new EmbedBuilder()

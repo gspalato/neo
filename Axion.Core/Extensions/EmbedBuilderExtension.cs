@@ -1,6 +1,6 @@
 ﻿using Discord;
 
-namespace Axion.Core.Utilities
+namespace Axion.Core.Extensions
 {
     public static class DiscordEmbedBuilderExtensions
     {

@@ -1,0 +1,8 @@
+.git/
+.github/
+.idea/
+.vs/
+.vscode/
+Axion.Docker/
+Axion.Tests/
+TestResults

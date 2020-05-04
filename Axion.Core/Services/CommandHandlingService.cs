@@ -1,10 +1,12 @@
 ﻿using Axion.Commands;
 using Axion.Commands.ArgumentParsers;
 using Axion.Commands.TypeParsers;
+using Axion.Core.Repositories;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -59,6 +61,7 @@ namespace Axion.Core.Services
 
 		private void AddTypeParsers()
 		{
+			_commandService.AddTypeParser(CommandTypeParser.Instance);
 			_commandService.AddTypeParser(GuildUserParser.Instance);
 			_commandService.AddTypeParser(MessageParser.Instance);
 			_commandService.AddTypeParser(TextChannelParser.Instance);
@@ -109,6 +112,9 @@ namespace Axion.Core.Services
 
 				case ParameterChecksFailedResult parameterChecks:
 					{
+						var failedCheck = parameterChecks.FailedChecks.First();
+						var reason = failedCheck.Result.Reason;
+
 						var footer = new EmbedFooterBuilder()
 							.WithText(m.Author.Username)
 							.WithIconUrl(m.Author.GetAvatarUrl());
@@ -116,7 +122,7 @@ namespace Axion.Core.Services
 						await m.Channel.SendMessageAsync(embed: new EmbedBuilder()
 							.WithTitle("⚠️ Huh?")
 							.WithColor(Color.Orange)
-							.WithDescription(parameterChecks.Reason)
+							.WithDescription(reason)
 							.WithFooter(footer)
 							.WithCurrentTimestamp()
 							.Build());

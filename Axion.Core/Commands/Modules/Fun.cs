@@ -1,5 +1,5 @@
+using Axion.Core.Extensions;
 using Axion.Core.Structures.Attributes;
-using Axion.Core.Utilities;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;

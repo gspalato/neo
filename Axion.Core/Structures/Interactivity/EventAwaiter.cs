@@ -16,7 +16,7 @@ namespace Axion.Core.Structures.Interactivity
 	{
 		public Func<T, bool> Filter { get; private set; }
 
-		private bool _isDisposed = false;
+		protected bool _isDisposed = false;
 		protected readonly DiscordSocketClient _client;
 		protected readonly TaskCompletionSource<T> _tcs = new TaskCompletionSource<T>();
 

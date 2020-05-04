@@ -33,7 +33,7 @@ namespace Axion.Commands.ArgumentParsers
             return new UnixArgumentParserResult(context, arguments);
         }
 
-        private UnixArgumentParserResult(CommandContext context, IReadOnlyDictionary<Parameter, object> arguments, UnixArgumentParseFailure failure, string reason, int? position, Parameter? parameter = null) : base(arguments)
+        private UnixArgumentParserResult(CommandContext context, IReadOnlyDictionary<Parameter, object> arguments, UnixArgumentParseFailure failure, string reason, int? position, Parameter parameter = null) : base(arguments)
         {
             _reason = reason;
             ParseFailure = failure;
@@ -51,13 +51,13 @@ namespace Axion.Commands.ArgumentParsers
             IsSuccessful = true;
         }
 
-        private readonly string? _reason;
+        private readonly string _reason;
 
         public override bool IsSuccessful { get; }
         public CommandContext Context { get; }
         public string RawArguments { get; }
         public UnixArgumentParseFailure? ParseFailure { get; }
-        public Parameter? Expected { get; }
+        public Parameter Expected { get; }
         public int? Position { get; }
 
         public override string Reason => _reason!;

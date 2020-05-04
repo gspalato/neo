@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using Discord;
+﻿using Discord;
+using System.Linq;
 
-namespace Axion.Core.Utilities
+namespace Axion.Core.Extensions
 {
 	public static class UserExtension
 	{

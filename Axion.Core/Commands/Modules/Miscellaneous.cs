@@ -1,6 +1,6 @@
-﻿using Axion.Core.Services;
+﻿using Axion.Core.Extensions;
+using Axion.Core.Services;
 using Axion.Core.Structures.Attributes;
-using Axion.Core.Utilities;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -34,27 +34,27 @@ namespace Axion.Commands.Modules
 				.WithInfo()
 				.WithFooter($"by hinoki_. v{Axion.Core.Version.FullVersion}");
 
-			foreach (var m in CommandService.GetAllModules())
+			var modules = CommandService.GetAllModules();
+
+			foreach (var m in modules)
 			{
 				var attribute = m.Attributes
 					.First(att => att is CategoryAttribute) as CategoryAttribute;
 
 				var category = attribute?.Category;
-				var commands = m.Commands
-					.OrderBy(n => n)
-					.Select(c => $"`{c.Name}`");
+				var commands = from cmd in m.Commands
+							   orderby cmd.Name ascending
+							   select $"`{cmd.Name}`";
 
-				embed.AddField(category, string.Join(", ", commands.Distinct().ToArray()));
+				embed.AddField(category, string.Join(", ", commands.Distinct()));
 			}
 
 			await SendEmbedAsync(embed);
 		}
 		[Command("help")]
 		[Description("What you're seeing right now.")]
-		public async Task HelpAsync(string name)
+		public async Task HelpAsync(Command cmd)
 		{
-			var cmd = CommandService.FindCommands(name).First().Command;
-
 			var aliases = cmd.Aliases
 				.OrderBy(alias => alias)
 				.Select(alias => $"`{alias}`");
@@ -117,7 +117,7 @@ namespace Axion.Commands.Modules
 		}
 
 		[Command("fw", "fullwidth")]
-		public async Task FullwidthAsync([Remainder] string text)
+		public async Task FullwidthAsync([Name("Text"), Remainder] string text)
 		{
 			var output = "";
 
@@ -164,10 +164,10 @@ namespace Axion.Commands.Modules
 		[Command("docs")]
 		[Description("Search for .NET Core documentation.")]
 		public async Task GetDocumentationAsync(
-			[Remainder] [Description("The term to search for in the documentation.")] string term)
+			[Name("Query"), Remainder, Description("The term to search for in the documentation.")] string query)
 		{
 			Regex reg = new Regex("^[0-9A-Za-z.<>]$");
-			foreach (char c in term)
+			foreach (char c in query)
 			{
 				if (!reg.IsMatch(c.ToString()))
 				{
@@ -177,7 +177,7 @@ namespace Axion.Commands.Modules
 				}
 			}
 
-			var response = await documentationService.GetDocumentationResultsAsync(term);
+			var response = await documentationService.GetDocumentationResultsAsync(query);
 
 			if (response.Count == 0)
 			{

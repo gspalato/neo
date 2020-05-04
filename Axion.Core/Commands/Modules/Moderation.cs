@@ -1,7 +1,6 @@
 ﻿using Axion.Commands.ArgumentParsers;
 using Axion.Core.Extensions;
 using Axion.Core.Structures.Attributes;
-using Axion.Core.Utilities;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
@@ -131,7 +130,7 @@ namespace Axion.Commands.Modules
 		}
 
 		[Command("purge", "clear")]
-		[Description("Clears a number of messages from a source message, in a certain direction.")]
+		[Description("Purge messages (with custom settings™️)")]
 		[RequireChannelUserPermissions(ChannelPermission.ManageMessages)]
 		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
 		[OverrideArgumentParser(typeof(UnixArgumentParser))]

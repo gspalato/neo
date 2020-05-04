@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Axion.Core.Utilities
+namespace Axion.Core.Extensions
 {
     public static class EnumerableExtensions
     {

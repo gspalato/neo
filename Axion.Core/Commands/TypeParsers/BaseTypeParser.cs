@@ -1,11 +1,10 @@
-﻿using Axion.Commands;
-using Qmmands;
+﻿using Qmmands;
 using System;
 using System.Threading.Tasks;
 
 namespace Axion.Commands.TypeParsers
 {
-	public abstract class BaseTypeParser<T> : Qmmands.TypeParser<T>
+	public abstract class BaseTypeParser<T> : TypeParser<T>
 	{
 		public ValueTask<TypeParserResult<T>> ParseAsync(Parameter parameter, string value,
 			CommandContext context, IServiceProvider provider)

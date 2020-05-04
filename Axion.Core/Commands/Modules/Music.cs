@@ -1,6 +1,6 @@
-﻿using Axion.Core.Structures.Attributes;
+﻿using Axion.Core.Extensions;
+using Axion.Core.Structures.Attributes;
 using Axion.Core.Structures.Interactivity;
-using Axion.Core.Utilities;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
@@ -442,7 +442,9 @@ namespace Axion.Commands.Modules
 					return;
 				}
 
-				IList<Embed> pages = new List<Embed>();
+				var pagedBuilder = new PaginatedMessageBuilder()
+					.WithDefaultButtons()
+					.WithResponsible(Context.Message.Author);
 
 				var queue = player.Queue.Items.Chunk(7);
 
@@ -474,10 +476,10 @@ namespace Axion.Commands.Modules
 					var embed = CreateDefaultEmbed($":musical_score:  Queue | Page {chunkNumber + 1}/{chunks.Count()}",
 						description.ToString());
 
-					pages.Add(embed.Build());
+					pagedBuilder.AddPage(embed);
 				}
 
-				var pagedMessage = new PaginatedMessage(Context.Client, Context.Message.Author, pages.ToArray());
+				var pagedMessage = pagedBuilder.Build(Context.Client);
 				await pagedMessage.Send(Context.Channel);
 			}
 			catch (Exception e)

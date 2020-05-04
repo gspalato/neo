@@ -3,13 +3,10 @@ using Axion.Core.Structures.Attributes;
 using Axion.Core.Structures.Miscellaneous;
 using Axion.Core.Utilities;
 using Discord;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
 using Newtonsoft.Json;
 using Qmmands;
 using System;
 using System.Collections;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -44,30 +41,18 @@ namespace Axion.Commands.Modules
 					Context = Context
 				};
 
-				var options = ScriptOptions.Default
-					.WithImports(
-						"System",
-						"System.Collections.Generic",
-						"System.Linq",
-						"System.Text",
-						"System.Threading.Tasks",
-						"Microsoft.Extensions.DependencyInjection",
-						"Discord",
-						"Discord.Net",
-						"Discord.Rest",
-						"Discord.WebSocket",
-						"Axion",
-						"Axion.Core.Structures",
-						"Axion.Core.Utilities",
-						"Axion.Core.Services")
-					.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
-						.Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 
-				var sw = Stopwatch.StartNew();
-				var result = await CSharpScript.EvaluateAsync(code, options, globals, typeof(RoslynVariables)).ConfigureAwait(false);
-				sw.Stop();
+				var result = await ScriptingUtility.EvaluateScriptAsync(code, globals);
+				if (!result.IsSuccess)
+				{
+					await SendErrorAsync($"Evaluation failed at **{result.FailedStage}** step.");
+					return;
+				}
 
-				if (result is null)
+				var value = result.ReturnValue;
+				var timeTook = TimeSpan.FromMilliseconds(result.ExecutionTime).ToHumanDuration();
+
+				if (value is null)
 				{
 					await evalMessage.DeleteAsync();
 					await Context.Message.AddReactionAsync(new Emoji("✅"));
@@ -83,11 +68,11 @@ namespace Axion.Commands.Modules
 						ReferenceLoopHandling = ReferenceLoopHandling.Ignore
 					};
 
-					var res = result switch
+					var res = value switch
 					{
 						string str => str,
 						IEnumerable enumerable => string.Join("\n", enumerable.Cast<object>().Select(x => $"{x}")),
-						_ => SerializeObject(result)
+						_ => EvaluationUtility.SerializeObject(value)
 					};
 
 					await evalMessage.ModifyAsync(props =>
@@ -95,7 +80,7 @@ namespace Axion.Commands.Modules
 						props.Embed = CreateDefaultEmbed(Format.Code(code.EscapeCodeblock(), "csharp"))
 							.AddField($"Result: {result.GetType().Name}", Format.Code(res.EscapeCodeblock(), "js"))
 							.WithFooter(new EmbedFooterBuilder()
-								.WithText($"Took {sw.Elapsed.ToHumanDuration()} | React with ❌ to delete."))
+								.WithText($"Took {timeTook} | React with ❌ to delete."))
 							.Build();
 					});
 
@@ -114,65 +99,8 @@ namespace Axion.Commands.Modules
 			{
 				var error = string.Concat("**", ex.GetType().ToString(), "**: ", ex.Message);
 				await evalMessage.ModifyAsync(props =>
-					props.Embed = CreateErrorEmbed($"{error}\n{ex.StackTrace}").Build());
+					props.Embed = CreateErrorEmbed($"{error}").Build());
 			}
-		}
-
-		private string SerializeObject(object obj, bool serializeInner = true)
-		{
-			var type = obj.GetType();
-
-			if (type.IsPrimitive)
-				return obj.ToString();
-			else if (obj is string)
-				return $"\"{obj.ToString().Replace("\n", @"\n")}\"";
-			else if (obj is decimal)
-				return obj.ToString();
-
-			static string ReplaceIndex(string s)
-			{
-				var indexed = Regex.Match(s, @"(?<=([a-zA-Z]+)`)([0-9]+)");
-				if (indexed.Success)
-					return s.ReplaceAt(indexed.Index - 1, indexed.Length + 1, $"[{indexed.Value}]");
-				else
-					return s;
-			}
-
-			if (!serializeInner)
-				return $"[{ReplaceIndex(type.Name)}]";
-
-			var props = type.GetProperties();
-
-			var builder = new StringBuilder();
-			builder.AppendLine($"{type.Name} {{");
-
-			int total = 0;
-			foreach (var prop in props)
-			{
-				if (total >= 10)
-				{
-					builder.AppendLine("\t...");
-					break;
-				}
-
-				var value = prop.GetValue(obj);
-				string serialized;
-				if (value != null)
-					serialized = SerializeObject(value, false);
-				else
-					serialized = null;
-
-				string typeName = ReplaceIndex(prop.PropertyType.Name);
-
-				builder.Append($"\t<{typeName}> {prop.Name}");
-				builder.Append($": {serialized ?? "null"}\n");
-
-				total++;
-			}
-
-			builder.Append("}");
-
-			return builder.ToString();
 		}
 	}
 }

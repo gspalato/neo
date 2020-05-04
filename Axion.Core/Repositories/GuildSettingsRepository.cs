@@ -1,10 +1,11 @@
 ﻿using Axion.Core.Structures.Database;
-using Canducci.MongoDB.Repository.Connection;
 using Canducci.MongoDB.Repository.Contracts;
+using Canducci.MongoDB.Repository.Connection;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
 
-namespace Axion.Core.Services
+
+namespace Axion.Core.Repositories
 {
     public interface IGuildSettingsRepository : IRepository<GuildSettings>
     {

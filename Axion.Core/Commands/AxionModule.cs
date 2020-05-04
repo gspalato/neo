@@ -1,5 +1,5 @@
 ﻿using Axion.Core.Services;
-using Axion.Core.Utilities;
+using Axion.Core.Extensions;
 using Discord;
 using Qmmands;
 using System.Threading.Tasks;
@@ -8,9 +8,8 @@ namespace Axion.Commands
 {
 	public abstract class AxionModule : ModuleBase<AxionContext>
 	{
-		public ICommandService CommandService { get; }
-		public IMusicService MusicService { get; set; }
-
+		public ICommandService CommandService => Context.GetService<ICommandService>();
+		public IMusicService MusicService => Context.GetService<IMusicService>();
 
 		protected EmbedBuilder CreateOkEmbed(string title, string content = null)
 		{

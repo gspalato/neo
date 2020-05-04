@@ -1,8 +1,8 @@
-﻿using Axion.Core.Structures.Interactivity;
+﻿using System;
+using System.Threading.Tasks;
+using Axion.Core.Structures.Interactivity;
 using Discord;
 using Discord.WebSocket;
-using System;
-using System.Threading.Tasks;
 
 namespace Axion.Core.Extensions
 {

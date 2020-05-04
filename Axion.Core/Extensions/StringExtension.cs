@@ -1,7 +1,7 @@
 using Discord;
 using System;
 
-namespace Axion.Core.Utilities
+namespace Axion.Core.Extensions
 {
 	public static class StringExtensions
 	{

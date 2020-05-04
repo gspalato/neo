@@ -1,31 +1,52 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Axion.Core.Structures.Interactivity
 {
+	using ReactionBehavior = ValueTuple<Emoji, Action<PaginatedContext>>;
+
 	public class PaginatedMessage : IDisposable
 	{
-		protected bool isDisposed = false;
+		private bool _isDisposed = false;
+		private object _lock = new object();
 
 		private readonly DiscordSocketClient _client;
 
-		public IUser Author { get; private set; }
+		public List<ReactionBehavior> Callbacks { get; private set; }
+		public int CurrentPage { get; private set; } = 0;
+		public IList<IUser> Responsibles { get; private set; }
 		public IUserMessage Message { get; private set; }
 		public Embed[] Pages { get; private set; }
 
-		public int CurrentPage { get; private set; } = 0;
 		private int _millisecondsTimeout;
 
-		public PaginatedMessage(DiscordSocketClient client, IUser author, Embed[] pages, int millisecondsTimeout = 180000)
+		public PaginatedMessage(DiscordSocketClient client, IList<IUser> responsibles,
+			Embed[] pages, List<ReactionBehavior> callbacks, int millisecondsTimeout = 180000)
 		{
 			_client = client;
 
-			Author = author;
+			Callbacks = callbacks;
 			Pages = pages;
+			Responsibles = responsibles;
 
 			_millisecondsTimeout = millisecondsTimeout;
+		}
+
+		public async Task SkipToPageAsync(int page)
+		{
+			lock (_lock)
+			{
+				CurrentPage = page;
+			}
+
+			await Message.ModifyAsync(props =>
+			{
+				props.Embed = Pages[CurrentPage];
+			});
 		}
 
 		public async Task<IUserMessage> Send(ITextChannel channel)
@@ -47,14 +68,7 @@ namespace Axion.Core.Structures.Interactivity
 
 		private void AddButtons()
 		{
-			_ = Message.AddReactionsAsync(new[]
-			{
-				new Emoji("⏪"),
-				new Emoji("◀️"),
-				new Emoji("⏹️"),
-				new Emoji("▶️"),
-				new Emoji("⏩")
-			});
+			_ = Message.AddReactionsAsync(Callbacks.Select(t => t.Item1).ToArray());
 		}
 
 		private async Task HandleReaction(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
@@ -68,6 +82,10 @@ namespace Axion.Core.Structures.Interactivity
 					? reaction.Message.Value
 					: await channel.GetMessageAsync(reaction.MessageId);
 
+			var user = reaction.User.IsSpecified
+				? reaction.User.Value
+				: await channel.GetUserAsync(reaction.UserId);
+
 			var me = await textChannel.Guild.GetCurrentUserAsync();
 			if (reaction.UserId == me.Id)
 				return;
@@ -75,90 +93,29 @@ namespace Axion.Core.Structures.Interactivity
 			if (reaction.MessageId != Message.Id)
 				return;
 
-			if (reaction.UserId != Author.Id)
+			if (Responsibles.Select(r => r.Id).Contains(reaction.UserId))
 				return;
 
 			if (!me.GetPermissions(textChannel).ManageMessages)
 				throw new Exception("I lack permissions to manage messages.");
 
-			switch (reaction.Emote.Name)
+			if (!Callbacks.Select(t => t.Item1.Name).Contains(reaction.Emote.Name))
+				return;
+
+			var ctx = new PaginatedContext
 			{
-				case "⏪":
-					{
-						CurrentPage = 0;
-						await Message.ModifyAsync(props =>
-						{
-							props.Embed = Pages[0];
-						});
+				PaginatedMessage = this,
+				User = user,
+				Reaction = reaction
+			};
 
-						await Message.RemoveReactionAsync(reaction.Emote, Author);
-					}
-					break;
-
-				case "◀️":
-					{
-						if (CurrentPage <= 0)
-						{
-							await Message.RemoveReactionAsync(reaction.Emote, Author);
-							return;
-						}
-
-						--CurrentPage;
-						await Message.ModifyAsync(props =>
-						{
-							props.Embed = Pages[CurrentPage];
-						});
-
-						await Message.RemoveReactionAsync(reaction.Emote, Author);
-					}
-					break;
-
-				case "⏹️":
-					{
-						await Message.DeleteAsync();
-						Dispose();
-					}
-					break;
-
-				case "▶️":
-					{
-						if (CurrentPage >= Pages.Length - 1)
-						{
-							await Message.RemoveReactionAsync(reaction.Emote, Author);
-							return;
-						}
-
-						++CurrentPage;
-						await Message.ModifyAsync(props =>
-						{
-							props.Embed = Pages[CurrentPage];
-						});
-
-						await Message.RemoveReactionAsync(reaction.Emote, Author);
-					}
-					break;
-
-				case "⏩":
-					{
-						if (CurrentPage == Pages.Length - 1)
-							return;
-
-						CurrentPage = Pages.Length - 1;
-						await Message.ModifyAsync(props =>
-						{
-							props.Embed = Pages[CurrentPage];
-						});
-
-						await Message.RemoveReactionAsync(reaction.Emote, Author);
-					}
-					break;
-			}
+			Callbacks.First(t => t.Item1.Name == reaction.Emote.Name).Item2.Invoke(ctx);
 		}
 
 		public void Dispose()
 		{
 			_client.ReactionAdded -= HandleReaction;
-			isDisposed = true;
+			_isDisposed = true;
 		}
 
 		~PaginatedMessage()
