@@ -5,28 +5,28 @@ using System.Collections.Generic;
 
 namespace Axion.Core.Structures.Interactivity
 {
-    using Page = ValueTuple<string, EmbedBuilder>;
+    using Page = Action<EmbedBuilder>;
     using ReactionBehavior = ValueTuple<Emoji, Action<PaginatedContext>>;
 
     public class PaginatedMessageBuilder
     {
-        public Page Template { get; private set; }
-        public TimeSpan Timeout { get; private set; }
+        public Func<EmbedBuilder> Template { get; private set; }
+        public TimeSpan Timeout { get; private set; } = TimeSpan.FromMinutes(3);
 
         private readonly List<ReactionBehavior> _callbacks = new List<ReactionBehavior>();
         private readonly List<Page> _pages = new List<Page>();
-        private readonly List<IUser> _resposibles = new List<IUser>();
+        private IUser _responsible;
 
         public PaginatedMessageBuilder() { }
 
-        public PaginatedMessageBuilder AddPage(EmbedBuilder builder)
+        public PaginatedMessageBuilder AddPage(Action<EmbedBuilder> builder)
         {
-            _pages.Add(("", builder));
+            _pages.Add(builder);
 
             return this;
         }
 
-        public PaginatedMessageBuilder AddPages(List<EmbedBuilder> builders)
+        public PaginatedMessageBuilder AddPages(List<Action<EmbedBuilder>> builders)
         {
             foreach (var builder in builders)
             {
@@ -103,14 +103,14 @@ namespace Axion.Core.Structures.Interactivity
 
         public PaginatedMessageBuilder WithResponsible(IUser user)
         {
-            _resposibles.Add(user);
+            _responsible = user;
 
             return this;
         }
 
-        public PaginatedMessageBuilder WithTemplate(string content, EmbedBuilder template)
+        public PaginatedMessageBuilder WithTemplate(Func<EmbedBuilder> template)
         {
-            Template = (content, template);
+            Template = template;
 
             return this;
         }
@@ -126,12 +126,14 @@ namespace Axion.Core.Structures.Interactivity
         {
             List<Embed> builtPages = new List<Embed>();
 
-            foreach (var tuple in _pages)
+            foreach (var factory in _pages)
             {
-                builtPages.Add(tuple.Item2.Build());
+                var embed = Template.Invoke() ?? new EmbedBuilder();
+                factory.Invoke(embed);
+                builtPages.Add(embed.Build());;
             }
 
-            var paginated = new PaginatedMessage(client, _resposibles, builtPages.ToArray(), _callbacks, (int)Timeout.TotalMilliseconds);
+            var paginated = new PaginatedMessage(client, _responsible, builtPages.ToArray(), _callbacks, (int)Timeout.TotalMilliseconds);
 
             return paginated;
         }

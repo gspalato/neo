@@ -9,51 +9,64 @@ namespace Axion.Core.Structures.Interactivity
 {
 	using ReactionBehavior = ValueTuple<Emoji, Action<PaginatedContext>>;
 
-	public class PaginatedMessage : IDisposable
+	public interface IPaginatedMessage : IDisposable
 	{
-		private bool _isDisposed = false;
-		private object _lock = new object();
+		List<ReactionBehavior> Callbacks { get; }
+		int CurrentPage { get; }
+		IUser Responsible { get; }
+		IUserMessage Message { get; }
+		Embed[] Pages { get; }
+
+		new void Dispose();
+		Task SkipToPageAsync(int page);
+		Task<IUserMessage> Send(ITextChannel channel);
+	}
+
+	public class PaginatedMessage : IPaginatedMessage
+	{
+		protected bool IsDisposed;
+		private readonly object _lock = new object();
 
 		private readonly DiscordSocketClient _client;
 
-		public List<ReactionBehavior> Callbacks { get; private set; }
+		public List<ReactionBehavior> Callbacks { get; }
 		public int CurrentPage { get; private set; } = 0;
-		public IList<IUser> Responsibles { get; private set; }
+		public IUser Responsible { get; }
 		public IUserMessage Message { get; private set; }
-		public Embed[] Pages { get; private set; }
+		public Embed[] Pages { get; }
 
-		private int _millisecondsTimeout;
+		private readonly int _millisecondsTimeout;
 
-		public PaginatedMessage(DiscordSocketClient client, IList<IUser> responsibles,
+		public PaginatedMessage(DiscordSocketClient client, IUser responsible,
 			Embed[] pages, List<ReactionBehavior> callbacks, int millisecondsTimeout = 180000)
 		{
 			_client = client;
 
 			Callbacks = callbacks;
 			Pages = pages;
-			Responsibles = responsibles;
+			Responsible = responsible;
 
 			_millisecondsTimeout = millisecondsTimeout;
 		}
 
-		public async Task SkipToPageAsync(int page)
+		public Task SkipToPageAsync(int page)
 		{
 			lock (_lock)
 			{
 				CurrentPage = page;
-			}
 
-			await Message.ModifyAsync(props =>
-			{
-				props.Embed = Pages[CurrentPage];
-			});
+				return Message.ModifyAsync(props =>
+				{
+					props.Embed = Pages[CurrentPage];
+				});
+			}
 		}
 
 		public async Task<IUserMessage> Send(ITextChannel channel)
 		{
 			Message = await channel.SendMessageAsync(embed: Pages[0]);
 
-			AddButtons();
+			await AddButtons();
 			_client.ReactionAdded += HandleReaction;
 
 			_ = Task.Run(async () =>
@@ -66,25 +79,15 @@ namespace Axion.Core.Structures.Interactivity
 			return Message;
 		}
 
-		private void AddButtons()
+		private Task AddButtons()
 		{
-			_ = Message.AddReactionsAsync(Callbacks.Select(t => t.Item1).ToArray());
+			return Message.AddReactionsAsync(Callbacks.Select(t => t.Item1 as IEmote).ToArray());
 		}
 
 		private async Task HandleReaction(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
 		{
 			if (!(channel is ITextChannel textChannel))
 				return;
-
-			var message = cache.HasValue
-				? cache.Value
-				: reaction.Message.IsSpecified
-					? reaction.Message.Value
-					: await channel.GetMessageAsync(reaction.MessageId);
-
-			var user = reaction.User.IsSpecified
-				? reaction.User.Value
-				: await channel.GetUserAsync(reaction.UserId);
 
 			var me = await textChannel.Guild.GetCurrentUserAsync();
 			if (reaction.UserId == me.Id)
@@ -93,14 +96,19 @@ namespace Axion.Core.Structures.Interactivity
 			if (reaction.MessageId != Message.Id)
 				return;
 
-			if (Responsibles.Select(r => r.Id).Contains(reaction.UserId))
+			if (Responsible.Id != reaction.UserId)
 				return;
+
+			var user = reaction.User.IsSpecified
+				? reaction.User.Value
+				: await channel.GetUserAsync(reaction.UserId);
 
 			if (!me.GetPermissions(textChannel).ManageMessages)
 				throw new Exception("I lack permissions to manage messages.");
 
 			if (!Callbacks.Select(t => t.Item1.Name).Contains(reaction.Emote.Name))
 				return;
+
 
 			var ctx = new PaginatedContext
 			{
@@ -109,13 +117,14 @@ namespace Axion.Core.Structures.Interactivity
 				Reaction = reaction
 			};
 
-			Callbacks.First(t => t.Item1.Name == reaction.Emote.Name).Item2.Invoke(ctx);
+			var callback = Callbacks.First(t => t.Item1.Name == reaction.Emote.Name).Item2;
+			callback.Invoke(ctx);
 		}
 
 		public void Dispose()
 		{
 			_client.ReactionAdded -= HandleReaction;
-			_isDisposed = true;
+			IsDisposed = true;
 		}
 
 		~PaginatedMessage()

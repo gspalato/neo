@@ -204,7 +204,7 @@ namespace Axion.Commands.Modules
 		}
 
 		[Command("resume")]
-		[Description("Unpause them tunes. B)")]
+		[Description("Resume them tunes. B)")]
 		[IgnoresExtraArguments]
 		public async Task ResumeAsync()
 		{
@@ -444,19 +444,21 @@ namespace Axion.Commands.Modules
 
 				var pagedBuilder = new PaginatedMessageBuilder()
 					.WithDefaultButtons()
-					.WithResponsible(Context.Message.Author);
+					.WithResponsible(Context.User)
+					.WithTemplate(() =>
+						new EmbedBuilder()
+							.WithDefaultColor());
 
-				var queue = player.Queue.Items.Chunk(7);
+                var queue = player.Queue.Items.Chunk(7);
+                var chunks = queue as IQueueable[][] ?? queue.ToArray();
 
-				var totalTrackNumber = 0;
-				var chunks = queue as IQueueable[][] ?? queue.ToArray();
-
-				if (chunks.Count() == 0)
+				if (!chunks.Any())
 				{
 					await SendDefaultEmbedAsync("There are no tracks next.");
 					return;
 				}
 
+                var totalTrackNumber = 0;
 				for (var chunkNumber = 0; chunkNumber < chunks.Count(); chunkNumber++)
 				{
 					var chunk = chunks.ElementAt(chunkNumber);
@@ -473,10 +475,12 @@ namespace Axion.Commands.Modules
 						description.Append($"{++totalTrackNumber}. [**{track.Title.TruncateAndSanitize()}**]({track.Url})\n");
 					}
 
-					var embed = CreateDefaultEmbed($":musical_score:  Queue | Page {chunkNumber + 1}/{chunks.Count()}",
-						description.ToString());
-
-					pagedBuilder.AddPage(embed);
+					pagedBuilder.AddPage(template =>
+					{
+                        template
+							.WithTitle($":musical_score:  Queue | Page {chunkNumber}/{chunks.Count()}")
+							.WithDescription(description.ToString());
+					});
 				}
 
 				var pagedMessage = pagedBuilder.Build(Context.Client);
@@ -544,7 +548,6 @@ namespace Axion.Commands.Modules
 				.WithFooter($"{slider}  {elapsedTime} / {totalTime}");
 
 			await SendEmbedAsync(embed: embed);
-
 		}
 	}
 }

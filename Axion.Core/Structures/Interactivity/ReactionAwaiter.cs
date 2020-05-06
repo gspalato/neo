@@ -9,7 +9,7 @@ namespace Axion.Core.Structures.Interactivity
 	{
 		public readonly IUserMessage Message;
 
-		private bool _shouldDeleteReaction;
+		private readonly bool _shouldDeleteReaction;
 
 		public ReactionAwaiter(DiscordSocketClient client,
 			IUserMessage message, Func<SocketReaction, bool> filter,
@@ -32,15 +32,7 @@ namespace Axion.Core.Structures.Interactivity
 			if (!(channel is ITextChannel textChannel))
 				return;
 
-			IUserMessage message;
-			if (cache.HasValue)
-				message = cache.Value;
-			else if (reaction.Message.IsSpecified)
-				message = reaction.Message.Value;
-			else
-				message = await channel.GetMessageAsync(reaction.MessageId) as IUserMessage;
-
-			var me = await textChannel.Guild.GetCurrentUserAsync();
+            var me = await textChannel.Guild.GetCurrentUserAsync();
 			if (reaction.UserId == me.Id)
 				return;
 

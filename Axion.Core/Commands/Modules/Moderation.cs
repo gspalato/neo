@@ -201,22 +201,6 @@ namespace Axion.Commands.Modules
 			await ok.DeleteAsync();
 		}
 
-		/*[Command("purge")]
-		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
-		[RequireChannelUserPermissions(ChannelPermission.ManageMessages)]
-		[IgnoresExtraArguments]
-		public async Task PurgeAsync(int number)
-		{
-			var channel = Context.Channel;
-			var messages = await Context.Channel.GetMessagesAsync(number).ElementAtAsync(1);
-
-			await channel.DeleteMessagesAsync(messages);
-
-			var ok = await SendOkAsync($"Purged {messages.Count.ToString()} messages.");
-			await Task.Delay(3000);
-			await ok.DeleteAsync();
-		}*/
-
 		[Command("whois")]
 		public async Task WhoIsAsync(IGuildUser target)
 		{
