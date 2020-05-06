@@ -9,7 +9,7 @@ namespace Axion.Core.Structures.Interactivity
 {
 	using ReactionBehavior = ValueTuple<Emoji, Action<PaginatedContext>>;
 
-	public interface IPaginatedMessage : IDisposable
+    public interface IPaginatedMessage : IDisposable
 	{
 		List<ReactionBehavior> Callbacks { get; }
 		int CurrentPage { get; }
