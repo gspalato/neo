@@ -104,13 +104,30 @@ namespace Axion.Core.Structures.Interactivity
 			return this;
 		}
 
+        public PaginatedMessageBuilder AddButton(PaginatedBehavior eBehavior)
+        {
+            var emoji = eBehavior switch
+            {
+                PaginatedBehavior.First => new Emoji("⏪"),
+                PaginatedBehavior.Previous => new Emoji("◀️"),
+                PaginatedBehavior.Delete => new Emoji("⏹️"),
+                PaginatedBehavior.Next => new Emoji("▶️"),
+                PaginatedBehavior.Last => new Emoji("⏩"),
+                _ => default
+            };
+
+            AddButton(emoji, eBehavior);
+
+            return this;
+        }
+
 		public PaginatedMessageBuilder WithDefaultButtons()
 		{
-			AddButton(new Emoji("⏪"), PaginatedBehavior.First);
-			AddButton(new Emoji("◀️"), PaginatedBehavior.Previous);
-			AddButton(new Emoji("⏹️"), PaginatedBehavior.Delete);
-			AddButton(new Emoji("▶️"), PaginatedBehavior.Next);
-			AddButton(new Emoji("⏩"), PaginatedBehavior.Last);
+			AddButton(PaginatedBehavior.First);
+			AddButton(PaginatedBehavior.Previous);
+			AddButton(PaginatedBehavior.Delete);
+			AddButton(PaginatedBehavior.Next);
+			AddButton(PaginatedBehavior.Last);
 
 			return this;
 		}
