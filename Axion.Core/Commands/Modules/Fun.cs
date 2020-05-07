@@ -7,7 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Utils = Axion.Core.Utilities;
 
-namespace Axion.Commands.Modules
+namespace Axion.Core.Commands.Modules
 {
 	[Category("Fun")]
 	[Description("🎉")]

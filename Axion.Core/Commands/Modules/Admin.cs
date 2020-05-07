@@ -3,15 +3,15 @@ using Axion.Core.Structures.Attributes;
 using Axion.Core.Structures.Miscellaneous;
 using Axion.Core.Utilities;
 using Discord;
-using Newtonsoft.Json;
 using Qmmands;
 using System;
 using System.Collections;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 
-namespace Axion.Commands.Modules
+namespace Axion.Core.Commands.Modules
 {
 	[Category("Administration")]
 	[Description("Elite-only commands.")]
@@ -23,12 +23,12 @@ namespace Axion.Commands.Modules
 		[RequireOwner]
 		public async Task EvalAsync([Remainder] string text)
 		{
-			var match = Regex.Match(text, @"(?<=```(csharp\n)?(\n)?)(.*)(?=\n?```)");
+			var match = Regex.Match(text, @"(?<=^```[a-z]*\n)[\s\S]*?(?=\n?```$)");
 			if (!match.Success)
 				throw new ArgumentException("You need to wrap the code into a code block.");
 
 			var code = match.Value;
-
+			Console.WriteLine(code);
 			var evalMessage = await SendDefaultEmbedAsync("Evaluating...");
 
 			try
@@ -40,11 +40,13 @@ namespace Axion.Commands.Modules
 					Context = Context
 				};
 
-
-				var result = await ScriptingUtility.EvaluateScriptAsync(code, globals);
+                var result = await ScriptingUtility.EvaluateScriptAsync(code, globals);
 				if (!result.IsSuccess)
-				{
-					await SendErrorAsync($"Evaluation failed at **{result.FailedStage}** step.");
+                {
+                    var message = result.CompilationDiagnostics.First(a => a.Severity == DiagnosticSeverity.Error)
+                        .GetMessage();
+
+					await SendErrorAsync($"Evaluation failed at **{result.FailedStage}** step.\n{Format.Code(message, "")}");
 					return;
 				}
 
@@ -57,17 +59,8 @@ namespace Axion.Commands.Modules
 					await Context.Message.AddReactionAsync(new Emoji("✅"));
 				}
 				else
-				{
-					var jsonSettings = new JsonSerializerSettings()
-					{
-						Formatting = Formatting.Indented,
-						MaxDepth = 2,
-						NullValueHandling = NullValueHandling.Include,
-						PreserveReferencesHandling = PreserveReferencesHandling.None,
-						ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-					};
-
-					var res = value switch
+                {
+                    var res = value switch
 					{
 						string str => str,
 						IEnumerable enumerable => string.Join("\n", enumerable.Cast<object>().Select(x => $"{x}")),
@@ -96,7 +89,7 @@ namespace Axion.Commands.Modules
 			}
 			catch (Exception ex)
 			{
-				var error = string.Concat("**", ex.GetType().ToString(), "**: ", ex.Message);
+				var error = string.Concat("**", ex.GetType().ToString(), "**: ", ex.Message, "\n", Format.Code(ex.StackTrace, ""));
 				await evalMessage.ModifyAsync(props =>
 					props.Embed = CreateErrorEmbed($"{error}").Build());
 			}

@@ -1,7 +1,7 @@
 ﻿using Qmmands;
 using System.Collections.Generic;
 
-namespace Axion.Commands.ArgumentParsers
+namespace Axion.Core.Commands.ArgumentParsers
 {
     public class UnixArgumentParserResult : ArgumentParserResult
     {

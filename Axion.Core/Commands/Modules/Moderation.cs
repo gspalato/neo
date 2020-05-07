@@ -1,4 +1,4 @@
-﻿using Axion.Commands.ArgumentParsers;
+﻿using Axion.Core.Commands.ArgumentParsers;
 using Axion.Core.Extensions;
 using Axion.Core.Structures.Attributes;
 using Discord;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Axion.Commands.Modules
+namespace Axion.Core.Commands.Modules
 {
 	[Category("Moderation")]
 	[Description("Le ban hammer")]
@@ -21,25 +21,31 @@ namespace Axion.Commands.Modules
 		[RequireGuildUserPermissions(GuildPermission.BanMembers)]
 		public async Task BanAsync(IGuildUser member, [Remainder] string reason = "Unspecified reason.")
 		{
+            var displayReason = reason.Length >= 75
+                ? Format.Code(reason.EscapeCodeblock().Truncate(150), "")
+                : Format.Code(Format.Sanitize(reason));
+
 			var msg = await SendDefaultEmbedAsync("Confirmation",
-				$"Are you sure you want to ban {member.Mention} for `{reason.TruncateAndSanitize()}`");
+				$"Are you sure you want to ban {member.Mention} for {displayReason}");
 
-			_ = msg.AddReactionsAsync(new[] { new Emoji("✅"), new Emoji("❌") });
+			var emojis = new IEmote[] {new Emoji("✅"), new Emoji("❌")};
 
-			var lazyReaction = msg.AwaitReaction(Context.Client, (r) =>
-				r.UserId == Context.Message.Author.Id && (new[] { "✅", "❌" }).Contains(r.Emote.Name));
+			_ = msg.AddReactionsAsync(emojis);
+
+			var lazyReaction = msg.AwaitReaction(Context.Client, r =>
+				r.UserId == Context.Message.Author.Id && emojis.Contains(r.Emote));
 			var result = await lazyReaction;
 
 			if (!lazyReaction.IsCompleted || lazyReaction.IsCanceled)
 			{
-				var embed = CreateDefaultEmbed("Aborted", $"Reaction timedout.");
-				await msg.ModifyAsync(props =>
-					props.Embed = embed.Build());
+				var embed = CreateDefaultEmbed("Aborted", "Reaction timedout.");
+				await msg.ModifyAsync(props => props.Embed = embed.Build());
 
 				return;
 			}
 
-			switch (result.Emote.Name)
+			var emoji = result.Emote.Name;
+			switch (emoji)
 			{
 				case "✅":
 					{
@@ -47,24 +53,88 @@ namespace Axion.Commands.Modules
 						{
 							await member.BanAsync(reason: reason);
 
-							var embed = CreateOkEmbed("Success", $"Banned {member.Mention} for `{reason.TruncateAndSanitize()}`");
+                            var embed = CreateOkEmbed("Success",
+								$"Banned {member.Mention} for {displayReason}");
+							await msg.ModifyAsync(props => props.Embed = embed.Build());
+						}
+						catch
+						{
+							var embed = CreateErrorEmbed("Error",
+								$"Couldn't ban {member.Mention}. Check if I have enough permissions.");
+							await msg.ModifyAsync(props => props.Embed = embed.Build());
+						}
+					}
+					break;
+
+				default:
+					{
+						var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
+						await msg.ModifyAsync(props => props.Embed = embed.Build());
+					}
+					break;
+
+			}
+
+			await msg.RemoveAllReactionsAsync();
+		}
+		[Command("softban")]
+		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
+		[RequireGuildBotPermissions(GuildPermission.BanMembers)]
+		[RequireGuildUserPermissions(GuildPermission.BanMembers)]
+		public async Task SoftbanAsync(IGuildUser member, [Remainder] string reason = "Unspecified reason.")
+		{
+            var displayReason = reason.Length >= 75
+                ? Format.Code(reason.EscapeCodeblock().Truncate(150), "")
+                : Format.Code(Format.Sanitize(reason));
+
+			var msg = await SendDefaultEmbedAsync("Confirmation",
+				$"Are you sure you want to softban {member.Mention} for {displayReason}");
+
+			var emojis = new IEmote[] { new Emoji("✅"), new Emoji("❌") };
+
+			_ = msg.AddReactionsAsync(emojis);
+
+			var lazyReaction = msg.AwaitReaction(Context.Client, r =>
+				r.UserId == Context.Message.Author.Id && emojis.Contains(r.Emote));
+			var result = await lazyReaction;
+
+			if (!lazyReaction.IsCompleted || lazyReaction.IsCanceled)
+			{
+				var embed = CreateDefaultEmbed("Aborted", "Reaction timedout.");
+				await msg.ModifyAsync(props => props.Embed = embed.Build());
+
+				return;
+			}
+
+			var emoji = result.Emote.Name;
+			switch (emoji)
+			{
+				case "✅":
+					{
+						try
+						{
+							await member.BanAsync(reason: reason);
+							await Context.Guild.RemoveBanAsync(member);
+
+                            var embed = CreateOkEmbed("Success",
+								$"Softbanned {member.Mention} for {displayReason}");
 							await msg.ModifyAsync(props =>
 								props.Embed = embed.Build());
 						}
 						catch
 						{
-							var embed = CreateErrorEmbed("Error", $"Couldn't ban {member.Mention}. Check if I have enough permissions.");
-							await msg.ModifyAsync(props =>
-								props.Embed = embed.Build());
+							var embed = CreateErrorEmbed("Error",
+								$"Couldn't softban {member.Mention}. Check if I have enough permissions.");
+							await msg.ModifyAsync(props => props.Embed = embed.Build());
 						}
 					}
 					break;
 
-				case "❌":
+				default:
 					{
-						var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
-						await msg.ModifyAsync(props =>
-							props.Embed = embed.Build());
+						var embed = CreateErrorEmbed("Error",
+							$"Couldn't softban {member.Mention}. Check if I have enough permissions.");
+						await msg.ModifyAsync(props => props.Embed = embed.Build());
 					}
 					break;
 			}
@@ -78,50 +148,52 @@ namespace Axion.Commands.Modules
 		[RequireGuildUserPermissions(GuildPermission.KickMembers)]
 		public async Task KickAsync(IGuildUser member, [Remainder] string reason = "Unspecified reason.")
 		{
+            var displayReason = reason.Length >= 75
+                ? Format.Code(reason.EscapeCodeblock().Truncate(150), "")
+                : Format.Code(Format.Sanitize(reason));
+
 			var msg = await SendDefaultEmbedAsync("Confirmation",
-				$"Are you sure you want to kick {member.Mention} for `{reason.TruncateAndSanitize()}`");
+				$"Are you sure you want to kick {member.Mention} for {displayReason}");
 
-			_ = msg.AddReactionsAsync(new[] { new Emoji("✅"), new Emoji("❌") });
+			var emojis = new IEmote[] { new Emoji("✅"), new Emoji("❌") };
 
-			var lazyReaction = msg.AwaitReaction(Context.Client, (r) =>
-				r.UserId == Context.Message.Author.Id && (new[] { "✅", "❌" }).Contains(r.Emote.Name));
+			_ = msg.AddReactionsAsync(emojis);
+
+			var lazyReaction = msg.AwaitReaction(Context.Client, r =>
+				r.UserId == Context.Message.Author.Id && emojis.Contains(r.Emote));
 			var result = await lazyReaction;
 
 			if (!lazyReaction.IsCompleted || lazyReaction.IsCanceled)
 			{
 				var embed = CreateDefaultEmbed("Aborted", $"Reaction timedout.");
-				await msg.ModifyAsync(props =>
-					props.Embed = embed.Build());
-
+				await msg.ModifyAsync(props => props.Embed = embed.Build());
 				return;
 			}
 
-			switch (result.Emote.Name)
+			var emoji = result.Emote.Name;
+			switch (emoji)
 			{
 				case "✅":
 					{
 						try
 						{
-							await member.KickAsync(reason: reason);
+							await member.KickAsync(reason);
 
-							var embed = CreateOkEmbed("Success", $"Kicked {member.Mention} for `{reason.TruncateAndSanitize()}`");
-							await msg.ModifyAsync(props =>
-								props.Embed = embed.Build());
+                            var embed = CreateOkEmbed("Success", $"Kicked {member.Mention} for {displayReason}");
+							await msg.ModifyAsync(props => props.Embed = embed.Build());
 						}
 						catch
 						{
 							var embed = CreateErrorEmbed("Error", $"Couldn't kick {member.Mention}. Check if I have enough permissions.");
-							await msg.ModifyAsync(props =>
-								props.Embed = embed.Build());
+							await msg.ModifyAsync(props => props.Embed = embed.Build());
 						}
 					}
 					break;
 
-				case "❌":
+				default:
 					{
-						var embed = CreateErrorEmbed("Aborted", $"You can go away this time. Only this time.");
-						await msg.ModifyAsync(props =>
-							props.Embed = embed.Build());
+						var embed = CreateErrorEmbed("Aborted", "You can go away this time. Only this time.");
+						await msg.ModifyAsync(props => props.Embed = embed.Build());
 					}
 					break;
 			}
@@ -159,8 +231,8 @@ namespace Axion.Commands.Modules
 			var id = afterMessageId ?? beforeMessageId ?? Context.Message.Id;
 			var direction = afterMessageId != null ? Direction.After : Direction.Before;
 
-			var request = await ch.GetMessagesAsync(id, direction, count, CacheMode.AllowDownload).ElementAtOrDefaultAsync(1);
-			if (request.Count() == 0)
+			var request = await ch.GetMessagesAsync(id, direction, count).ElementAtOrDefaultAsync(1);
+			if (request.Any())
 				await Context.ReactAsync("❌");
 
 			var messages = request
@@ -169,7 +241,7 @@ namespace Axion.Commands.Modules
 					if (user != null && m.Author.Id != user.Id)
 						return false;
 
-					if (embeds && m.Embeds.Count() == 0)
+					if (embeds && !m.Embeds.Any())
 						return false;
 
 					if (botsOnly && !m.Author.IsBot)
@@ -208,14 +280,13 @@ namespace Axion.Commands.Modules
 				return;
 
 			var escapedUsername = Format.Sanitize(member.Username);
-			var escapedNickname = Format.Sanitize(member.Nickname) ?? null;
+			var escapedNickname = Format.Sanitize(member.Nickname);
 
 			var totalName = $"{escapedUsername} {(escapedNickname is null ? "" : $"({escapedNickname})")}";
 
-			var rolesList =
-				from role in member.Roles
-				orderby role.Position descending
-				select $"`{Format.Sanitize(role.Name)}`";
+			var rolesList = from role in member.Roles
+							orderby role.Position descending
+							select $"`{Format.Sanitize(role.Name)}`";
 
 			var embed = new EmbedBuilder()
 				.WithAuthor(member.Username + "#" + member.Discriminator, member.GetAvatarUrl())

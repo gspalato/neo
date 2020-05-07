@@ -1,7 +1,7 @@
-﻿using Axion.Commands;
-using Axion.Commands.ArgumentParsers;
-using Axion.Commands.TypeParsers;
-using Axion.Core.Repositories;
+﻿using Axion.Core.Commands;
+using Axion.Core.Commands.ArgumentParsers;
+using Axion.Core.Commands.TypeParsers;
+using Axion.Core.Database;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
@@ -27,11 +27,11 @@ namespace Axion.Core.Services
 
 		public CommandHandlingService(DiscordSocketClient client,
 			ICommandService commandService, ILoggingService loggingService,
-			IGuildSettingsRepository guildSettingsRepository, IServiceProvider services)
+            IGuildSettingsRepository guildSettingsRepository, IServiceProvider services)
 		{
 			_commandService = commandService;
 			_client = client;
-			_guildSettingsRepository = guildSettingsRepository;
+            _guildSettingsRepository = guildSettingsRepository;
 			_loggingService = loggingService;
 			_services = services;
 
@@ -45,9 +45,9 @@ namespace Axion.Core.Services
 
 		private void LinkEvents()
 		{
-			_commandService.CommandExecutionFailed += async (args) =>
+			_commandService.CommandExecutionFailed += async args =>
 			{
-				_loggingService.Error(args.Result.Reason, args.Result.Exception);
+				_loggingService.Error($"{args.Result.Exception.Message}\n{args.Result.Exception.StackTrace}");
 				await Task.Delay(0);
 			};
 
@@ -76,19 +76,19 @@ namespace Axion.Core.Services
 			if (!(msg.Channel is ITextChannel textChannel))
 				return;
 
+            var me = await textChannel.Guild.GetCurrentUserAsync();
+            if (!me.GetPermissions(textChannel).SendMessages)
+                return;
+
 			var settings = await _guildSettingsRepository.GetOrCreateForGuildAsync(textChannel.GuildId);
 
 			if (!CommandUtilities.HasPrefix(msg.Content, settings.Prefix, out var output))
 				return;
 
-			var result = await _commandService.ExecuteAsync(output, new AxionContext(msg, _services));
+			var result = await _commandService.ExecuteAsync(output, new AxionContext(msg, me, _services));
 
 			switch (result)
 			{
-				default:
-				case CommandNotFoundResult _:
-					break;
-
 				case TypeParseFailedResult typeParse:
 					{
 						var name = typeParse.Parameter.Name;
@@ -112,8 +112,8 @@ namespace Axion.Core.Services
 
 				case ParameterChecksFailedResult parameterChecks:
 					{
-						var failedCheck = parameterChecks.FailedChecks.First();
-						var reason = failedCheck.Result.Reason;
+						var (_, parameterResult) = parameterChecks.FailedChecks.First();
+						var reason = parameterResult.Reason;
 
 						var footer = new EmbedFooterBuilder()
 							.WithText(m.Author.Username)

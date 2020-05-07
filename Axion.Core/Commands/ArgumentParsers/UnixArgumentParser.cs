@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Axion.Commands.ArgumentParsers
+namespace Axion.Core.Commands.ArgumentParsers
 {
     internal enum UnixParserState
     {

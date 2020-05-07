@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Axion.Commands.TypeParsers
+namespace Axion.Core.Commands.TypeParsers
 {
     public class GuildUserParser : BaseTypeParser<IGuildUser>
     {

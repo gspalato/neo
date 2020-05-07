@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Axion.Commands.TypeParsers
+namespace Axion.Core.Commands.TypeParsers
 {
 	public abstract class BaseTypeParser<T> : TypeParser<T>
 	{

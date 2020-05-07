@@ -5,7 +5,6 @@ using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -16,7 +15,7 @@ using Victoria.Interfaces;
 using Victoria.Responses.Rest;
 using Utils = Axion.Core.Utilities;
 
-namespace Axion.Commands.Modules
+namespace Axion.Core.Commands.Modules
 {
 	[Category("Music")]
 	[Description("Feel the vibe. B)")]
@@ -449,8 +448,8 @@ namespace Axion.Commands.Modules
 						new EmbedBuilder()
 							.WithDefaultColor());
 
-                var queue = player.Queue.Items.Chunk(7);
-                var chunks = queue as IQueueable[][] ?? queue.ToArray();
+				var queue = player.Queue.Items.Chunk(7);
+				var chunks = queue as IQueueable[][] ?? queue.ToArray();
 
 				if (!chunks.Any())
 				{
@@ -458,7 +457,7 @@ namespace Axion.Commands.Modules
 					return;
 				}
 
-                var totalTrackNumber = 0;
+				var totalTrackNumber = 0;
 				for (var chunkNumber = 0; chunkNumber < chunks.Count(); chunkNumber++)
 				{
 					var chunk = chunks.ElementAt(chunkNumber);
@@ -477,7 +476,7 @@ namespace Axion.Commands.Modules
 
 					pagedBuilder.AddPage(template =>
 					{
-                        template
+						template
 							.WithTitle($":musical_score:  Queue | Page {chunkNumber}/{chunks.Count()}")
 							.WithDescription(description.ToString());
 					});

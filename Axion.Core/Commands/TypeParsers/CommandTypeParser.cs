@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Axion.Commands.TypeParsers
+namespace Axion.Core.Commands.TypeParsers
 {
     public class CommandTypeParser : BaseTypeParser<Command>
     {
@@ -15,7 +15,7 @@ namespace Axion.Commands.TypeParsers
         public override ValueTask<TypeParserResult<Command>> ParseAsync(Parameter parameter, string value,
             AxionContext context, IServiceProvider provider)
         {
-            var commandService = context.ServiceProvider.GetRequiredService<ICommandService>();
+            var commandService = context.GetService<ICommandService>();
 
             Command command = commandService.FindCommands(value).First().Command
                 ?? commandService.GetAllCommands().First(c => c.Name.ToLower() == value.ToLower());
