@@ -32,10 +32,21 @@ namespace Axion.Core.Utilities
             "Discord.Net",
             "Discord.Rest",
             "Discord.WebSocket",
-            "Axion",
+            "Axion.Core",
+            "Axion.Core.Commands",
+            "Axion.Core.Commands.ArgumentParsers",
+            "Axion.Core.Commands.Modules",
+            "Axion.Core.Commands.TypeParsers",
+            "Axion.Core.Database",
+            "Axion.Core.Database.Entities",
+            "Axion.Core.Extensions",
+            "Axion.Core.Services",
             "Axion.Core.Structures",
-            "Axion.Core.Utilities",
-            "Axion.Services"
+            "Axion.Core.Structures.Attributes",
+            "Axion.Core.Structures.Database",
+            "Axion.Core.Structures.Interactivity",
+            "Axion.Core.Structures.Miscellaneous",
+            "Axion.Core.Utilities"
         });
 
         public static async Task<ScriptingResult> EvaluateScriptAsync<T>(string code, T properties)
