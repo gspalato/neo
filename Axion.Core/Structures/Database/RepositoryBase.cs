@@ -5,6 +5,6 @@ namespace Axion.Core.Structures.Database
 {
     public abstract class RepositoryBase<T> : Repository<T>, IRepository<T> where T : class, new()
     {
-        public RepositoryBase(IConnect connect) : base(connect) { }
+        protected RepositoryBase(IConnect connect) : base(connect) { }
     }
 }
