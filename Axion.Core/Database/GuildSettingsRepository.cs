@@ -3,9 +3,9 @@ using Canducci.MongoDB.Repository.Contracts;
 using Canducci.MongoDB.Repository.Connection;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
+using Axion.Core.Database.Entities;
 
-
-namespace Axion.Core.Repositories
+namespace Axion.Core.Database
 {
     public interface IGuildSettingsRepository : IRepository<GuildSettings>
     {
