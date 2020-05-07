@@ -48,8 +48,8 @@ namespace Axion.Core.Extensions
 
 			SocketRole highestRoleWithColor = roles.Find((role) =>
 			{
-				var RGB = role.Color.R + role.Color.G + role.Color.B;
-				return RGB > 0;
+				var rgb = role.Color.R + role.Color.G + role.Color.B;
+				return rgb > 0;
 			});
 			return highestRoleWithColor?.Color ?? fallback;
 		}

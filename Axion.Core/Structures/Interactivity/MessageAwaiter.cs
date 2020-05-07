@@ -10,14 +10,14 @@ namespace Axion.Core.Structures.Interactivity
 		public readonly ITextChannel Channel;
 
 		public MessageAwaiter(DiscordSocketClient client,
-			ITextChannel channel, Func<IMessage, bool> filter) : base(client, filter)
+			ITextChannel channel, Predicate<IMessage> filter) : base(client, filter)
 		{
 			Channel = channel;
 		}
 
 		public override Task<IMessage> Wait(int millisecondsTimeout = 180000)
 		{
-			_client.MessageReceived += HandleEvent;
+			Client.MessageReceived += HandleEvent;
 
 			return base.Wait(millisecondsTimeout);
 		}
@@ -26,7 +26,7 @@ namespace Axion.Core.Structures.Interactivity
 		{
 			if (Filter(message))
 			{
-				_tcs.SetResult(message);
+				Tcs.SetResult(message);
 				Dispose();
 			}
 
@@ -35,7 +35,7 @@ namespace Axion.Core.Structures.Interactivity
 
 		public override void Dispose()
 		{
-			_client.MessageReceived -= HandleEvent;
+			Client.MessageReceived -= HandleEvent;
 			base.Dispose();
 		}
 

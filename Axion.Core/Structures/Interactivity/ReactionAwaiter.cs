@@ -5,15 +5,14 @@ using System.Threading.Tasks;
 
 namespace Axion.Core.Structures.Interactivity
 {
-	public class ReactionAwaiter : EventAwaiter<SocketReaction>, IEventAwaiter<SocketReaction>
+	public class ReactionAwaiter : EventAwaiter<SocketReaction>
 	{
 		public readonly IUserMessage Message;
 
 		private readonly bool _shouldDeleteReaction;
 
-		public ReactionAwaiter(DiscordSocketClient client,
-			IUserMessage message, Func<SocketReaction, bool> filter,
-			bool shouldDeleteReaction = true) : base(client, filter)
+		public ReactionAwaiter(DiscordSocketClient client, IUserMessage message,
+            Predicate<SocketReaction> filter, bool shouldDeleteReaction = true) : base(client, filter)
 		{
 			Message = message;
 
@@ -22,7 +21,7 @@ namespace Axion.Core.Structures.Interactivity
 
 		public override Task<SocketReaction> Wait(int millisecondsTimeout = 180000)
 		{
-			_client.ReactionAdded += HandleEvent;
+			Client.ReactionAdded += HandleEvent;
 
 			return base.Wait(millisecondsTimeout);
 		}
@@ -41,7 +40,7 @@ namespace Axion.Core.Structures.Interactivity
 
 			if (Filter(reaction))
 			{
-				_tcs.SetResult(reaction);
+				Tcs.SetResult(reaction);
 				if (_shouldDeleteReaction)
 					await Message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
 
@@ -51,7 +50,7 @@ namespace Axion.Core.Structures.Interactivity
 
 		public override void Dispose()
 		{
-			_client.ReactionAdded -= HandleEvent;
+			Client.ReactionAdded -= HandleEvent;
 			base.Dispose();
 		}
 

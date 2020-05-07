@@ -18,8 +18,8 @@ namespace Axion.Core.Structures.Interactivity
 	}
 
 	public class PaginatedMessageBuilder
-	{
-		public Func<EmbedBuilder> Template { get; private set; }
+    {
+        public Func<EmbedBuilder> Template { get; private set; }
 		public TimeSpan Timeout { get; private set; } = TimeSpan.FromMinutes(3);
 
 		private readonly List<ReactionBehavior> _callbacks = new List<ReactionBehavior>();
@@ -33,15 +33,16 @@ namespace Axion.Core.Structures.Interactivity
 			return this;
 		}
 
-        public PaginatedMessageBuilder AddButton(Emoji emoji, Action<PaginatedContext> action)
+		public PaginatedMessageBuilder AddButton(Emoji emoji, Action<PaginatedContext> action)
 		{
 			_callbacks.Add((emoji, action));
 
 			return this;
 		}
+
 		public PaginatedMessageBuilder AddButton(Emoji emoji, PaginatedBehavior eBehavior)
 		{
-			Action<PaginatedContext> action = eBehavior switch
+            Action<PaginatedContext> action = eBehavior switch
 			{
 				PaginatedBehavior.First => 
 					async ctx =>
@@ -72,74 +73,58 @@ namespace Axion.Core.Structures.Interactivity
 
 				PaginatedBehavior.Next =>
 					async ctx =>
-				    {
-					    var pm = ctx.PaginatedMessage;
+					{
+						var pm = ctx.PaginatedMessage;
 
-					    await pm.Message.RemoveReactionAsync(ctx.Reaction.Emote, ctx.User);
+						await pm.Message.RemoveReactionAsync(ctx.Reaction.Emote, ctx.User);
 
-					    if (pm.CurrentPage >= pm.Pages.Length - 1)
-						    return;
+						if (pm.CurrentPage >= pm.Pages.Length - 1)
+							return;
 
-					    await pm.SkipToPageAsync(pm.CurrentPage + 1);
-				    },
+						await pm.SkipToPageAsync(pm.CurrentPage + 1);
+					},
 
 				PaginatedBehavior.Last =>
-                    async ctx =>
-				    {
-					    var pm = ctx.PaginatedMessage;
+					async ctx =>
+					{
+						var pm = ctx.PaginatedMessage;
 
-					    await pm.Message.RemoveReactionAsync(ctx.Reaction.Emote, ctx.User);
+						await pm.Message.RemoveReactionAsync(ctx.Reaction.Emote, ctx.User);
 
-					    if (pm.CurrentPage == pm.Pages.Length - 1)
-					    	return;
+						if (pm.CurrentPage == pm.Pages.Length - 1)
+							return;
 
-					    await pm.SkipToPageAsync(pm.Pages.Length - 1);
-				    },
+						await pm.SkipToPageAsync(pm.Pages.Length - 1);
+					},
 
-				_ => default,
+				_ => default
 			};
 
-			AddButton(emoji, action);
+            _callbacks.Add((emoji, action));
 
 			return this;
+
 		}
-
-        public PaginatedMessageBuilder AddButton(PaginatedBehavior eBehavior)
-        {
-            var emoji = eBehavior switch
-            {
-                PaginatedBehavior.First => new Emoji("⏪"),
-                PaginatedBehavior.Previous => new Emoji("◀️"),
-                PaginatedBehavior.Delete => new Emoji("⏹️"),
-                PaginatedBehavior.Next => new Emoji("▶️"),
-                PaginatedBehavior.Last => new Emoji("⏩"),
-                _ => default
-            };
-
-            AddButton(emoji, eBehavior);
-
-            return this;
-        }
 
 		public PaginatedMessageBuilder WithDefaultButtons()
 		{
-			AddButton(PaginatedBehavior.First);
-			AddButton(PaginatedBehavior.Previous);
-			AddButton(PaginatedBehavior.Delete);
-			AddButton(PaginatedBehavior.Next);
-			AddButton(PaginatedBehavior.Last);
+			AddButton(new Emoji("⏪"), PaginatedBehavior.First);
+			AddButton(new Emoji("◀️"), PaginatedBehavior.Previous);
+			AddButton(new Emoji("⏹️"), PaginatedBehavior.Delete);
+			AddButton(new Emoji("▶️"), PaginatedBehavior.Next);
+			AddButton(new Emoji("⏩"), PaginatedBehavior.Last);
 
 			return this;
 		}
 
-        public PaginatedMessageBuilder WithSimpleButtons()
-        {
-            AddButton(new Emoji("◀️"), PaginatedBehavior.Previous);
-            AddButton(new Emoji("⏹️"), PaginatedBehavior.Delete);
-            AddButton(new Emoji("▶️"), PaginatedBehavior.Next);
+		public PaginatedMessageBuilder WithSimpleButtons()
+		{
+			AddButton(new Emoji("◀️"), PaginatedBehavior.Previous);
+			AddButton(new Emoji("⏹️"), PaginatedBehavior.Delete);
+			AddButton(new Emoji("▶️"), PaginatedBehavior.Next);
 
-            return this;
-        }
+			return this;
+		}
 
 		public PaginatedMessageBuilder WithResponsible(IUser user)
 		{
@@ -162,18 +147,18 @@ namespace Axion.Core.Structures.Interactivity
 			return this;
 		}
 
-		public PaginatedMessage Build(DiscordSocketClient client)
+		public IPaginatedMessage Build(DiscordSocketClient client)
 		{
 			var builtPages = new List<Embed>();
 
 			foreach (var factory in _pages)
 			{
-				var embed = Template.Invoke() ?? new EmbedBuilder();
+				var embed = Template is null ? new EmbedBuilder() : Template();
 				factory.Invoke(embed);
-				builtPages.Add(embed.Build());;
+				builtPages.Add(embed.Build());
 			}
 
 			return new PaginatedMessage(client, _responsible, builtPages.ToArray(), _callbacks, (int)Timeout.TotalMilliseconds);
-        }
+		}
 	}
 }

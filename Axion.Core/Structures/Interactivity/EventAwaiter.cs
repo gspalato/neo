@@ -6,7 +6,7 @@ namespace Axion.Core.Structures.Interactivity
 {
 	public interface IEventAwaiter<T> : IDisposable
 	{
-		Func<T, bool> Filter { get; }
+		Predicate<T> Filter { get; }
 
 		Task<T> Wait(int millisecondsTimeout = 180000);
 		new void Dispose();
@@ -14,15 +14,15 @@ namespace Axion.Core.Structures.Interactivity
 
 	public abstract class EventAwaiter<T> : IEventAwaiter<T>
 	{
-		public Func<T, bool> Filter { get; private set; }
+		public Predicate<T> Filter { get; }
 
-		protected bool _isDisposed = false;
-		protected readonly DiscordSocketClient _client;
-		protected readonly TaskCompletionSource<T> _tcs = new TaskCompletionSource<T>();
+		protected bool IsDisposed;
+		protected readonly DiscordSocketClient Client;
+		protected readonly TaskCompletionSource<T> Tcs = new TaskCompletionSource<T>();
 
-		public EventAwaiter(DiscordSocketClient client, Func<T, bool> filter)
+		protected EventAwaiter(DiscordSocketClient client, Predicate<T> filter)
 		{
-			_client = client;
+			Client = client;
 
 			Filter = filter;
 		}
@@ -31,20 +31,20 @@ namespace Axion.Core.Structures.Interactivity
 		{
 			_ = Task.Run(async () =>
 			{
-				var finished = await Task.WhenAny(_tcs.Task, Task.Delay(millisecondsTimeout));
-				if (finished != _tcs.Task)
+				var finished = await Task.WhenAny(Tcs.Task, Task.Delay(millisecondsTimeout));
+				if (finished != Tcs.Task)
 				{
-					_tcs.SetCanceled();
+					Tcs.SetCanceled();
 					Dispose();
 				}
 			});
 
-			return _tcs.Task;
+			return Tcs.Task;
 		}
 
 		public virtual void Dispose()
 		{
-			_isDisposed = true;
+			IsDisposed = true;
 		}
 	}
 }
