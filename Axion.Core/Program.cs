@@ -1,11 +1,10 @@
-﻿using Axion.Core;
-using Axion.Core.Extensions;
+﻿using Axion.Core.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Axion
+namespace Axion.Core
 {
 	internal static class Program
 	{
@@ -28,6 +27,7 @@ namespace Axion
 			{
 				services
 					.AddAxionCoreServices(hostContext)
+                    .AddAxionDatabases()
 					.AddHostedService<App>()
 					.AddLogging();
 			});

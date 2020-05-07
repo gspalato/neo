@@ -1,5 +1,4 @@
-﻿using System;
-using Axion.Core.Repositories;
+﻿using Axion.Core.Database;
 using Axion.Core.Services;
 using Canducci.MongoDB.Repository.Connection;
 using Discord;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Qmmands;
+using System;
 using Victoria;
 
 namespace Axion.Core.Extensions
@@ -44,7 +44,12 @@ namespace Axion.Core.Extensions
                 .AddSingleton<ILoggingService, LoggingService>()
                 .AddSingleton<IMusicService, MusicService>()
                 .AddSingleton<LavaNode>()
-                .AddSingleton<Random>()
+                .AddSingleton<Random>();
+        }
+
+        public static IServiceCollection AddAxionDatabases(this IServiceCollection provider)
+        {
+            return provider
                 .AddScoped<IConfig, Config>()
                 .AddScoped<IConnect, Connect>()
                 .AddScoped<IGuildSettingsRepository, GuildSettingsRepository>();
