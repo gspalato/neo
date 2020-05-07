@@ -76,11 +76,11 @@ namespace Axion.Core.Services
 
         public void Error(string message, Exception exception = null,
             string className = null) =>
-            BaseLog("info:", "#ff3333", message, exception, className);
+            BaseLog("error:", "#ff3333", message, exception, className);
 
         public void Critical(string message, Exception exception = null,
             string className = null) =>
-            BaseLog("info:", "#ff0000", message, exception, className);
+            BaseLog("crit:", "#ff0000", message, exception, className);
 
 
         private void BaseLog(string name, string color,
