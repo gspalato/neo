@@ -1,4 +1,4 @@
-using Axion.Commands;
+using Axion.Core.Commands;
 using Discord;
 using Discord.WebSocket;
 

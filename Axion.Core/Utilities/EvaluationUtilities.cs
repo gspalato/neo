@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Axion.Commands;
+using Axion.Core.Commands;
 using Axion.Core.Extensions;
 using Discord;
 
@@ -69,7 +69,7 @@ namespace Axion.Core.Utilities
                     inheritors = inheritors.ToList();
                     inheritors.Add(baseType.BaseType);
                 }
-                if (inheritors.Count() > 0) sb.Append($": {string.Join(", ", inheritors.Select(b => b.FullName))}");
+                if (inheritors.Any()) sb.Append($": {string.Join(", ", inheritors.Select(b => b.FullName))}");
 
                 sb.AppendLine();
             }
