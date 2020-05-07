@@ -1,17 +1,15 @@
-﻿using Axion.Core.Services;
-using Axion.Core.Extensions;
+﻿using Axion.Core.Extensions;
 using Discord;
 using Qmmands;
 using System.Threading.Tasks;
 
-namespace Axion.Commands
+namespace Axion.Core.Commands
 {
 	public abstract class AxionModule : ModuleBase<AxionContext>
 	{
 		public ICommandService CommandService => Context.GetService<ICommandService>();
-		public IMusicService MusicService => Context.GetService<IMusicService>();
 
-		protected EmbedBuilder CreateOkEmbed(string title, string content = null)
+		protected EmbedBuilder CreateOkEmbed(string title, string content)
 		{
 			return new EmbedBuilder()
 				.WithTitle(title)
@@ -26,7 +24,7 @@ namespace Axion.Commands
 		protected EmbedBuilder CreateOkEmbed(string content = null) =>
 			CreateOkEmbed("", content);
 
-		protected EmbedBuilder CreateErrorEmbed(string title, string content = null)
+		protected EmbedBuilder CreateErrorEmbed(string title, string content)
 		{
 			return new EmbedBuilder()
 				.WithTitle(title)
@@ -41,7 +39,7 @@ namespace Axion.Commands
 		protected EmbedBuilder CreateErrorEmbed(string content = null) =>
 			CreateErrorEmbed("", content);
 
-		protected EmbedBuilder CreateDefaultEmbed(string title, string content = null)
+		protected EmbedBuilder CreateDefaultEmbed(string title, string content)
 		{
 			return new EmbedBuilder()
 				.WithTitle(title)
@@ -51,12 +49,12 @@ namespace Axion.Commands
 		protected EmbedBuilder CreateDefaultEmbed(string content = null) =>
 			CreateDefaultEmbed("", content);
 
-		protected async Task<IUserMessage> SendOkAsync(string title, string content = null) =>
+		protected async Task<IUserMessage> SendOkAsync(string title, string content) =>
 			await SendEmbedAsync(CreateOkEmbed(title, content));
 		protected async Task<IUserMessage> SendOkAsync(string content = null) =>
 			await SendOkAsync("", content);
 
-		protected async Task<IUserMessage> SendErrorAsync(string title, string content = null) =>
+		protected async Task<IUserMessage> SendErrorAsync(string title, string content) =>
 			await SendEmbedAsync(CreateErrorEmbed(title, content));
 		protected async Task<IUserMessage> SendErrorAsync(string content = null) =>
 			await SendErrorAsync("", content);
