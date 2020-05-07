@@ -66,10 +66,10 @@ namespace Axion.Core.Structures.Interactivity
 		{
 			Message = await channel.SendMessageAsync(embed: Pages[0]);
 
+            _client.ReactionAdded += HandleReaction;
 			await AddButtons();
-			_client.ReactionAdded += HandleReaction;
 
-			_ = Task.Run(async () =>
+            _ = Task.Run(async () =>
 			{
 				await Task.Delay(_millisecondsTimeout);
 				await Message.RemoveAllReactionsAsync();
@@ -89,37 +89,37 @@ namespace Axion.Core.Structures.Interactivity
 			if (!(channel is ITextChannel textChannel))
 				return;
 
-			var me = await textChannel.Guild.GetCurrentUserAsync();
+            var me = await textChannel.Guild.GetCurrentUserAsync();
 			if (reaction.UserId == me.Id)
-				return;
+                return;
 
-			if (reaction.MessageId != Message.Id)
-				return;
+            if (reaction.MessageId != Message.Id)
+                return;
 
 			if (Responsible.Id != reaction.UserId)
-				return;
+                return;
 
-			var user = reaction.User.IsSpecified
+            var user = reaction.User.IsSpecified
 				? reaction.User.Value
 				: await channel.GetUserAsync(reaction.UserId);
 
 			if (!me.GetPermissions(textChannel).ManageMessages)
 				throw new Exception("I lack permissions to manage messages.");
 
-			if (!Callbacks.Select(t => t.Item1.Name).Contains(reaction.Emote.Name))
-				return;
+            if (!Callbacks.Select(t => t.Item1.Name).Contains(reaction.Emote.Name))
+                return;
 
 
-			var ctx = new PaginatedContext
+            var ctx = new PaginatedContext
 			{
 				PaginatedMessage = this,
 				User = user,
 				Reaction = reaction
 			};
 
-			var callback = Callbacks.First(t => t.Item1.Name == reaction.Emote.Name).Item2;
-			callback.Invoke(ctx);
-		}
+			var action = Callbacks.First(t => t.Item1.Name == reaction.Emote.Name).Item2;
+            action?.Invoke(ctx);
+        }
 
 		public void Dispose()
 		{
