@@ -1,46 +1,35 @@
-﻿using Axion.Core.Extensions;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Qmmands;
 using System;
 using System.Threading.Tasks;
 
-namespace Axion.Commands
+namespace Axion.Core.Commands
 {
 	public class AxionContext : CommandContext
 	{
 		public readonly ITextChannel Channel;
 		public readonly DiscordSocketClient Client;
 		public readonly IGuild Guild;
+        public readonly IGuildUser Me;
 		public readonly IUserMessage Message;
 		public readonly DateTimeOffset Now;
 		public readonly IGuildUser User;
 
-		public AxionContext(IUserMessage msg, IServiceProvider services) : base(services)
+		public AxionContext(IUserMessage msg, IGuildUser me, IServiceProvider services) : base(services)
 		{
 			Channel = (ITextChannel)msg.Channel;
 			Client = services.GetService<DiscordSocketClient>();
 			Guild = Channel.Guild;
+            Me = me;
 			Message = msg;
 			Now = DateTimeOffset.UtcNow;
 			User = (IGuildUser)msg.Author;
 		}
 
 		public T GetService<T>() =>
-			this.ServiceProvider.GetRequiredService<T>();
-
-		public Embed CreateEmbed(string content) =>
-			new EmbedBuilder()
-			.WithSuccess()
-			.WithAuthor(User)
-			.WithDescription(content).Build();
-
-		public EmbedBuilder CreateEmbedBuilder(string content = null) =>
-			new EmbedBuilder()
-			.WithSuccess()
-			.WithAuthor(User)
-			.WithDescription(content ?? string.Empty);
+			ServiceProvider.GetRequiredService<T>();
 
 		public async Task<IUserMessage> ReplyAsync(string content, Embed embed) =>
 			await Channel.SendMessageAsync(content, embed: embed);
