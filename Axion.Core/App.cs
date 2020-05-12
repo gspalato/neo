@@ -29,7 +29,7 @@ namespace Axion.Core
 			_configuration = configuration;
 			_client = client;
 
-			_commandHandler = commandHandler;
+            _commandHandler = commandHandler;
 			_eventService = eventService;
 		}
 
