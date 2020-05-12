@@ -19,7 +19,7 @@ namespace Axion.Core.Commands
 					IconUrl = Context.User.GetAvatarUrl(),
 					Text = Context.User.Username
 				})
-				.WithDescription(content ?? string.Empty);
+				.WithDescription(content ?? "");
 		}
 		protected EmbedBuilder CreateOkEmbed(string content = null) =>
 			CreateOkEmbed("", content);
@@ -34,7 +34,7 @@ namespace Axion.Core.Commands
 					IconUrl = Context.User.GetAvatarUrl(),
 					Text = Context.User.Username
 				})
-				.WithDescription(content ?? string.Empty);
+				.WithDescription(content ?? "");
 		}
 		protected EmbedBuilder CreateErrorEmbed(string content = null) =>
 			CreateErrorEmbed("", content);
@@ -44,7 +44,7 @@ namespace Axion.Core.Commands
 			return new EmbedBuilder()
 				.WithTitle(title)
 				.WithDefaultColor()
-				.WithDescription(content ?? string.Empty);
+				.WithDescription(content ?? "");
 		}
 		protected EmbedBuilder CreateDefaultEmbed(string content = null) =>
 			CreateDefaultEmbed("", content);
