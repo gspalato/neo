@@ -148,13 +148,14 @@ namespace Axion.Core.Utilities
 
         private static string FormatType(Type atype)
         {
-            var vs = atype.Namespace + "." + atype.Name;
+            var vs = new StringBuilder($"{atype.Namespace}.{atype.Name}");
 
             var t = atype.GenericTypeArguments;
 
-            if (t.Length > 0) vs += $"<{string.Join(", ", t.Select(a => a.Name))}>";
+            if (t.Length > 0)
+                vs.Append($"<{string.Join(", ", t.Select(a => a.Name))}>");
 
-            return vs;
+            return vs.ToString();
         }
 
         public Task<IGuildUser> User(ulong id)
