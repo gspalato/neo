@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Qmmands;
+﻿using Qmmands;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,13 +16,12 @@ namespace Axion.Core.Commands.TypeParsers
         {
             var commandService = context.GetService<ICommandService>();
 
-            Command command = commandService.FindCommands(value).First().Command
-                ?? commandService.GetAllCommands().First(c => c.Name.ToLower() == value.ToLower());
+            var command = commandService.FindCommands(value).First().Command
+                ?? commandService.GetAllCommands().First(c => c.Name == value);
 
-            if (command is null)
-                return TypeParserResult<Command>.Unsuccessful("Couldn't find command.");
-            else
-                return TypeParserResult<Command>.Successful(command);
+            return command is null
+                ? TypeParserResult<Command>.Unsuccessful("Couldn't find command.")
+                : TypeParserResult<Command>.Successful(command);
         }
     }
 }
