@@ -1,6 +1,7 @@
-﻿using System;
-using Discord;
+﻿using Discord;
 using Pastel;
+using System;
+using System.Text;
 
 namespace Axion.Core.Services
 {
@@ -19,9 +20,6 @@ namespace Axion.Core.Services
     public class LoggingService : ILoggingService
     {
         private readonly object _lock = new object();
-
-        public LoggingService()
-        { }
 
         public void Log(LogSeverity severity, string message,
             Exception exception = null, string className = "axion")
@@ -86,14 +84,16 @@ namespace Axion.Core.Services
         private void BaseLog(string name, string color,
             string message, Exception exception = null, string className = null)
         {
-            var output = "";
+            var output = new StringBuilder();
 
-            if (!(className is null))
-                output = $"{className.Pastel("#888888")} ";
+            if (className != null)
+                output = new StringBuilder($"{className.Pastel("#888888")} ");
 
-            output += $"{name.Pastel(color)} ";
-            output += message.Pastel("#cfcfcf");
-            output += exception is null ? "" : $"\n{exception.Message}";
+            output.Append($"{name.Pastel(color)} ");
+            output.Append(message.Pastel("#cfcfcf"));
+
+            if (exception != null)
+                output.Append($"\n{exception.Message}");
 
             lock (_lock)
             {
