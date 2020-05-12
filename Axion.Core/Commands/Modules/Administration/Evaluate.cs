@@ -3,32 +3,31 @@ using Axion.Core.Structures.Attributes;
 using Axion.Core.Structures.Miscellaneous;
 using Axion.Core.Utilities;
 using Discord;
+using Microsoft.CodeAnalysis;
 using Qmmands;
 using System;
 using System.Collections;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 
-namespace Axion.Core.Commands.Modules
+namespace Axion.Core.Commands.Modules.Administration
 {
-	[Category("Administration")]
-	[Description("Elite-only commands.")]
-	public sealed class Admin : AxionModule
+	[Category(Category.Admin)]
+	[Group("eval", "$", "roslyn")]
+	public sealed class Evaluate : AxionModule
 	{
-		[Command("eval", "$", "roslyn")]
-		[Description("Evaluates C# code.")]
+		[Command]
 		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
 		[RequireOwner]
-		public async Task EvalAsync([Remainder] string text)
+		public async Task ExecuteAsync([Remainder] string text)
 		{
 			var match = Regex.Match(text, @"(?<=^```[a-z]*\n)[\s\S]*?(?=\n?```$)");
 			if (!match.Success)
 				throw new ArgumentException("You need to wrap the code into a code block.");
 
 			var code = match.Value;
-			Console.WriteLine(code);
+
 			var evalMessage = await SendDefaultEmbedAsync("Evaluating...");
 
 			try
@@ -40,11 +39,11 @@ namespace Axion.Core.Commands.Modules
 					Context = Context
 				};
 
-                var result = await ScriptingUtility.EvaluateScriptAsync(code, globals);
+				var result = await ScriptingUtility.EvaluateScriptAsync(code, globals);
 				if (!result.IsSuccess)
-                {
-                    var message = result.CompilationDiagnostics.First(a => a.Severity == DiagnosticSeverity.Error)
-                        .GetMessage();
+				{
+					var message = result.CompilationDiagnostics.First(a => a.Severity == DiagnosticSeverity.Error)
+						.GetMessage();
 
 					await SendErrorAsync($"Evaluation failed at **{result.FailedStage}** step.\n{Format.Code(message, "")}");
 					return;
@@ -59,8 +58,8 @@ namespace Axion.Core.Commands.Modules
 					await Context.Message.AddReactionAsync(new Emoji("✅"));
 				}
 				else
-                {
-                    var res = value switch
+				{
+					var res = value switch
 					{
 						string str => str,
 						IEnumerable enumerable => string.Join("\n", enumerable.Cast<object>().Select(x => $"{x}")),
@@ -70,14 +69,14 @@ namespace Axion.Core.Commands.Modules
 					await evalMessage.ModifyAsync(props =>
 					{
 						props.Embed = CreateDefaultEmbed(Format.Code(code.EscapeCodeblock(), "csharp"))
-							.AddField($"Result: {result.GetType().Name}", Format.Code(res.EscapeCodeblock(), "js"))
+							.AddField($"Result: {value.GetType().Name}", Format.Code(res.EscapeCodeblock(), "js"))
 							.WithFooter(new EmbedFooterBuilder()
-								.WithText($"Took {timeTook} | React with ❌ to delete."))
+								.WithText($"took {timeTook} · react with ❌ to delete."))
 							.Build();
 					});
 
-					var reactionAwaiter = evalMessage.AwaitReaction(Context.Client, (r) =>
-						r.UserId == Context.Message.Author.Id && r.Emote.Name == "❌");
+					var reactionAwaiter = evalMessage.AwaitReaction(Context.Client,
+						r => r.UserId == Context.Message.Author.Id && r.Emote.Name == "❌");
 					var reaction = await reactionAwaiter;
 
 					if (!reactionAwaiter.IsCompleted || reactionAwaiter.IsCanceled)
@@ -89,9 +88,9 @@ namespace Axion.Core.Commands.Modules
 			}
 			catch (Exception ex)
 			{
-				var error = string.Concat("**", ex.GetType().ToString(), "**: ", ex.Message, "\n", Format.Code(ex.StackTrace, ""));
+				var error = $"**{ex.GetType()}**: {ex.Message}\n{Format.Code(ex.StackTrace, "")}";
 				await evalMessage.ModifyAsync(props =>
-					props.Embed = CreateErrorEmbed($"{error}").Build());
+					props.Embed = CreateErrorEmbed(error).Build());
 			}
 		}
 	}
