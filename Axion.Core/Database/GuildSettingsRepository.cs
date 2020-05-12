@@ -33,9 +33,7 @@ namespace Axion.Core.Database
                 Prefix = prefix
             };
 
-            await AddAsync(settings);
-
-            return settings;
+            return await AddAsync(settings);
         }
 
         public async Task<GuildSettings> GetForGuildAsync(ulong guildId) =>
