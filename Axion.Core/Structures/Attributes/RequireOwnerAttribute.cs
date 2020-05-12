@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 namespace Axion.Core.Structures.Attributes
 {
 	public class RequireOwnerAttribute : BaseCheckAttribute
-	{
-		public override async ValueTask<CheckResult> CheckAsync(AxionContext context, IServiceProvider provider)
+    {
+        public override async ValueTask<CheckResult> CheckAsync(AxionContext context, IServiceProvider provider)
 		{
 			var app = await context.Client.GetApplicationInfoAsync();
 
