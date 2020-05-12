@@ -9,6 +9,8 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Axion.Core.Commands.Modules;
+using Axion.Core.Structures.Attributes;
 
 namespace Axion.Core.Services
 {
@@ -41,15 +43,19 @@ namespace Axion.Core.Services
 			AddTypeParsers();
 
 			_commandService.AddModules(Assembly.GetExecutingAssembly());
-		}
+        }
 
 		private void LinkEvents()
 		{
 			_commandService.CommandExecutionFailed += async args =>
 			{
 				_loggingService.Error($"{args.Result.Exception.Message}\n{args.Result.Exception.StackTrace}");
-				await Task.Delay(0);
-			};
+                if (args.Result.Exception.InnerException != null)
+                {
+                    var inner = args.Result.Exception.InnerException;
+                    _loggingService.Error($"INNER EXCEPTION | {inner.Message}\n{inner.StackTrace}");
+				}
+            };
 
 			_client.MessageReceived += OnMessageReceivedAsync;
 		}
@@ -61,9 +67,10 @@ namespace Axion.Core.Services
 
 		private void AddTypeParsers()
 		{
-			_commandService.AddTypeParser(CommandTypeParser.Instance);
+            _commandService.AddTypeParser(CommandTypeParser.Instance);
 			_commandService.AddTypeParser(GuildUserParser.Instance);
 			_commandService.AddTypeParser(MessageParser.Instance);
+			_commandService.AddTypeParser(ModuleTypeParser.Instance);
 			_commandService.AddTypeParser(TextChannelParser.Instance);
 			_commandService.AddTypeParser(UserParser.Instance);
 		}
@@ -85,66 +92,68 @@ namespace Axion.Core.Services
 			if (!CommandUtilities.HasPrefix(msg.Content, settings.Prefix, out var output))
 				return;
 
-			var result = await _commandService.ExecuteAsync(output, new AxionContext(msg, me, _services));
+            var context = new AxionContext(msg, me, _services);
+			var result = await _commandService.ExecuteAsync(output, context);
 
-			switch (result)
-			{
-				case TypeParseFailedResult typeParse:
+            switch (result)
+            {
+				default:
+					Console.WriteLine($"Result Type: {result.GetType().Name}");
+                    break;
+
+                case ArgumentParseFailedResult argParse:
+                    {
+                        await SendErrorResultEmbedAsync(msg, argParse.Reason);
+                    }
+                    break;
+
+                case TypeParseFailedResult typeParse:
 					{
 						var name = typeParse.Parameter.Name;
 						var type = typeParse.Parameter.Type.Name;
 						var given = typeParse.Value;
 
-						var footer = new EmbedFooterBuilder()
-							.WithText(m.Author.Username)
-							.WithIconUrl(m.Author.GetAvatarUrl());
-
-						await m.Channel.SendMessageAsync(embed: new EmbedBuilder()
-							.WithTitle("⚠️ Huh?")
-							.WithColor(Color.Orange)
-							.WithDescription(
-								$"Wrong type given at `{name}`.\nExpected {type}, got\n{Format.Quote(Format.Sanitize(given))}")
-							.WithFooter(footer)
-							.WithCurrentTimestamp()
-							.Build());
+						await SendErrorResultEmbedAsync(msg,
+								$"Wrong type given at `{name}`.\nExpected {type}, got\n{Format.Quote(Format.Sanitize(given))}");
 					}
 					break;
 
 				case ParameterChecksFailedResult parameterChecks:
-					{
+                    {
+                        var cmd = parameterChecks.Parameter.Command;
+                        var shouldSupress = cmd.Attributes.Any(a => a is SupressPermissionErrorsAttribute);
+
+                        if (shouldSupress)
+                            return;
+
 						var (_, parameterResult) = parameterChecks.FailedChecks.First();
 						var reason = parameterResult.Reason;
 
-						var footer = new EmbedFooterBuilder()
-							.WithText(m.Author.Username)
-							.WithIconUrl(m.Author.GetAvatarUrl());
-
-						await m.Channel.SendMessageAsync(embed: new EmbedBuilder()
-							.WithTitle("⚠️ Huh?")
-							.WithColor(Color.Orange)
-							.WithDescription(reason)
-							.WithFooter(footer)
-							.WithCurrentTimestamp()
-							.Build());
-					}
+						await SendErrorResultEmbedAsync(msg, reason);
+                    }
 					break;
 
 				case OverloadsFailedResult overloads:
-					{
-						var footer = new EmbedFooterBuilder()
-							.WithText(m.Author.Username)
-							.WithIconUrl(m.Author.GetAvatarUrl());
-
-						await m.Channel.SendMessageAsync(embed: new EmbedBuilder()
-							.WithTitle("⚠️ Huh?")
-							.WithColor(Color.Orange)
-							.WithDescription(overloads.Reason)
-							.WithFooter(footer)
-							.WithCurrentTimestamp()
-							.Build());
-					}
+                    {
+                        await SendErrorResultEmbedAsync(msg, overloads.Reason);
+                    }
 					break;
 			}
+		}
+
+        private async Task SendErrorResultEmbedAsync(IMessage msg, string reason)
+        {
+            var footer = new EmbedFooterBuilder()
+                .WithText(msg.Author.Username)
+                .WithIconUrl(msg.Author.GetAvatarUrl());
+
+            await msg.Channel.SendMessageAsync(embed: new EmbedBuilder()
+                .WithTitle("⚠️ Huh?")
+                .WithColor(Color.Orange)
+                .WithDescription(reason)
+                .WithFooter(footer)
+                .WithCurrentTimestamp()
+                .Build());
 		}
 	}
 }
