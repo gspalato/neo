@@ -9,7 +9,7 @@ namespace Axion.Core.Structures.Interactivity
 {
 	using ReactionBehavior = ValueTuple<Emoji, Action<PaginatedContext>>;
 
-    public interface IPaginatedMessage : IDisposable
+	public interface IPaginatedMessage : IDisposable
 	{
 		List<ReactionBehavior> Callbacks { get; }
 		int CurrentPage { get; }
@@ -30,7 +30,7 @@ namespace Axion.Core.Structures.Interactivity
 		private readonly DiscordSocketClient _client;
 
 		public List<ReactionBehavior> Callbacks { get; }
-		public int CurrentPage { get; private set; } = 0;
+		public int CurrentPage { get; private set; }
 		public IUser Responsible { get; }
 		public IUserMessage Message { get; private set; }
 		public Embed[] Pages { get; }
@@ -60,16 +60,16 @@ namespace Axion.Core.Structures.Interactivity
 					props.Embed = Pages[CurrentPage];
 				});
 			}
-		}
+        }
 
 		public async Task<IUserMessage> Send(ITextChannel channel)
 		{
 			Message = await channel.SendMessageAsync(embed: Pages[0]);
 
-            _client.ReactionAdded += HandleReaction;
+			_client.ReactionAdded += HandleReaction;
 			await AddButtons();
 
-            _ = Task.Run(async () =>
+			_ = Task.Run(async () =>
 			{
 				await Task.Delay(_millisecondsTimeout);
 				await Message.RemoveAllReactionsAsync();
@@ -89,37 +89,34 @@ namespace Axion.Core.Structures.Interactivity
 			if (!(channel is ITextChannel textChannel))
 				return;
 
-            var me = await textChannel.Guild.GetCurrentUserAsync();
+			var me = await textChannel.Guild.GetCurrentUserAsync();
 			if (reaction.UserId == me.Id)
-                return;
+				return;
 
-            if (reaction.MessageId != Message.Id)
-                return;
+			if (reaction.MessageId != Message.Id)
+				return;
 
 			if (Responsible.Id != reaction.UserId)
-                return;
+				return;
 
-            var user = reaction.User.IsSpecified
+			var user = reaction.User.IsSpecified
 				? reaction.User.Value
 				: await channel.GetUserAsync(reaction.UserId);
 
 			if (!me.GetPermissions(textChannel).ManageMessages)
 				throw new Exception("I lack permissions to manage messages.");
 
-            if (!Callbacks.Select(t => t.Item1.Name).Contains(reaction.Emote.Name))
-                return;
+			if (!Callbacks.Select(t => t.Item1.Name).Contains(reaction.Emote.Name))
+				return;
 
-
-            var ctx = new PaginatedContext
+			var (_, action) = Callbacks.First(t => t.Item1.Name == reaction.Emote.Name);
+			action?.Invoke(new PaginatedContext
 			{
 				PaginatedMessage = this,
 				User = user,
 				Reaction = reaction
-			};
-
-			var action = Callbacks.First(t => t.Item1.Name == reaction.Emote.Name).Item2;
-            action?.Invoke(ctx);
-        }
+			});
+		}
 
 		public void Dispose()
 		{
