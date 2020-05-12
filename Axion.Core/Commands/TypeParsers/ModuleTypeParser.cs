@@ -1,0 +1,31 @@
+﻿using Qmmands;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Axion.Core.Commands.TypeParsers
+{
+    public class ModuleTypeParser : BaseTypeParser<Module>
+    {
+        public static readonly ModuleTypeParser Instance = new ModuleTypeParser();
+
+        private ModuleTypeParser() { }
+
+        public override ValueTask<TypeParserResult<Module>> ParseAsync(Parameter parameter, string value,
+            AxionContext context, IServiceProvider provider)
+        {
+            var commandService = context.GetService<ICommandService>();
+
+            var modules = commandService.GetAllModules();
+            var module = modules.First(m =>
+            {
+                var attribute = (GroupAttribute)m.Attributes.First(a => a is GroupAttribute);
+                return attribute?.Aliases.Contains(value) ?? false;
+            }) ?? modules.First(m => m.Name == value);
+
+            return module is null
+                ? TypeParserResult<Module>.Unsuccessful("Couldn't find command.")
+                : TypeParserResult<Module>.Successful(module);
+        }
+    }
+}
