@@ -22,16 +22,6 @@ namespace Axion.Core.Utilities
     {
         public static readonly IReadOnlyList<string> Imports = new ReadOnlyCollection<string>(new List<string>()
         {
-            "System",
-            "System.Collections.Generic",
-            "System.Linq",
-            "System.Text",
-            "System.Threading.Tasks",
-            "Microsoft.Extensions.DependencyInjection",
-            "Discord",
-            "Discord.Net",
-            "Discord.Rest",
-            "Discord.WebSocket",
             "Axion.Core",
             "Axion.Core.Commands",
             "Axion.Core.Commands.ArgumentParsers",
@@ -46,7 +36,18 @@ namespace Axion.Core.Utilities
             "Axion.Core.Structures.Database",
             "Axion.Core.Structures.Interactivity",
             "Axion.Core.Structures.Miscellaneous",
-            "Axion.Core.Utilities"
+            "Axion.Core.Utilities",
+            "Discord",
+            "Discord.Net",
+            "Discord.Rest",
+            "Discord.WebSocket",
+            "Microsoft.Extensions.DependencyInjection",
+            "Newtonsoft.Json",
+            "System",
+            "System.Collections.Generic",
+            "System.Linq",
+            "System.Text",
+            "System.Threading.Tasks",
         });
 
         public static async Task<ScriptingResult> EvaluateScriptAsync<T>(string code, T properties)

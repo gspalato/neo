@@ -2,7 +2,7 @@
 using Axion.Core.Extensions;
 using System;
 
-namespace Axion.Tests
+namespace Axion.Tests.Extensions
 {
     [TestClass]
     public class DateTimeExtensionsTests

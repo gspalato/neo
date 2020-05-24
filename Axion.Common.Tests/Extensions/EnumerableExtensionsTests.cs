@@ -2,7 +2,7 @@
 using Axion.Core.Extensions;
 using System.Linq;
 
-namespace Axion.Tests
+namespace Axion.Tests.Extensions
 {
     [TestClass]
     public class EnumerableExtensionsTests
@@ -15,7 +15,6 @@ namespace Axion.Tests
 
             if (!(actual.Count() == 3 && actual.Last().Last() == 7))
                 Assert.Fail("Array wasn't split right.");
-
         }
     }
 }

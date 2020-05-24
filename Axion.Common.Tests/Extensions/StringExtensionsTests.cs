@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Axion.Core.Extensions;
 
-namespace Axion.Tests
+namespace Axion.Tests.Extensions
 {
     [TestClass]
     public class StringExtensionsTests
