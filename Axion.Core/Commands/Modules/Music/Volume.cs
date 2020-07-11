@@ -1,7 +1,7 @@
-﻿using Qmmands;
+﻿using Axion.Core.Structures.Attributes;
+using Qmmands;
 using System;
 using System.Threading.Tasks;
-using Axion.Core.Structures.Attributes;
 using Victoria;
 
 namespace Axion.Core.Commands.Modules.Music

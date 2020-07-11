@@ -8,56 +8,51 @@ using System.Threading.Tasks;
 
 namespace Axion.Core.Commands.TypeParsers
 {
-    public class GuildUserParser : BaseTypeParser<IGuildUser>
-    {
-        public static readonly GuildUserParser Instance = new GuildUserParser();
+	public class GuildUserParser : BaseTypeParser<IGuildUser>
+	{
+		public static readonly GuildUserParser Instance = new GuildUserParser();
 
-        private GuildUserParser() { }
+		private GuildUserParser() { }
 
-        private readonly Regex _userRegex = new Regex(@"^<@\!?(\d+?)>$", RegexOptions.ECMAScript | RegexOptions.Compiled);
+		private readonly Regex _userRegex = new Regex(@"^<@\!?(\d+?)>$", RegexOptions.ECMAScript | RegexOptions.Compiled);
 
-        public override async ValueTask<TypeParserResult<IGuildUser>> ParseAsync(Parameter parameter, string value,
-            AxionContext context, IServiceProvider provider)
-        {
-            if (context.Guild is null)
-                return TypeParserResult<IGuildUser>.Unsuccessful("You're not in a guild.");
+		public override async ValueTask<TypeParserResult<IGuildUser>> ParseAsync(Parameter parameter, string value,
+			AxionContext context, IServiceProvider provider)
+		{
+			if (context.Guild is null)
+				return TypeParserResult<IGuildUser>.Unsuccessful("You're not in a guild.");
 
-            if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))
-            {
-                var result = await context.Guild.GetUserAsync(uid);
-                var ret = result != null
-                    ? TypeParserResult<IGuildUser>.Successful(result)
-                    : TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
-                return ret;
-            }
+			if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))
+			{
+				var result = await context.Guild.GetUserAsync(uid);
+				return result != null
+					? TypeParserResult<IGuildUser>.Successful(result)
+					: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user."); ;
+			}
 
-            var m = _userRegex.Match(value);
-            if (m.Success && ulong.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uid))
-            {
-                var result = await context.Guild.GetUserAsync(uid);
-                var ret = result != null
-                    ? TypeParserResult<IGuildUser>.Successful(result)
-                    : TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
-                return ret;
-            }
+			var m = _userRegex.Match(value);
+			if (m.Success && ulong.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uid))
+			{
+				var result = await context.Guild.GetUserAsync(uid);
+				return result != null
+					? TypeParserResult<IGuildUser>.Successful(result)
+					: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
+			}
 
-            value = value.ToLowerInvariant();
+			value = value.ToLowerInvariant();
 
-            var di = value.IndexOf('#');
-            var un = di != -1 ? value.Substring(0, di) : value;
-            var dv = di != -1 ? value.Substring(di + 1) : null;
+			var di = value.IndexOf('#');
+			var un = di != -1 ? value.Substring(0, di) : value;
+			var dv = di != -1 ? value.Substring(di + 1) : null;
 
-            var us =
-                from user in await context.Guild.GetUsersAsync()
-                where user.Username.ToLowerInvariant() == un
-                      && (dv != null && user.Discriminator == dv || dv == null)
-                      || user.Nickname?.ToLowerInvariant() == value
-                select user;
+			var mbr = (await context.Guild.GetUsersAsync()).FirstOrDefault(u =>
+				u.Username.ToLowerInvariant() == un
+				&& (dv != null && u.Discriminator == dv || dv == null)
+				|| u.Nickname?.ToLowerInvariant() == value);
 
-            var mbr = us.FirstOrDefault();
-            return mbr != null
-                ? TypeParserResult<IGuildUser>.Successful(mbr)
-                : TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
-        }
-    }
+			return mbr != null
+				? TypeParserResult<IGuildUser>.Successful(mbr)
+				: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
+		}
+	}
 }

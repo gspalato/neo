@@ -1,45 +1,47 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
+using System.Threading.Tasks;
 using Victoria;
 
 namespace Axion.Core.Services
 {
-    public interface IEventService
-    {
-        public Task OnReadyAsync();
-    }
+	public interface IEventService
+	{
+		public void Listen();
+	}
 
-    public class EventService : IEventService
-    {
-        private DiscordSocketClient Client { get; }
-        private LavaNode LavaNode { get; }
-        private ILoggingService Logger { get; }
+	public class EventService : IEventService
+	{
+		private DiscordSocketClient Client { get; }
+		private LavaNode LavaNode { get; }
+		private ILoggingService Logger { get; }
 
-        public EventService(DiscordSocketClient client,
-            LavaNode lavaNode, ILoggingService logger)
-        {
-            Client = client;
-            LavaNode = lavaNode;
-            Logger = logger;
+		public EventService(DiscordSocketClient client,
+			LavaNode lavaNode, ILoggingService logger)
+		{
+			Client = client;
+			LavaNode = lavaNode;
+			Logger = logger;
+		}
 
-            Client.Ready += OnReadyAsync;
-            Client.Log += Log;
-        }
+		public void Listen()
+		{
+			Client.Ready += OnReadyAsync;
+			Client.Log += Log;
+		}
 
-        public async Task OnReadyAsync()
-        {
-            _ = LavaNode.ConnectAsync();
+		private async Task OnReadyAsync()
+		{
+			_ = LavaNode.ConnectAsync();
 
-            await Client.SetGameAsync($"{Client.Guilds.Count()} guilds.", type: ActivityType.Watching);
-        }
+			await Client.SetGameAsync($"{Client.Guilds.Count} guilds.", type: ActivityType.Watching);
+		}
 
-        public Task Log(LogMessage log)
-        {
-            Logger.Log(log.Severity, log.Message, log.Exception, "dnet");
+		public Task Log(LogMessage log)
+		{
+			Logger.Log(log.Severity, log.Message, log.Exception, "dnet");
 
-            return Task.CompletedTask;
-        }
-    }
+			return Task.CompletedTask;
+		}
+	}
 }

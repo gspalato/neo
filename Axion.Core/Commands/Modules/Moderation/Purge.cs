@@ -19,7 +19,8 @@ namespace Axion.Core.Commands.Modules.Moderation
 		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
 		[OverrideArgumentParser(typeof(UnixArgumentParser))]
 		public async Task PurgeAsync(
-			[Name("Count"), Range(1, 100, true, true)] int count,
+			[Range(1, 100, true, true)]
+			[Name("Count")]   int count,
 			[Name("User")]    IGuildUser user = null,
 			[Name("Channel")] ITextChannel channel = null,
 			[Name("Embeds")]  bool embeds = false,
@@ -50,7 +51,8 @@ namespace Axion.Core.Commands.Modules.Moderation
 				return;
 			}
 
-			var messages = request
+			var messageCount = 0;
+			var filtered = request
 				.Where(m =>
 				{
 					if (user != null && m.Author.Id != user.Id)
@@ -62,19 +64,27 @@ namespace Axion.Core.Commands.Modules.Moderation
 					if (botsOnly && !m.Author.IsBot)
 						return false;
 
-					return m is IUserMessage && (DateTimeOffset.UtcNow - m.CreatedAt).TotalDays < 14;
+					try
+					{
+						return m is IUserMessage && (DateTimeOffset.UtcNow - m.CreatedAt).TotalDays < 14;
+					}
+					finally
+					{
+						messageCount++;
+					}
 				});
+			var messages = filtered as IMessage[] ?? filtered.ToArray();
 
 			if (self)
 				await Context.Message.DeleteAsync();
-
+			
 			await ch.DeleteMessagesAsync(messages).ConfigureAwait(false);
 
 			if (silent)
 				return;
 
 			var sb = new StringBuilder();
-			sb.AppendLine($"Deleted `{messages.Count()}` messages.");
+			sb.AppendLine($"Deleted `{messageCount}` messages.");
 			sb.AppendLine();
 
 			foreach (var author in messages.GroupBy(b => b.Author.Id))

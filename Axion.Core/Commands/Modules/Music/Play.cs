@@ -1,4 +1,4 @@
-﻿using Axion.Core.Extensions;
+﻿using Axion.Common.Extensions;
 using Axion.Core.Structures.Attributes;
 using Qmmands;
 using System;

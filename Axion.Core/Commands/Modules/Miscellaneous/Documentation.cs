@@ -1,7 +1,7 @@
-﻿using Axion.Core.Extensions;
+﻿using Axion.Common.Extensions;
 using Axion.Core.Services;
 using Axion.Core.Structures.Attributes;
-using Axion.Core.Structures.Interactivity;
+using InteractivityNET;
 using Qmmands;
 using System.Linq;
 using System.Text;
@@ -37,7 +37,7 @@ namespace Axion.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			var chunks = response.Results.Chunk(3).Take(5);
+			var chunks = response.Results.Chunk(3).Take(5).ToArray();
 			var chunkCount = chunks.Count();
 
 			var pagedBuilder = new PaginatedMessageBuilder()
@@ -47,7 +47,7 @@ namespace Axion.Core.Commands.Modules.Miscellaneous
 			var totalMatchCount = 0;
 			for (var chunkNumber = 0; chunkNumber < chunkCount; chunkNumber++)
 			{
-				var chunk = chunks.ToArray()[chunkNumber];
+				var chunk = chunks[chunkNumber];
 				var description = new StringBuilder();
 
 				if (chunk is null)
@@ -74,7 +74,7 @@ namespace Axion.Core.Commands.Modules.Miscellaneous
 				pagedBuilder.AddPage(template =>
 				{
 					template
-						.WithTitle($"📜 dotnet documentation · page {n} of {chunkCount}")
+						.WithTitle($"\\📜 dotnet documentation · page {n} of {chunkCount}")
 						.WithDefaultColor()
 						.WithDescription(description.ToString());
 				});

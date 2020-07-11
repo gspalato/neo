@@ -1,7 +1,14 @@
-﻿using Axion.Core.Extensions;
+﻿using Axion.Core.Services;
+using Axion.Database.Repositories;
+using Canducci.MongoDB.Repository.Connection;
+using Discord;
+using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Qmmands;
+using System;
+using Victoria;
 
 namespace Axion.Core
 {
@@ -12,18 +19,45 @@ namespace Axion.Core
 
 		private static IHostBuilder CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
-				.ConfigureAppConfiguration((hostContext, configBuilder) =>
+				.ConfigureServices((hostContext, services) =>
 				{
-					configBuilder.AddJsonFile("appsettings.json");
+					services
+						.AddSingleton(new DiscordSocketConfig
+						{
+							ExclusiveBulkDelete = true
+						})
+						.AddSingleton(new CommandServiceConfiguration
+						{
+							DefaultRunMode = RunMode.Parallel
+						})
+						.AddSingleton(new LavaConfig
+						{
+							Authorization = hostContext.Configuration.GetValue<string>("LAVALINK"),
+							LogSeverity = LogSeverity.Debug
+						});
 				})
-				.ConfigureLogging((hostContext, configLogging) =>
+				.ConfigureServices((hostContext, services) =>
 				{
-					configLogging
-						.AddConsole()
-						.AddDebug();
+					services
+						.AddSingleton<DiscordSocketClient>()
+						.AddSingleton<ICommandHandlingService, CommandHandlingService>()
+						.AddSingleton<ICommandService, CommandService>()
+						.AddSingleton<IDocumentationService, DocumentationService>()
+						.AddSingleton<IEventService, EventService>()
+						.AddSingleton<ILoggingService, LoggingService>()
+						.AddSingleton<IMusicService, MusicService>()
+						.AddSingleton<LavaNode>()
+						.AddSingleton<Random>()
+						.AddHostedService<App>();
 				})
-				.AddAxionCoreConfigurations(args)
-				.AddAxionCoreServices()
-				.AddAxionDatabases();
+				.ConfigureServices((hostContext, services) =>
+				{
+					services
+						.AddScoped<IConfig, Config>()
+						.AddScoped<IConnect, Connect>()
+						.AddScoped<IGuildSettingsRepository, GuildSettingsRepository>()
+						.AddScoped<IQueueRepository, QueueRepository>()
+						.AddScoped<ITagsRepository, TagsRepository>();
+				});
 	}
 }

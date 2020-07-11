@@ -5,27 +5,32 @@ using System.Threading.Tasks;
 
 namespace Axion.Core.Commands.TypeParsers
 {
-    public class ModuleTypeParser : BaseTypeParser<Module>
-    {
-        public static readonly ModuleTypeParser Instance = new ModuleTypeParser();
+	public class ModuleTypeParser : BaseTypeParser<Module>
+	{
+		public static readonly ModuleTypeParser Instance = new ModuleTypeParser();
 
-        private ModuleTypeParser() { }
+		private ModuleTypeParser() { }
 
-        public override ValueTask<TypeParserResult<Module>> ParseAsync(Parameter parameter, string value,
-            AxionContext context, IServiceProvider provider)
-        {
-            var commandService = context.GetService<ICommandService>();
+		public override ValueTask<TypeParserResult<Module>> ParseAsync(Parameter parameter, string value,
+			AxionContext context, IServiceProvider provider)
+		{
+			var commandService = context.GetService<ICommandService>();
 
-            var modules = commandService.GetAllModules();
-            var module = modules.First(m =>
-            {
-                var attribute = (GroupAttribute)m.Attributes.First(a => a is GroupAttribute);
-                return attribute?.Aliases.Contains(value) ?? false;
-            }) ?? modules.First(m => m.Name == value);
+			var modules = commandService.GetAllModules();
+			foreach (var module in modules)
+			{
+				var attribute = (GroupAttribute)module.Attributes.FirstOrDefault(a => a is GroupAttribute);
+				if (attribute is null)
+				{
+					Console.WriteLine("no group attribute");
+					return TypeParserResult<Module>.Unsuccessful("Couldn't find command.");
+				}
 
-            return module is null
-                ? TypeParserResult<Module>.Unsuccessful("Couldn't find command.")
-                : TypeParserResult<Module>.Successful(module);
-        }
-    }
+				if (attribute.Aliases.Contains(value))
+					return TypeParserResult<Module>.Successful(module);
+			}
+
+			return TypeParserResult<Module>.Unsuccessful("Couldn't find command.");
+		}
+	}
 }

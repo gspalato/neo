@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Axion.Core.Utilities
+namespace Axion.Common.Utilities
 {
     public enum ScriptStage
     {
@@ -18,25 +18,24 @@ namespace Axion.Core.Utilities
         Postprocessing
     }
 
-    public sealed class ScriptingUtility
+    public static class ScriptingUtility
     {
-        public static readonly IReadOnlyList<string> Imports = new ReadOnlyCollection<string>(new List<string>()
+        private static readonly IReadOnlyList<string> Imports = new ReadOnlyCollection<string>(new List<string>()
         {
+            "Axion.Common.Extensions",
+            "Axion.Common.Utilities",
             "Axion.Core",
             "Axion.Core.Commands",
             "Axion.Core.Commands.ArgumentParsers",
             "Axion.Core.Commands.Modules",
             "Axion.Core.Commands.TypeParsers",
-            "Axion.Core.Database",
-            "Axion.Core.Database.Entities",
-            "Axion.Core.Extensions",
             "Axion.Core.Services",
             "Axion.Core.Structures",
             "Axion.Core.Structures.Attributes",
-            "Axion.Core.Structures.Database",
-            "Axion.Core.Structures.Interactivity",
             "Axion.Core.Structures.Miscellaneous",
-            "Axion.Core.Utilities",
+            "Axion.Database",
+            "Axion.Database.Entities",
+            "Axion.Database.Repositories",
             "Discord",
             "Discord.Net",
             "Discord.Rest",

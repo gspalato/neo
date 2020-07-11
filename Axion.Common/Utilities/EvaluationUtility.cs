@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Axion.Common.Extensions;
+using Discord;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Axion.Core.Extensions;
-using Discord;
 
-namespace Axion.Core.Utilities
+namespace Axion.Common.Utilities
 {
-	public class EvaluationUtility
+	public static class EvaluationUtility
 	{
 		public static string InspectInheritance(object obj) => Inheritance(obj.GetType());
 
@@ -62,7 +62,7 @@ namespace Axion.Core.Utilities
 			var type = obj.GetType();
 
 			if (obj is string)
-				return $"\"{obj.ToString().Replace("\n", @"\n")}\"";
+				return $"\"{obj.ToString()?.Replace("\n", @"\n")}\"";
 			else if (obj is decimal)
 				return obj.ToString();
 			else if (type.IsPrimitive)

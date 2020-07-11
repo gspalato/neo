@@ -4,7 +4,7 @@ using InteractivityNET;
 using System;
 using System.Threading.Tasks;
 
-namespace Axion.Core.Extensions
+namespace Axion.Common.Extensions
 {
     public static class TextChannelExtensions
     {

@@ -5,7 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-    <StartupObject>Axion.AxionDocker</StartupObject>
+    <StartupObject>Axion.Docker.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

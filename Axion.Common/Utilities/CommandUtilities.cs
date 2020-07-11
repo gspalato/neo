@@ -1,10 +1,9 @@
-﻿using Axion.Core.Extensions;
-using System;
-using System.Text;
+﻿using System.Text;
+using Axion.Common.Extensions;
 using Victoria;
 using Victoria.Interfaces;
 
-namespace Axion.Core.Utilities
+namespace Axion.Common.Utilities
 {
 	public static class CommandUtilities
 	{
@@ -13,11 +12,12 @@ namespace Axion.Core.Utilities
 			if (queue.Count == 0)
 				return "";
 
-			StringBuilder s = new StringBuilder();
+			var s = new StringBuilder();
 
-			int elapsed = 0;
-			foreach (LavaTrack track in queue.Items)
+			var elapsed = 0;
+			foreach (var queueable in queue.Items)
 			{
+				var track = (LavaTrack)queueable;
 				if (elapsed >= 5)
 					break;
 
@@ -25,7 +25,7 @@ namespace Axion.Core.Utilities
 				s.Append("\n");
 			}
 
-			int remaining = queue.Count - elapsed;
+			var remaining = queue.Count - elapsed;
 			if (queue.Count > 5)
 				s.Append($"and {remaining} more track{(remaining > 1 ? "s" : "")}...");
 

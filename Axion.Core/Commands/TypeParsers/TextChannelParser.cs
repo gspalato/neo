@@ -37,7 +37,7 @@ namespace Axion.Core.Commands.TypeParsers
 
 			value = value.ToLowerInvariant();
 
-			var chn = (await context.Guild.GetTextChannelsAsync()).First(chn => chn.Name.ToLowerInvariant() == value);
+			var chn = (await context.Guild.GetTextChannelsAsync()).First(c => c.Name.ToLowerInvariant() == value);
 
 			return chn != null
 				? TypeParserResult<ITextChannel>.Successful(chn)

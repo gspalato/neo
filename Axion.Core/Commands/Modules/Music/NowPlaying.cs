@@ -1,10 +1,11 @@
-﻿using Axion.Core.Extensions;
+﻿using System.Text;
+using Axion.Common.Extensions;
 using Axion.Core.Structures.Attributes;
 using Qmmands;
 using System.Threading.Tasks;
 using Victoria;
 using Victoria.Enums;
-using Utils = Axion.Core.Utilities;
+using Utils = Axion.Common.Utilities;
 
 namespace Axion.Core.Commands.Modules.Music
 {
@@ -13,6 +14,7 @@ namespace Axion.Core.Commands.Modules.Music
 	[Group("nowplaying", "np", "now-playing")]
 	public sealed class NowPlaying : AxionModule
 	{
+		// ReSharper disable once MemberCanBePrivate.Global
 		public LavaNode LavaNode { get; set; }
 
 		[Command]
@@ -40,14 +42,16 @@ namespace Axion.Core.Commands.Modules.Music
 			var elapsedTime = track.Position.ToHumanDuration();
 			var remainingTime = (track.Duration - track.Position).ToHumanDuration();
 
-			var description = $"**[{track.Title.TruncateAndSanitize()}]({track.Url})**"
-					+ $"\n`{remainingTime}` remaining.\n\n"
-					+ firstTracks;
+			var description = new StringBuilder();
 
-			var embed = CreateDefaultEmbed("🎶 Now Playing", description)
+			description.AppendLine($"**[{track.Title.TruncateAndSanitize()}]({track.Url})**");
+			description.AppendLine($"`{remainingTime}` remaining.\n");
+			description.Append(firstTracks);
+
+			var embed = CreateDefaultEmbed("🎶 Now Playing", description.ToString())
 				.WithFooter($"{slider}  {elapsedTime} / {totalTime}");
 
-			await SendEmbedAsync(embed: embed);
+			await SendEmbedAsync(embed);
 		}
 	}
 }

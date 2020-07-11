@@ -8,33 +8,29 @@ using System.Threading.Tasks;
 
 namespace Axion.Core
 {
-	public interface IApp : IHostedService
-	{
-		new Task StartAsync(CancellationToken cancellationToken);
-		new Task StopAsync(CancellationToken cancellationToken);
-	}
-
-	public class App : IApp
+	public class App : IHostedService
 	{
 		private readonly IConfiguration _configuration;
 		private readonly DiscordSocketClient _client;
 
-		/* Needed for initializing. */
-		private CommandHandlingService _commandHandler;
-		private IEventService _eventService;
+		private readonly ICommandHandlingService _commandHandler;
+		private readonly IEventService _eventService;
 
 		public App(DiscordSocketClient client, IConfiguration configuration,
-			CommandHandlingService commandHandler, IEventService eventService)
+			ICommandHandlingService commandHandler, IEventService eventService)
 		{
 			_configuration = configuration;
 			_client = client;
 
-            _commandHandler = commandHandler;
+			_commandHandler = commandHandler;
 			_eventService = eventService;
 		}
 
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
+			_commandHandler.Start();
+			_eventService.Listen();
+
 			await _client.LoginAsync(TokenType.Bot, _configuration.GetValue<string>("TOKEN"));
 			await _client.StartAsync();
 

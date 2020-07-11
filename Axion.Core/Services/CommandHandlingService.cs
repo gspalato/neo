@@ -1,21 +1,23 @@
 ﻿using Axion.Core.Commands;
 using Axion.Core.Commands.ArgumentParsers;
 using Axion.Core.Commands.TypeParsers;
-using Axion.Core.Database;
+using Axion.Core.Structures.Attributes;
+using Axion.Database.Repositories;
 using Discord;
 using Discord.WebSocket;
 using Qmmands;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
-using Axion.Core.Commands.Modules;
-using Axion.Core.Structures.Attributes;
 
 namespace Axion.Core.Services
 {
 	public interface ICommandHandlingService
-	{ }
+	{
+		void Start();
+	}
 
 	public class CommandHandlingService : ICommandHandlingService
 	{
@@ -29,33 +31,43 @@ namespace Axion.Core.Services
 
 		public CommandHandlingService(DiscordSocketClient client,
 			ICommandService commandService, ILoggingService loggingService,
-            IGuildSettingsRepository guildSettingsRepository, IServiceProvider services)
+			IGuildSettingsRepository guildSettingsRepository, IServiceProvider services)
 		{
 			_commandService = commandService;
 			_client = client;
-            _guildSettingsRepository = guildSettingsRepository;
+			_guildSettingsRepository = guildSettingsRepository;
 			_loggingService = loggingService;
 			_services = services;
+		}
 
+		public void Start()
+		{
 			LinkEvents();
 
 			AddArgumentParsers();
 			AddTypeParsers();
 
 			_commandService.AddModules(Assembly.GetExecutingAssembly());
-        }
+		}
 
 		private void LinkEvents()
 		{
 			_commandService.CommandExecutionFailed += async args =>
 			{
-				_loggingService.Error($"{args.Result.Exception.Message}\n{args.Result.Exception.StackTrace}");
-                if (args.Result.Exception.InnerException != null)
-                {
-                    var inner = args.Result.Exception.InnerException;
-                    _loggingService.Error($"INNER EXCEPTION | {inner.Message}\n{inner.StackTrace}");
+				var builder = new StringBuilder();
+
+				builder.Append($"{args.Result.Exception.Message}\n{args.Result.Exception.StackTrace}");
+
+				if (args.Result.Exception.InnerException != null)
+				{
+					var inner = args.Result.Exception.InnerException;
+					builder.Append($"\nINNER EXCEPTION | {inner.Message}\n{inner.StackTrace}");
 				}
-            };
+
+				_loggingService.Error(builder.ToString());
+
+				await Task.Yield();
+			};
 
 			_client.MessageReceived += OnMessageReceivedAsync;
 		}
@@ -67,7 +79,7 @@ namespace Axion.Core.Services
 
 		private void AddTypeParsers()
 		{
-            _commandService.AddTypeParser(CommandTypeParser.Instance);
+			_commandService.AddTypeParser(CommandTypeParser.Instance);
 			_commandService.AddTypeParser(GuildUserParser.Instance);
 			_commandService.AddTypeParser(MessageParser.Instance);
 			_commandService.AddTypeParser(ModuleTypeParser.Instance);
@@ -83,77 +95,73 @@ namespace Axion.Core.Services
 			if (!(msg.Channel is ITextChannel textChannel))
 				return;
 
-            var me = await textChannel.Guild.GetCurrentUserAsync();
-            if (!me.GetPermissions(textChannel).SendMessages)
-                return;
+			var me = await textChannel.Guild.GetCurrentUserAsync();
+			if (!me.GetPermissions(textChannel).SendMessages)
+				return;
 
 			var settings = await _guildSettingsRepository.GetOrCreateForGuildAsync(textChannel.GuildId);
 
 			if (!CommandUtilities.HasPrefix(msg.Content, settings.Prefix, out var output))
 				return;
 
-            var context = new AxionContext(msg, me, _services);
+			var context = new AxionContext(msg, me, _services);
 			var result = await _commandService.ExecuteAsync(output, context);
 
-            switch (result)
-            {
-				default:
-					Console.WriteLine($"Result Type: {result.GetType().Name}");
-                    break;
+			switch (result)
+			{
+				case ArgumentParseFailedResult argParse:
+					{
+						await SendErrorResultEmbedAsync(msg, argParse.Reason);
+					}
+					break;
 
-                case ArgumentParseFailedResult argParse:
-                    {
-                        await SendErrorResultEmbedAsync(msg, argParse.Reason);
-                    }
-                    break;
-
-                case TypeParseFailedResult typeParse:
+				case TypeParseFailedResult typeParse:
 					{
 						var name = typeParse.Parameter.Name;
 						var type = typeParse.Parameter.Type.Name;
-						var given = typeParse.Value;
+						var given = Format.Quote(Format.Sanitize(typeParse.Value));
 
 						await SendErrorResultEmbedAsync(msg,
-								$"Wrong type given at `{name}`.\nExpected {type}, got\n{Format.Quote(Format.Sanitize(given))}");
+								$"Wrong type given at `{name}`.\nExpected {type}, got\n{given}");
 					}
 					break;
 
 				case ParameterChecksFailedResult parameterChecks:
-                    {
-                        var cmd = parameterChecks.Parameter.Command;
-                        var shouldSupress = cmd.Attributes.Any(a => a is SupressPermissionErrorsAttribute);
+					{
+						var cmd = parameterChecks.Parameter.Command;
+						var shouldSupress = cmd.Attributes.Any(a => a is SupressPermissionErrorsAttribute);
 
-                        if (shouldSupress)
-                            return;
+						if (shouldSupress)
+							return;
 
 						var (_, parameterResult) = parameterChecks.FailedChecks.First();
 						var reason = parameterResult.Reason;
 
 						await SendErrorResultEmbedAsync(msg, reason);
-                    }
+					}
 					break;
 
 				case OverloadsFailedResult overloads:
-                    {
-                        await SendErrorResultEmbedAsync(msg, overloads.Reason);
-                    }
+					{
+						await SendErrorResultEmbedAsync(msg, overloads.Reason);
+					}
 					break;
 			}
 		}
 
-        private async Task SendErrorResultEmbedAsync(IMessage msg, string reason)
-        {
-            var footer = new EmbedFooterBuilder()
-                .WithText(msg.Author.Username)
-                .WithIconUrl(msg.Author.GetAvatarUrl());
+		private async Task SendErrorResultEmbedAsync(IMessage msg, string reason)
+		{
+			var footer = new EmbedFooterBuilder()
+				.WithText(msg.Author.Username)
+				.WithIconUrl(msg.Author.GetAvatarUrl());
 
-            await msg.Channel.SendMessageAsync(embed: new EmbedBuilder()
-                .WithTitle("⚠️ Huh?")
-                .WithColor(Color.Orange)
-                .WithDescription(reason)
-                .WithFooter(footer)
-                .WithCurrentTimestamp()
-                .Build());
+			await msg.Channel.SendMessageAsync(embed: new EmbedBuilder()
+				.WithTitle("⚠️ Huh?")
+				.WithColor(Color.Orange)
+				.WithDescription(reason)
+				.WithFooter(footer)
+				.WithCurrentTimestamp()
+				.Build());
 		}
 	}
 }

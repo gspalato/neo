@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Axion.Tests</RootNamespace>
+    <RootNamespace>Axion.Common.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Axion.Core\Axion.Core.csproj" />
+    <ProjectReference Include="..\Axion.Common\Axion.Common.csproj" />
   </ItemGroup>
   
   <ItemGroup>

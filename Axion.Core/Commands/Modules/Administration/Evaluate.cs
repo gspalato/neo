@@ -1,7 +1,7 @@
-﻿using Axion.Core.Extensions;
+﻿using Axion.Common.Utilities;
+using Axion.Common.Extensions;
 using Axion.Core.Structures.Attributes;
 using Axion.Core.Structures.Miscellaneous;
-using Axion.Core.Utilities;
 using Discord;
 using Microsoft.CodeAnalysis;
 using Qmmands;
@@ -42,7 +42,8 @@ namespace Axion.Core.Commands.Modules.Administration
 				var result = await ScriptingUtility.EvaluateScriptAsync(code, globals);
 				if (!result.IsSuccess)
 				{
-					var message = result.CompilationDiagnostics.First(a => a.Severity == DiagnosticSeverity.Error)
+					var message = result.CompilationDiagnostics
+						.First(a => a.Severity is DiagnosticSeverity.Error)
 						.GetMessage();
 
 					await SendErrorAsync($"Evaluation failed at **{result.FailedStage}** step.\n{Format.Code(message, "")}");
@@ -56,35 +57,34 @@ namespace Axion.Core.Commands.Modules.Administration
 				{
 					await evalMessage.DeleteAsync();
 					await Context.Message.AddReactionAsync(new Emoji("✅"));
+					return;
 				}
-				else
+
+				var res = value switch
 				{
-					var res = value switch
-					{
-						string str => str,
-						IEnumerable enumerable => string.Join("\n", enumerable.Cast<object>().Select(x => $"{x}")),
-						_ => EvaluationUtility.SerializeObject(value)
-					};
+					string str => str,
+					IEnumerable enumerable => string.Join("\n", enumerable.Cast<object>().Select(x => $"{x}")),
+					_ => EvaluationUtility.SerializeObject(value)
+				};
 
-					await evalMessage.ModifyAsync(props =>
-					{
-						props.Embed = CreateDefaultEmbed(Format.Code(code.EscapeCodeblock(), "csharp"))
-							.AddField($"Result: {value.GetType().Name}", Format.Code(res.EscapeCodeblock(), "js"))
-							.WithFooter(new EmbedFooterBuilder()
-								.WithText($"took {timeTook} · react with ❌ to delete."))
-							.Build();
-					});
+				await evalMessage.ModifyAsync(props =>
+				{
+					props.Embed = CreateDefaultEmbed(Format.Code(code.EscapeCodeblock(), "csharp"))
+						.AddField($"Result: {value.GetType().Name}", Format.Code(res.EscapeCodeblock(), "js"))
+						.WithFooter(new EmbedFooterBuilder()
+							.WithText($"took {timeTook} · react with ❌ to delete."))
+						.Build();
+				});
 
-					var reactionAwaiter = evalMessage.AwaitReaction(Context.Client,
-						r => r.UserId == Context.Message.Author.Id && r.Emote.Name == "❌");
-					var reaction = await reactionAwaiter;
+				var reactionAwaiter = evalMessage.AwaitReaction(Context.Client,
+					r => r.UserId == Context.Message.Author.Id && r.Emote.Name == "❌");
+				var reaction = await reactionAwaiter;
 
-					if (!reactionAwaiter.IsCompleted || reactionAwaiter.IsCanceled)
-						return;
+				if (!reactionAwaiter.IsCompleted || reactionAwaiter.IsCanceled)
+					return;
 
-					if (reaction.Emote.Name == "❌")
-						await evalMessage.DeleteAsync();
-				}
+				if (reaction.Emote.Name == "❌")
+					await evalMessage.DeleteAsync();
 			}
 			catch (Exception ex)
 			{

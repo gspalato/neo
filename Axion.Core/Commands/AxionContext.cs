@@ -12,7 +12,7 @@ namespace Axion.Core.Commands
 		public readonly ITextChannel Channel;
 		public readonly DiscordSocketClient Client;
 		public readonly IGuild Guild;
-        public readonly IGuildUser Me;
+		public readonly IGuildUser Me;
 		public readonly IUserMessage Message;
 		public readonly DateTimeOffset Now;
 		public readonly IGuildUser User;
@@ -22,7 +22,7 @@ namespace Axion.Core.Commands
 			Channel = (ITextChannel)msg.Channel;
 			Client = services.GetService<DiscordSocketClient>();
 			Guild = Channel.Guild;
-            Me = me;
+			Me = me;
 			Message = msg;
 			Now = DateTimeOffset.UtcNow;
 			User = (IGuildUser)msg.Author;

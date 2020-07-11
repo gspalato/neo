@@ -14,6 +14,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0-preview.2.20160.3" />
 		<PackageReference Include="MongoDB.Bson" Version="2.10.2" />
 		<PackageReference Include="MongoDB.Driver" Version="2.10.2" />
+		<PackageReference Include="Victoria" Version="5.1.2" />
   </ItemGroup>
 
 </Project>

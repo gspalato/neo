@@ -1,4 +1,4 @@
-﻿using Axion.Core.Extensions;
+﻿using Axion.Common.Extensions;
 using Discord;
 using Discord.WebSocket;
 using System.Threading.Tasks;
@@ -23,8 +23,6 @@ namespace Axion.Core.Services
 			Logger = logger;
 
 			LavaNode.OnLog += OnLog;
-			LavaNode.OnPlayerUpdated += OnPlayerUpdated;
-			LavaNode.OnStatsReceived += OnStatsReceived;
 			LavaNode.OnTrackEnded += OnTrackEnded;
 			LavaNode.OnTrackException += OnTrackException;
 			LavaNode.OnTrackStuck += OnTrackStuck;
@@ -38,21 +36,9 @@ namespace Axion.Core.Services
 			return Task.CompletedTask;
 		}
 
-		private Task OnPlayerUpdated(PlayerUpdateEventArgs arg)
-		{
-			// Logger.LogInformation($"Player update received for {arg.Player.VoiceChannel.Name}.");
-			return Task.CompletedTask;
-		}
-
 		private async Task OnReady()
 		{
 			await LavaNode.ConnectAsync().ConfigureAwait(false);
-		}
-
-		private Task OnStatsReceived(StatsEventArgs arg)
-		{
-			// Logger.LogInformation($"Lavalink Uptime {arg.Uptime}.");
-			return Task.CompletedTask;
 		}
 
 		private async Task OnTrackEnded(TrackEndedEventArgs args)
