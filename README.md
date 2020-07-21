@@ -43,7 +43,7 @@
 
 ## 👨‍🏫 Authors
 
-- **Gabriel Spalato Marques** (@devsharp_) ➔ CEO/Founder of C# shitcode
+- **Gabriel Spalato Marques** (@gspalato) ➔ CEO/Founder of C# shitcode
 - **Laura Moreira** (@strawberrycandy20) ➔ Emotional support during these trying times.
 
 ## 📝 License
