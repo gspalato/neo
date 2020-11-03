@@ -36,8 +36,8 @@
 ```
 
 #### With Docker
-* Go to `Axion.Docker`;
-* Run the Axion Docker Utility (`ps-axion.ps1`)
+* Go to `Spade.Docker`;
+* Run the Spade Docker Utility (`ps-axion.ps1`)
 * Run `build`;
 * To start, run `run`;
 
