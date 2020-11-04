@@ -17,7 +17,7 @@ namespace Spade.Core.Services
 		void Critical(string message, Exception exception = null, string className = null);
 	}
 
-	public class LoggingService : ILoggingService
+	public class LoggingService : ServiceBase, ILoggingService
 	{
 		private readonly object _lock = new object();
 
@@ -86,13 +86,16 @@ namespace Spade.Core.Services
 		{
 			var output = new StringBuilder();
 
-			if (className != null)
+			if (message is null || message.Length < 1)
+				return;
+
+			if (className is not null)
 				output = new StringBuilder($"{className.Pastel("#888888")} ");
 
 			output.Append($"{name.Pastel(color)} ");
-			output.Append(message.Pastel("#cfcfcf"));
+			output.Append(message?.Pastel("#cfcfcf"));
 
-			if (exception != null)
+			if (exception is not null)
 				output.Append($"\n{exception.Message}");
 
 			lock (_lock)

@@ -11,7 +11,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class TextChannelParser : BaseTypeParser<ITextChannel>
 	{
-		public static readonly TextChannelParser Instance = new TextChannelParser();
+		public static readonly TextChannelParser Instance = new();
 
 		private TextChannelParser() { }
 
@@ -39,7 +39,7 @@ namespace Spade.Core.Commands.TypeParsers
 
 			var chn = (await context.Guild.GetTextChannelsAsync()).First(c => c.Name.ToLowerInvariant() == value);
 
-			return chn != null
+			return chn is not null
 				? TypeParserResult<ITextChannel>.Successful(chn)
 				: TypeParserResult<ITextChannel>.Unsuccessful("Couldn't parse text channel");
 		}

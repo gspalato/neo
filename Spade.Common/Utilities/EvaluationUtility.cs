@@ -19,7 +19,7 @@ namespace Spade.Common.Utilities
             var baseTypes = new List<Type>() { type };
             var latestType = type.BaseType;
 
-            while (latestType != null)
+            while (latestType is not null)
             {
                 baseTypes.Add(latestType);
                 latestType = latestType.BaseType;
@@ -31,7 +31,7 @@ namespace Spade.Common.Utilities
             {
                 sb.Append($"[{FormatType(baseType)}]");
                 IList<Type> inheritors = baseType.GetInterfaces();
-                if (baseType.BaseType != null)
+                if (baseType.BaseType is not null)
                 {
                     inheritors = inheritors.ToList();
                     inheritors.Add(baseType.BaseType);
@@ -96,14 +96,14 @@ namespace Spade.Common.Utilities
 
 				var value = prop.GetValue(obj);
 				string serialized;
-				if (value != null)
+				if (value is not null)
 					serialized = SerializeObject(value, false);
 				else
 					serialized = null;
 
 				string typeName = ReplaceIndex(prop.PropertyType.Name);
 
-				builder.Append($"\t<{typeName}> {prop.Name}");
+				builder.Append($"\t{typeName} {prop.Name}");
 				builder.Append($": {serialized ?? "null"}\n");
 
 				total++;

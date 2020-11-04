@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using Spade.Common.Extensions;
 using Victoria;
-using Victoria.Interfaces;
 
 namespace Spade.Common.Utilities
 {
@@ -12,7 +11,7 @@ namespace Spade.Common.Utilities
 			if (queue.Count == 0)
 				return "";
 
-			var s = new StringBuilder();
+			StringBuilder s = new();
 
 			var elapsed = 0;
 			foreach (var queueable in queue.Items)

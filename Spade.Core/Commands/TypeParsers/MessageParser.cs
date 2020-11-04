@@ -9,7 +9,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class MessageParser : BaseTypeParser<IMessage>
 	{
-		public static readonly MessageParser Instance = new MessageParser();
+		public static readonly MessageParser Instance = new();
 
 		private MessageParser() { }
 
@@ -41,7 +41,7 @@ namespace Spade.Core.Commands.TypeParsers
 					return TypeParserResult<IMessage>.Unsuccessful("Couldn't parse message.");
 
 				var msg = await ((ITextChannel)chn).GetMessageAsync(mid).ConfigureAwait(false);
-				return msg != null
+				return msg is not null
 					? TypeParserResult<IMessage>.Successful(msg)
 					: TypeParserResult<IMessage>.Unsuccessful("Couldn't parse message.");
 			}
@@ -50,7 +50,7 @@ namespace Spade.Core.Commands.TypeParsers
 				return TypeParserResult<IMessage>.Unsuccessful("Couldn't parse message.");
 
 			var result = await context.Channel.GetMessageAsync(mid).ConfigureAwait(false);
-			return result != null
+			return result is not null
 				? TypeParserResult<IMessage>.Successful(result)
 				: TypeParserResult<IMessage>.Unsuccessful("Couldn't parse message.");
 		}

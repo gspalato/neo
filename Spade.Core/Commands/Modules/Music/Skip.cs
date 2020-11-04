@@ -40,7 +40,7 @@ namespace Spade.Core.Commands.Modules.Music
 				var embed = CreateDefaultEmbed(":notes: now playing",
 					$"**[{currentTrack.Title.TruncateAndSanitize()}]({currentTrack.Url})**");
 					
-				if (player.PlayerState == PlayerState.Paused)
+				if (player.PlayerState is PlayerState.Paused)
 					embed.WithFooter(new EmbedFooterBuilder
 					{
 						Text = "The player's paused."

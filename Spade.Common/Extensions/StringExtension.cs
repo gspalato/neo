@@ -19,7 +19,7 @@ namespace Spade.Common.Extensions
 		
 		public static string Truncate(this string s, int maxLength = 40)
 		{
-			return s != null && s.Length > maxLength ? s.Substring(0, maxLength) + "..." : s;
+			return (s is not null && s.Length > maxLength) ? s.Substring(0, maxLength) + "..." : s;
 		}
 
 		public static string TruncateAndSanitize(this string s, int maxLength = 40)

@@ -139,7 +139,7 @@ namespace Spade.Core.Commands.Modules.Music
 				return;
 			}
 
-			if (player.Queue.Count is 0 && player.Track != null)
+			if (player.Queue.Count is 0 && player.Track is not null)
 			{
 				await SendDefaultEmbedAsync("The queue is empty.");
 				return;

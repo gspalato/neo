@@ -10,7 +10,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class GuildUserParser : BaseTypeParser<IGuildUser>
 	{
-		public static readonly GuildUserParser Instance = new GuildUserParser();
+		public static readonly GuildUserParser Instance = new();
 
 		private GuildUserParser() { }
 
@@ -25,7 +25,7 @@ namespace Spade.Core.Commands.TypeParsers
 			if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))
 			{
 				var result = await context.Guild.GetUserAsync(uid);
-				return result != null
+				return result is not null
 					? TypeParserResult<IGuildUser>.Successful(result)
 					: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user."); ;
 			}
@@ -34,7 +34,7 @@ namespace Spade.Core.Commands.TypeParsers
 			if (m.Success && ulong.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uid))
 			{
 				var result = await context.Guild.GetUserAsync(uid);
-				return result != null
+				return result is not null
 					? TypeParserResult<IGuildUser>.Successful(result)
 					: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
 			}
@@ -47,10 +47,10 @@ namespace Spade.Core.Commands.TypeParsers
 
 			var mbr = (await context.Guild.GetUsersAsync()).FirstOrDefault(u =>
 				u.Username.ToLowerInvariant() == un
-				&& (dv != null && u.Discriminator == dv || dv == null)
+				&& (dv is not null && u.Discriminator == dv || dv == null)
 				|| u.Nickname?.ToLowerInvariant() == value);
 
-			return mbr != null
+			return mbr is not null
 				? TypeParserResult<IGuildUser>.Successful(mbr)
 				: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
 		}

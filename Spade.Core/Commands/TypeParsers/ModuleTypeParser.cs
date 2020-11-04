@@ -7,7 +7,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class ModuleTypeParser : BaseTypeParser<Module>
 	{
-		public static readonly ModuleTypeParser Instance = new ModuleTypeParser();
+		public static readonly ModuleTypeParser Instance = new();
 
 		private ModuleTypeParser() { }
 

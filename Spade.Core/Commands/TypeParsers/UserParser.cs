@@ -10,7 +10,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class UserParser : BaseTypeParser<IUser>
 	{
-		public static readonly UserParser Instance = new UserParser();
+		public static readonly UserParser Instance = new();
 
 		private UserParser() { }
 
@@ -22,7 +22,7 @@ namespace Spade.Core.Commands.TypeParsers
 			if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))
 			{
 				var result = context.Client.GetUser(uid);
-				var ret = result != null
+				var ret = result is not null
 					? TypeParserResult<IUser>.Successful(result)
 					: TypeParserResult<IUser>.Unsuccessful("Couldn't parse user.");
 				return ret;
@@ -32,7 +32,7 @@ namespace Spade.Core.Commands.TypeParsers
 			if (m.Success && ulong.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uid))
 			{
 				var result = context.Client.GetUser(uid);
-				var ret = result != null
+				var ret = result is not null
 					? TypeParserResult<IUser>.Successful(result)
 					: TypeParserResult<IUser>.Unsuccessful("Couldn't parse user.");
 				return ret;
@@ -48,10 +48,10 @@ namespace Spade.Core.Commands.TypeParsers
 				.SelectMany(guild => guild.Users)
 				.Where(user =>
 					user.Username.ToLowerInvariant() == username
-					&& ((discrim != null && user.Discriminator == discrim) || discrim == null));
+					&& ((discrim is not null && user.Discriminator == discrim) || discrim == null));
 
 			var usr = us.FirstOrDefault();
-			return usr != null
+			return usr is not null
 				? TypeParserResult<IUser>.Successful(usr)
 				: TypeParserResult<IUser>.Unsuccessful("Couldn't parse users.");
 		}

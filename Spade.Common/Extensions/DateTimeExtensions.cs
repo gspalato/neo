@@ -10,7 +10,7 @@ namespace Spade.Common.Extensions
             if (duration == null)
                 return null;
 
-            var builder = new StringBuilder();
+            StringBuilder builder = new();
             if (displaySign)
                 builder.Append(duration.TotalMilliseconds < 0 ? "-" : "+");
 

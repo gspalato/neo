@@ -10,7 +10,7 @@ namespace Spade.Core.Services
 	public interface IMusicService
 	{ }
 
-	public sealed class MusicService : IMusicService
+	public sealed class MusicService : ServiceBase, IMusicService
 	{
 		private LavaNode LavaNode { get; }
 		private ILoggingService Logger { get; }

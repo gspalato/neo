@@ -38,7 +38,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 			}
 
 			var tag = await TagsRepository.GetTagAsync(Context.Guild, name);
-			if (tag != null)
+			if (tag is not null)
 			{
 				await Context.ReplyAsync($"Tag \"{name}\" already exists.");
 				return;

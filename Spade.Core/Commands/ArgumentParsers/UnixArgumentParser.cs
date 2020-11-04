@@ -17,7 +17,7 @@ namespace Spade.Core.Commands.ArgumentParsers
 
 	public class UnixArgumentParser : IArgumentParser
 	{
-		public static readonly UnixArgumentParser Instance = new UnixArgumentParser();
+		public static readonly UnixArgumentParser Instance = new();
 
 		private UnixArgumentParser() { }
 
@@ -74,7 +74,7 @@ namespace Spade.Core.Commands.ArgumentParsers
 					case ' ' when state == UnixParserState.ArgumentName:
 						{
 							currentParameter = GetParameter(context, parameterName.ToString());
-							if (currentParameter != null && currentParameter.Type == typeof(bool))
+							if (currentParameter is not null && currentParameter.Type == typeof(bool))
 							{
 								parameters.TryAdd(currentParameter, true);
 								parameterName.Clear();

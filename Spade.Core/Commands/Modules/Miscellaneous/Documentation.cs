@@ -29,15 +29,15 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 					return;
 				}
 
-			var response = await DocumentationService.GetDocumentationResultsAsync(query);
+			var (results, totalResults) = await DocumentationService.GetDocumentationResultsAsync(query);
 
-			if (response.Count == 0)
+			if (totalResults is 0)
 			{
 				await Context.ReplyAsync("Could not find documentation for your requested query.");
 				return;
 			}
 
-			var chunks = response.Results.Chunk(3).Take(5).ToArray();
+			var chunks = results.Chunk(3).Take(5).ToArray();
 			var chunkCount = chunks.Count();
 
 			var pagedBuilder = new PaginatedMessageBuilder()
@@ -66,7 +66,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 
 				if (chunkNumber == chunkCount - 1)
 				{
-					description.Append($"{totalMatchCount} of {response.Results.Count} results shown · ");
+					description.Append($"{totalMatchCount} of {totalResults} results shown · ");
 					description.Append("[click here for more results](https://docs.microsoft.com/dotnet/api/?term={query})");
 				}
 

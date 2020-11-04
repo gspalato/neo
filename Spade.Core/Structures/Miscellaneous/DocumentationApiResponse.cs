@@ -2,23 +2,29 @@
 
 namespace Spade.Core.Structures.Miscellaneous
 {
-    public class DocumentationApiResponse
+    public record DocumentationApiResponse
     {
-        public List<DocumentationMember> Results { get; set; } = new List<DocumentationMember>();
+        public List<DocumentationMember> Results { get; init; } = new();
 
-        public int Count { get; set; }
+        public int Count { get; init; }
+
+        public void Deconstruct(out List<DocumentationMember> results, out int count)
+        {
+            results = Results;
+            count = Count;
+        }
     }
 
-    public class DocumentationMember
+    public record DocumentationMember
     {
-        public string DisplayName { get; set; }
+        public string DisplayName { get; init; }
 
-        public string Url { get; set; }
+        public string Url { get; init; }
 
-        public string ItemType { get; set; }
+        public string ItemType { get; init; }
 
-        public string ItemKind { get; set; }
+        public string ItemKind { get; init; }
 
-        public string Description { get; set; }
+        public string Description { get; init; }
     }
 }

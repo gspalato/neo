@@ -19,7 +19,7 @@ namespace Spade.Core.Commands.Modules.Moderation
 				return;
 
 			var escapedUsername = Format.Sanitize(member.Username);
-			var escapedNickname = member.Nickname != null
+			var escapedNickname = member.Nickname is not null
 				? $"({Format.Sanitize(member.Nickname)})"
 				: "";
 

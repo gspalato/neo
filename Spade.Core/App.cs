@@ -1,8 +1,8 @@
-using Spade.Core.Services;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Spade.Core.Services;
 using System.Threading;
 using System.Threading.Tasks;
 

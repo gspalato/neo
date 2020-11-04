@@ -1,4 +1,5 @@
 ﻿using Qmmands;
+using System;
 using System.Collections.Generic;
 
 namespace Spade.Core.Commands.ArgumentParsers
@@ -38,7 +39,7 @@ namespace Spade.Core.Commands.ArgumentParsers
 			_reason = reason;
 			ParseFailure = failure;
 			Position = position;
-			RawArguments = Context.RawArguments;
+			RawArguments = context.RawArguments;
 			Expected = parameter;
 			IsSuccessful = false;
 			Context = context;
