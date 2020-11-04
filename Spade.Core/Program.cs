@@ -1,12 +1,14 @@
-﻿using Spade.Core.Services;
-using Spade.Database.Repositories;
-using Canducci.MongoDB.Repository.Connection;
+﻿using Canducci.MongoDB.Repository.Connection;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MongoDB;
+using MongoDB.Driver;
 using Qmmands;
+using Spade.Core.Services;
+using Spade.Database.Repositories;
 using System;
 using Victoria;
 
@@ -21,6 +23,17 @@ namespace Spade.Core
 			Host.CreateDefaultBuilder(args)
 				.ConfigureServices((hostContext, services) =>
 				{
+					string lavalinkPassword = hostContext.Configuration.GetValue<string>("LAVALINK");
+					if (lavalinkPassword.Length == 0)
+					{
+						services
+							.BuildServiceProvider()
+							.GetRequiredService<ILoggingService>()
+							.Critical("No Lavalink password was provided.");
+
+						return;
+					}
+
 					services
 						.AddSingleton(new DiscordSocketConfig
 						{
@@ -32,7 +45,7 @@ namespace Spade.Core
 						})
 						.AddSingleton(new LavaConfig
 						{
-							Authorization = hostContext.Configuration.GetValue<string>("LAVALINK"),
+							Authorization = lavalinkPassword,
 							LogSeverity = LogSeverity.Debug
 						});
 				})
@@ -46,7 +59,7 @@ namespace Spade.Core
 						.AddSingleton<IEventService, EventService>()
 						.AddSingleton<ILoggingService, LoggingService>()
 						.AddSingleton<IMusicService, MusicService>()
-						//.AddSingleton<LavaNode>()
+						.AddSingleton<LavaNode>()
 						.AddSingleton<Random>()
 						.AddHostedService<App>();
 				})
