@@ -1,11 +1,11 @@
-﻿using Spade.Core.Commands;
+﻿using Discord;
+using Discord.WebSocket;
+using Qmmands;
+using Spade.Core.Commands;
 using Spade.Core.Commands.ArgumentParsers;
 using Spade.Core.Commands.TypeParsers;
 using Spade.Core.Structures.Attributes;
 using Spade.Database.Repositories;
-using Discord;
-using Discord.WebSocket;
-using Qmmands;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -19,7 +19,7 @@ namespace Spade.Core.Services
 		void Start();
 	}
 
-	public class CommandHandlingService : ICommandHandlingService
+	public class CommandHandlingService : ServiceBase, ICommandHandlingService
 	{
 		private readonly DiscordSocketClient _client;
 		private readonly ICommandService _commandService;
@@ -58,7 +58,7 @@ namespace Spade.Core.Services
 
 				builder.Append($"{args.Result.Exception.Message}\n{args.Result.Exception.StackTrace}");
 
-				if (args.Result.Exception.InnerException != null)
+				if (args.Result.Exception.InnerException is not null)
 				{
 					var inner = args.Result.Exception.InnerException;
 					builder.Append($"\nINNER EXCEPTION | {inner.Message}\n{inner.StackTrace}");
@@ -66,7 +66,7 @@ namespace Spade.Core.Services
 
 				_loggingService.Error(builder.ToString());
 
-				await Task.Yield();
+				await Task.CompletedTask;
 			};
 
 			_client.MessageReceived += OnMessageReceivedAsync;
@@ -84,15 +84,16 @@ namespace Spade.Core.Services
 			_commandService.AddTypeParser(MessageParser.Instance);
 			_commandService.AddTypeParser(ModuleTypeParser.Instance);
 			_commandService.AddTypeParser(TextChannelParser.Instance);
+			_commandService.AddTypeParser(TimeSpanTypeParser.Instance);
 			_commandService.AddTypeParser(UserParser.Instance);
 		}
 
 		private async Task OnMessageReceivedAsync(IMessage m)
 		{
-			if (!(m is IUserMessage msg))
+			if (m is not IUserMessage msg)
 				return;
 
-			if (!(msg.Channel is ITextChannel textChannel))
+			if (msg.Channel is not ITextChannel textChannel)
 				return;
 
 			var me = await textChannel.Guild.GetCurrentUserAsync();
