@@ -26,7 +26,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 			var uptime = Context.Now - Process.GetCurrentProcess().StartTime.ToUniversalTime();
 
 			var embed = new EmbedBuilder()
-				.WithTitle("🏓 Pong!")
+				.WithTitle("🏓 pong!")
 				.WithInfo()
 				.AddField("API Latency", Format.Code($"{Context.Client.Latency}ms", ""), true)
 				.AddField("Bot Latency", Format.Code($"{sw.ElapsedMilliseconds}ms", ""), true)
