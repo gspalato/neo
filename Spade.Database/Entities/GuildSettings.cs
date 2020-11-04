@@ -6,24 +6,24 @@ namespace Spade.Database.Entities
 {
 	public interface IGuildSettings
 	{
-		ObjectId Id { get; set; }
+		ObjectId Id { get; init; }
 
-		string GuildId { get; set; }
-		string Prefix { get; set; }
+		string GuildId { get; init; }
+		string Prefix { get; init; }
 	}
 
 	[MongoCollectionName("GuildSettings")]
-	public class GuildSettings : IGuildSettings
+	public record GuildSettings : IGuildSettings
 	{
 		[BsonId]
-		public ObjectId Id { get; set; }
+		public ObjectId Id { get; init; }
 
 		[BsonElement("guild_id")]
 		[BsonRequired]
-		public string GuildId { get; set; }
+		public string GuildId { get; init; }
 
 		[BsonElement("prefix")]
 		[BsonRequired]
-		public string Prefix { get; set; }
+		public string Prefix { get; init; }
 	}
 }

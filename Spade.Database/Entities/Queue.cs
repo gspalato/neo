@@ -7,28 +7,28 @@ namespace Spade.Database.Entities
 {
 	public interface IQueue
 	{
-		ObjectId Id { get; set; }
+		ObjectId Id { get; init; }
 
-		string GuildId { get; set; }
-		IEnumerable<string> Urls { get; set; }
+		string GuildId { get; init; }
+		IEnumerable<string> Urls { get; init; }
 	}
 
 	[MongoCollectionName("MusicQueues")]
-	public class Queue : IQueue
+	public record Queue : IQueue
 	{
 		[BsonId]
-		public ObjectId Id { get; set; }
+		public ObjectId Id { get; init; }
 
 		[BsonElement("guild_id")]
 		[BsonRequired]
-		public string GuildId { get; set; }
+		public string GuildId { get; init; }
 		
 		[BsonElement("name")]
 		[BsonRequired]
-		public string Name { get; set; }
+		public string Name { get; init; }
 
 		[BsonElement("urls")]
 		[BsonRequired]
-		public IEnumerable<string> Urls { get; set; }
+		public IEnumerable<string> Urls { get; init; }
 	}
 }

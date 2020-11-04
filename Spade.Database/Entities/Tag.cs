@@ -6,39 +6,39 @@ namespace Spade.Database.Entities
 {
 	public interface ITag
 	{
-		ObjectId Id { get; set; }
+		ObjectId Id { get; init; }
 
-		string GuildId { get; set; }
-		string Name { get; set; }
-		string Content { get; set; }
-		string Author { get; set; }
-		int Uses { get; set; }
+		string GuildId { get; init; }
+		string Name { get; init; }
+		string Content { get; init; }
+		string Author { get; init; }
+		int Uses { get; init; }
 	}
 	
 	[MongoCollectionName("Tags")]
-	public class Tag : ITag
+	public record Tag : ITag
 	{
 		[BsonId]
-		public ObjectId Id { get; set; }
+		public ObjectId Id { get; init; }
 
 		[BsonElement("guild_id")]
 		[BsonRequired]
-		public string GuildId { get; set; }
+		public string GuildId { get; init; }
 
 		[BsonElement("name")]
 		[BsonRequired]
-		public string Name { get; set; }
+		public string Name { get; init; }
 
 		[BsonElement("content")]
 		[BsonRequired]
-		public string Content { get; set; }
+		public string Content { get; init; }
 
 		[BsonElement("author")]
 		[BsonRequired]
-		public string Author { get; set; }
+		public string Author { get; init; }
 
 		[BsonElement("uses")]
 		[BsonRequired]
-		public int Uses { get; set; }
+		public int Uses { get; init; }
 	}
 }
