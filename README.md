@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://i.ibb.co/G9rQ1cC/custom-1.png" width="800"/>
+	<img src="https://i.ibb.co/31MFSxY/spade-banner.png" width="800"/>
 </p>
 <p align="center">
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/made-with-c-sharp.svg">
