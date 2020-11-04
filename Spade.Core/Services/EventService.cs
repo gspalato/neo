@@ -1,5 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Hangfire;
+using Spade.Core.Structures.Attributes;
+using System;
 using System.Threading.Tasks;
 using Victoria;
 
@@ -10,17 +13,17 @@ namespace Spade.Core.Services
 		public void Listen();
 	}
 
-	public class EventService : IEventService
+	public class EventService : ServiceBase, IEventService
 	{
 		private DiscordSocketClient Client { get; }
 		private LavaNode LavaNode { get; }
 		private ILoggingService Logger { get; }
 
 		public EventService(DiscordSocketClient client,
-			/*LavaNode lavaNode,*/ ILoggingService logger)
+			LavaNode lavaNode, ILoggingService logger) : base()
 		{
 			Client = client;
-			//LavaNode = lavaNode;
+			LavaNode = lavaNode;
 			Logger = logger;
 		}
 
@@ -32,7 +35,7 @@ namespace Spade.Core.Services
 
 		private async Task OnReadyAsync()
 		{
-			//_ = LavaNode.ConnectAsync();
+			_ = LavaNode.ConnectAsync();
 
 			await Client.SetGameAsync($"{Client.Guilds.Count} guilds.", type: ActivityType.Watching);
 		}
