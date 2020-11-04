@@ -56,7 +56,6 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 			foreach (var (key, value) in categories.OrderBy(x => x.Key))
 			{
 				var joined = string.Join(", ", value.OrderBy(x => x));
-				Console.WriteLine(joined);
 				embed.AddField(key, joined);
 			}
 
