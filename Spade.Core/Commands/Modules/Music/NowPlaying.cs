@@ -1,6 +1,7 @@
 ﻿using Qmmands;
 using Spade.Common.Extensions;
 using Spade.Core.Structures.Attributes;
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Victoria;
@@ -34,7 +35,7 @@ namespace Spade.Core.Commands.Modules.Music
 			var track = player.Track;
 
 			var firstTracks = GetNearestTracksAsString(player.Queue);
-			var slider = track.GenerateSlider();
+			var slider = GenerateSlider(track);
 
 			var totalTime = track.Duration.ToHumanDuration();
 			var elapsedTime = track.Position.ToHumanDuration();
@@ -52,7 +53,7 @@ namespace Spade.Core.Commands.Modules.Music
 			await SendEmbedAsync(embed);
 		}
 
-		public string GetNearestTracksAsString(DefaultQueue<LavaTrack> queue)
+		private string GetNearestTracksAsString(DefaultQueue<LavaTrack> queue)
 		{
 			if (queue.Count == 0)
 				return "";
@@ -75,6 +76,19 @@ namespace Spade.Core.Commands.Modules.Music
 				s.Append($"and {remaining} more track{(remaining > 1 ? "s" : "")}...");
 
 			return s.ToString();
+		}
+
+		private string GenerateSlider(LavaTrack track)
+		{
+			StringBuilder slider = new();
+			for (int i = 0; i <= 29; i++)
+				slider.Append("▬");
+
+			double sliderPosition = track.Position.TotalSeconds * 30 / track.Duration.TotalSeconds;
+			int roundSliderPosition = (int)Math.Round(sliderPosition);
+			slider.Insert((roundSliderPosition <= 0) ? 0 : roundSliderPosition - 1, "\ud83d\udd35");
+
+			return slider.ToString();
 		}
 	}
 }
