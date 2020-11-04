@@ -69,8 +69,9 @@ namespace Spade.Core.Commands.Modules.Administration
 
 				await evalMessage.ModifyAsync(props =>
 				{
+					string resultBlock = $"**{Format.Code(res.EscapeCodeblock(), "js")}**";
 					props.Embed = CreateDefaultEmbed(Format.Code(code.EscapeCodeblock(), "csharp"))
-						.AddField($"Result: {value.GetType().Name}", Format.Code(res.EscapeCodeblock(), "js"))
+						.AddField($"Result: {value.GetType().Name}", resultBlock)
 						.WithFooter(new EmbedFooterBuilder()
 							.WithText($"took {timeTook} · react with ❌ to delete."))
 						.Build();
