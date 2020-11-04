@@ -1,11 +1,10 @@
-﻿using System.Text;
+﻿using Qmmands;
 using Spade.Common.Extensions;
 using Spade.Core.Structures.Attributes;
-using Qmmands;
+using System.Text;
 using System.Threading.Tasks;
 using Victoria;
 using Victoria.Enums;
-using Utils = Spade.Common.Utilities;
 
 namespace Spade.Core.Commands.Modules.Music
 {
@@ -14,7 +13,6 @@ namespace Spade.Core.Commands.Modules.Music
 	[Group("nowplaying", "np", "now-playing")]
 	public sealed class NowPlaying : SpadeModule
 	{
-		// ReSharper disable once MemberCanBePrivate.Global
 		public LavaNode LavaNode { get; set; }
 
 		[Command]
@@ -35,7 +33,7 @@ namespace Spade.Core.Commands.Modules.Music
 
 			var track = player.Track;
 
-			var firstTracks = Utils::CommandUtilities.GetNearestTracksAsString(player.Queue);
+			var firstTracks = GetNearestTracksAsString(player.Queue);
 			var slider = track.GenerateSlider();
 
 			var totalTime = track.Duration.ToHumanDuration();
@@ -52,6 +50,31 @@ namespace Spade.Core.Commands.Modules.Music
 				.WithFooter($"{slider}  {elapsedTime} / {totalTime}");
 
 			await SendEmbedAsync(embed);
+		}
+
+		public string GetNearestTracksAsString(DefaultQueue<LavaTrack> queue)
+		{
+			if (queue.Count == 0)
+				return "";
+
+			var s = new StringBuilder();
+
+			var elapsed = 0;
+			foreach (var queueable in queue)
+			{
+				var track = (LavaTrack)queueable;
+				if (elapsed >= 5)
+					break;
+
+				s.Append($"{++elapsed}. [{track.Title.TruncateAndSanitize()}]({track.Url})");
+				s.Append("\n");
+			}
+
+			var remaining = queue.Count - elapsed;
+			if (queue.Count > 5)
+				s.Append($"and {remaining} more track{(remaining > 1 ? "s" : "")}...");
+
+			return s.ToString();
 		}
 	}
 }
