@@ -1,10 +1,12 @@
 <p align="center">
-	<img src="https://i.ibb.co/G9rQ1cC/custom-1.png" width="800"/>
+	<img src="https://i.ibb.co/31MFSxY/spade-banner.png" width="800"/>
 </p>
 <p align="center">
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/made-with-c-sharp.svg">
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/built-with-love.svg">
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/gluten-free.svg">
+	<br/>
+	<img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fgspalato%2Faxion%2Fbadge%3Fref%3Dv2%26token%3Df01e610fbbe81abcbd4fdc800e745acefd140a17&style=for-the-badge">
 </p>
 
 ## 📦 Getting Started
@@ -17,17 +19,40 @@
 
 ### Installing
 
-Just clone the repository, restore and compile.
+* Clone the repository;
+* Restore;
+* Compile;
+* Create an `appsettings.json` file on the root folder:
+```json
+{
+    "TOKEN": "lmao.u.gay",
+    "PREFIX": "",
+    "LAVALINK": "",
+    "MongoDB": {
+        "Database": "axion",
+        "ConnectionStrings": "mongodb://localhost:27017"
+    }
+}
+```
+
+#### With Docker
+* Go to `Spade.Docker`;
+* Run the Spade Docker Utility (`ps-axion.ps1`)
+* Run `build`;
+* To start, run `run`;
 
 ## 👨‍🏫 Authors
 
-- **Gabriel Spalato Marques** (ohinoki, o_Hinoki) - Only developer
+- **Gabriel Spalato Marques** (@gspalato) ➔ CEO/Founder of C# shitcode
+- **Laura Moreira** (@strawberrycandy20) ➔ Emotional support during these trying times.
 
 ## 📝 License
 
-Unlicensed, you must not copy, modify, redistribute, sell, "remix" or share in any medium, shape or form. 
+Unlicensed, you must not copy, modify, redistribute, sell, "remix" or share in any medium, shape or form.
 
 ## 👥 Acknowledgements
 
-- **Izumemori**
-- **trinitrotoluene**
+- [**foxbot**](https://github.com/foxbot) and others \- Developer(s) of Discord.NET;
+- [**Quahu**](https://github.com/Quahu) \- Developing Qmmands;
+- [**Izumemori**](https://github.com/Izumemori) \- Helping me understand C# concepts and fixing my crap;
+- [**trinitrotoluene**](https://github.com/trinitrotoluene) \- Emotional support (or lack thereof);

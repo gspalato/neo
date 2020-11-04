@@ -17,6 +17,6 @@ jobs:
     - name: Setup Nuget.exe
       uses: warrenbuckley/Setup-Nuget@v1
     - name: Setup NuGet Sources
-      run: nuget sources add -name "SlimGet" -Source "https://nuget.emzi0767.com/api/v3/index.json"
+      run: nuget sources add -name "MyGet" -Source "https://www.myget.org/F/discord-net/api/v3/index.json"
     - name: Build with dotnet
       run: dotnet build --configuration Release
