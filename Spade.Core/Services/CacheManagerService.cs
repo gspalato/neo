@@ -1,58 +1,88 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Spade.Common.Structures.Attributes;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Reflection;
+using System.Runtime.Caching;
 
 namespace Spade.Core.Services
 {
-	public interface ICacheManagerService
-	{
-		T Get<T>(string key);
-		void Set(string key, object data, int cacheTime);
-		bool IsSet(string key);
-		void Remove(string key);
-		void Clear();
-	}
+    public interface ICacheManagerService
+    {
+        T Get<T>(string key);
+        void Set(string key, object data);
+        bool IsSet(string key);
+        string Format<T>(ulong guildId = 0, ulong userId = 0, params string[] args);
+        void Remove(string key);
+        void Clear();
+    }
 
-	public class CacheManagerService : ServiceBase, ICacheManagerService
-	{
-		private MemoryCache _cache;
-		public CacheManagerService()
-		{
-			Clear();
-		}
+    public class CacheManagerService : ServiceBase, ICacheManagerService
+    {
+        private ILoggingService m_LoggingService;
 
-		public T Get<T>(string key)
-		{
-			if (!_cache.TryGetValue(key, out T value))
-				return default;
-			else
-				return value;
-		}
+        public MemoryCache Cache => _cache;
+        private MemoryCache _cache;
 
-		public void Set(string key, object data, int cacheTime)
-		{
-			if (data == null)
-				return;
+        private CacheItemPolicy m_DefaultCacheItemPolicy = new CacheItemPolicy
+        {
+            SlidingExpiration = new TimeSpan(0, 30, 0)
+        };
 
-			_cache.Set(key, data);
-		}
+        public CacheManagerService(ILoggingService loggingService)
+        {
+            m_LoggingService = loggingService;
 
-		public bool IsSet(string key)
-			=> _cache.Get(key) is not null;
+            Clear();
+        }
 
-		public void Remove(string key)
-			=> _cache.Remove(key);
+        public T Get<T>(string key)
+        {
+            if (!_cache.Contains(key))
+                return default;
+            else
+                return (T)_cache.Get(key);
+        }
 
-		public void Clear()
-		{
-			_cache?.Dispose();
-			_cache = new MemoryCache(new MemoryCacheOptions());
-		}
+        public void Set(string key, object data)
+        {
+            if (data == null)
+                return;
 
-		public void Dispose()
-		{
-			_cache?.Dispose();
-		}
-	}
+            _cache.Set(key, data, m_DefaultCacheItemPolicy);
+        }
+
+        public bool IsSet(string key)
+            => _cache.Get(key) is not null;
+
+        public string Format<T>(ulong guildId = 0, ulong userId = 0, params string[] args)
+        {
+            var entityType = typeof(T);
+            var ckfaType = typeof(CacheKeyFormatAttribute);
+            CacheKeyFormatAttribute ckfa = entityType.GetCustomAttribute(ckfaType) as CacheKeyFormatAttribute;
+
+            string format = ckfa?.Format;
+            if (format is null || format.Length is 0)
+                return "";
+
+            var idSubstituted = format.Replace("%guild%", guildId.ToString()).Replace("%user%", userId.ToString());
+            var argsFormatted = string.Format(idSubstituted, args);
+
+            m_LoggingService.Debug($"Final cache key: {argsFormatted}");
+
+            return argsFormatted;
+        }
+
+        public void Remove(string key)
+            => _cache.Remove(key);
+
+        public void Clear()
+        {
+            _cache?.Dispose();
+            _cache = new MemoryCache("spade_default_cache");
+        }
+
+        public void Dispose()
+        {
+            _cache?.Dispose();
+        }
+    }
 }

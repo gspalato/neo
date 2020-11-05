@@ -117,7 +117,7 @@ namespace Spade.Core.Commands.Modules.Music
 
 							await SendDefaultEmbedAsync($"Queued **[{track.Title.TruncateAndSanitize()}]({track.Url})**");
 						}
-						else
+						else if (player.PlayerState is not PlayerState.Disconnected)
 						{
 							await player.PlayAsync(track);
 
@@ -129,7 +129,7 @@ namespace Spade.Core.Commands.Modules.Music
 					}
 
 				default:
-					throw new ArgumentOutOfRangeException();
+					throw new NotImplementedException();
 			}
 		}
 	}

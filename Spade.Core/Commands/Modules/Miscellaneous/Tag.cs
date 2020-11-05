@@ -5,6 +5,8 @@ using Qmmands;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Spade.Core.Services;
+using SpadeEntities = Spade.Database.Entities;
 
 namespace Spade.Core.Commands.Modules.Miscellaneous
 {
@@ -12,12 +14,29 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 	[Group("tag")]
 	public class Tag : SpadeModule
 	{
+		public ICacheManagerService CacheManagerService { get; set; }
+		public ILoggingService LoggingService { get; set; }
 		public ITagsRepository TagsRepository { get; set; }
 
 		[Command]
 		public async Task ExecuteAsync([Remainder] string name)
 		{
-			var tag = await TagsRepository.GetTagAsync(Context.Guild, name);
+			SpadeEntities::ITag tag;
+
+			string key = CacheManagerService.Format<SpadeEntities::Tag>(Context.Guild.Id, 0, name);
+			if (CacheManagerService.IsSet(key))
+				tag = CacheManagerService.Get<SpadeEntities::Tag>(key);
+			else
+            {
+				tag = await TagsRepository.GetTagAsync(Context.Guild, name);
+
+				if (!CacheManagerService.IsSet(key) && tag is not null)
+                {
+					LoggingService.Debug($"Appended tag {tag.Name} from guild {tag.GuildId} to cache");
+					CacheManagerService.Set(key, tag);
+				}
+			}
+
 			if (tag is null)
 			{
 				await Context.ReplyAsync($"Tag \"{name}\" doesn't exist.");

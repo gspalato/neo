@@ -4,73 +4,66 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MongoDB;
-using MongoDB.Driver;
 using Qmmands;
+using Spade.Core;
 using Spade.Core.Services;
 using Spade.Database.Repositories;
 using System;
 using Victoria;
 
-namespace Spade.Core
-{
-	internal static class Program
+
+Host.CreateDefaultBuilder(args)
+	.ConfigureServices((hostContext, services) =>
 	{
-		private static void Main(string[] args) =>
-			CreateHostBuilder(args).Build().Run();
+		string lavalinkPassword = hostContext.Configuration.GetValue<string>("LAVALINK");
+		if (lavalinkPassword.Length == 0)
+		{
+			services
+				.BuildServiceProvider()
+				.GetRequiredService<ILoggingService>()
+				.Critical("No Lavalink password was provided.");
 
-		private static IHostBuilder CreateHostBuilder(string[] args) =>
-			Host.CreateDefaultBuilder(args)
-				.ConfigureServices((hostContext, services) =>
-				{
-					string lavalinkPassword = hostContext.Configuration.GetValue<string>("LAVALINK");
-					if (lavalinkPassword.Length == 0)
-					{
-						services
-							.BuildServiceProvider()
-							.GetRequiredService<ILoggingService>()
-							.Critical("No Lavalink password was provided.");
+			return;
+		}
 
-						return;
-					}
-
-					services
-						.AddSingleton(new DiscordSocketConfig
-						{
-							ExclusiveBulkDelete = true
-						})
-						.AddSingleton(new CommandServiceConfiguration
-						{
-							DefaultRunMode = RunMode.Parallel
-						})
-						.AddSingleton(new LavaConfig
-						{
-							Authorization = lavalinkPassword,
-							LogSeverity = LogSeverity.Debug
-						});
-				})
-				.ConfigureServices((hostContext, services) =>
-				{
-					services
-						.AddSingleton<DiscordSocketClient>()
-						.AddSingleton<ICommandHandlingService, CommandHandlingService>()
-						.AddSingleton<ICommandService, CommandService>()
-						.AddSingleton<IDocumentationService, DocumentationService>()
-						.AddSingleton<IEventService, EventService>()
-						.AddSingleton<ILoggingService, LoggingService>()
-						.AddSingleton<IMusicService, MusicService>()
-						.AddSingleton<LavaNode>()
-						.AddSingleton<Random>()
-						.AddHostedService<App>();
-				})
-				.ConfigureServices((hostContext, services) =>
-				{
-					services
-						.AddScoped<IConfig, Config>()
-						.AddScoped<IConnect, Connect>()
-						.AddScoped<IGuildSettingsRepository, GuildSettingsRepository>()
-						.AddScoped<IQueueRepository, QueueRepository>()
-						.AddScoped<ITagsRepository, TagsRepository>();
-				});
-	}
-}
+		services
+			.AddSingleton(new DiscordSocketConfig
+			{
+				ExclusiveBulkDelete = true
+			})
+			.AddSingleton(new CommandServiceConfiguration
+			{
+				DefaultRunMode = RunMode.Parallel
+			})
+			.AddSingleton(new LavaConfig
+			{
+				Authorization = lavalinkPassword,
+				LogSeverity = LogSeverity.Debug
+			});
+		})
+		.ConfigureServices((hostContext, services) =>
+		{
+			services
+				.AddSingleton<DiscordSocketClient>()
+				.AddSingleton<ICacheManagerService, CacheManagerService>()
+				.AddSingleton<ICommandHandlingService, CommandHandlingService>()
+				.AddSingleton<ICommandService, CommandService>()
+				.AddSingleton<IDocumentationService, DocumentationService>()
+				.AddSingleton<IEventService, EventService>()
+				.AddSingleton<ILoggingService, LoggingService>()
+				.AddSingleton<IMusicService, MusicService>()
+				.AddSingleton<LavaNode>()
+				.AddSingleton<Random>()
+				.AddHostedService<App>();
+		})
+		.ConfigureServices((hostContext, services) =>
+		{
+			services
+				.AddScoped<IConfig, Config>()
+				.AddScoped<IConnect, Connect>()
+				.AddScoped<IGuildSettingsRepository, GuildSettingsRepository>()
+				.AddScoped<IQueueRepository, QueueRepository>()
+				.AddScoped<ITagsRepository, TagsRepository>();
+		})
+		.Build()
+		.Run();

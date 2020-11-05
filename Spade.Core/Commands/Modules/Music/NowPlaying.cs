@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Victoria;
 using Victoria.Enums;
+using Victoria.Interfaces;
 
 namespace Spade.Core.Commands.Modules.Music
 {
@@ -53,7 +54,7 @@ namespace Spade.Core.Commands.Modules.Music
 			await SendEmbedAsync(embed);
 		}
 
-		private string GetNearestTracksAsString(DefaultQueue<LavaTrack> queue)
+		private string GetNearestTracksAsString(DefaultQueue<IQueueable> queue)
 		{
 			if (queue.Count == 0)
 				return "";

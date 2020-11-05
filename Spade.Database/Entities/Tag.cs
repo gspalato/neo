@@ -1,6 +1,7 @@
 ﻿using Canducci.MongoDB.Repository.MongoAttribute;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Spade.Common.Structures.Attributes;
 
 namespace Spade.Database.Entities
 {
@@ -15,6 +16,7 @@ namespace Spade.Database.Entities
 		int Uses { get; init; }
 	}
 	
+	[CacheKeyFormat("TAG %guild% {0}")]
 	[MongoCollectionName("Tags")]
 	public record Tag : ITag
 	{
