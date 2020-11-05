@@ -90,7 +90,7 @@ namespace Spade.Core.Services
 		{
 			var output = new StringBuilder();
 
-			if (message is null || message.Length < 1)
+			if (string.IsNullOrEmpty(message))
 				return;
 
 			if (className is not null)

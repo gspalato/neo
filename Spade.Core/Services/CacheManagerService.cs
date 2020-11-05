@@ -60,7 +60,7 @@ namespace Spade.Core.Services
             CacheKeyFormatAttribute ckfa = entityType.GetCustomAttribute(ckfaType) as CacheKeyFormatAttribute;
 
             string format = ckfa?.Format;
-            if (format is null || format.Length is 0)
+            if (string.IsNullOrEmpty(format))
                 return "";
 
             var idSubstituted = format.Replace("%guild%", guildId.ToString()).Replace("%user%", userId.ToString());

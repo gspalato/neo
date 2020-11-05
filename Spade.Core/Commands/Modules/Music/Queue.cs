@@ -131,5 +131,25 @@ namespace Spade.Core.Commands.Modules.Music
 					throw new ArgumentOutOfRangeException();
 			}
 		}
+
+		[Command("clear")]
+		public async Task ClearQueueAsync()
+		{
+			if (!LavaNode.TryGetPlayer(Context.Guild, out var player))
+			{
+				await SendDefaultEmbedAsync("I'm not connected to a voice channel.");
+				return;
+			}
+
+			if (player.Queue.Count is 0 && player.Track is not null)
+			{
+				await SendDefaultEmbedAsync("The queue is empty.");
+				return;
+			}
+
+			player?.Queue.Clear();
+
+			await Context.Message.AddReactionAsync(new Emoji("✅"));
+		}
 	}
 }

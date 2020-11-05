@@ -3,9 +3,9 @@
 	public static class Version
 	{
 		private const int Major = 1;
-		private const int Minor = 5;
-		private const int Patch = 3;
-		private const int Hotfix = 0;
+		private const int Minor = 6;
+		private const int Patch = 4;
+		private const int Hotfix = 2;
 
 #if (DEBUG)
 		public static ReleaseType ReleaseType = ReleaseType.Development;
