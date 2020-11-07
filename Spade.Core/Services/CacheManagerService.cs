@@ -1,5 +1,6 @@
 ﻿using Spade.Common.Structures.Attributes;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Caching;
 
@@ -7,6 +8,8 @@ namespace Spade.Core.Services
 {
     public interface ICacheManagerService
     {
+        MemoryCache Cache { get; }
+
         T Get<T>(string key);
         void Set(string key, object data);
         bool IsSet(string key);
@@ -63,10 +66,19 @@ namespace Spade.Core.Services
             if (string.IsNullOrEmpty(format))
                 return "";
 
-            var idSubstituted = format.Replace("%guild%", guildId.ToString()).Replace("%user%", userId.ToString());
+            var predefinedValues = new Dictionary<string, string>()
+            {
+                { "guild",  guildId.ToString() },
+                { "user", userId.ToString() }
+            };
+
+            var idSubstituted = format;
+            foreach (var (key, value) in predefinedValues)
+                idSubstituted = idSubstituted.Replace(key, value);
+
             var argsFormatted = string.Format(idSubstituted, args);
 
-            m_LoggingService.Debug($"Final cache key: {argsFormatted}");
+            m_LoggingService.Debug($"Formatted cache key: {argsFormatted}");
 
             return argsFormatted;
         }
