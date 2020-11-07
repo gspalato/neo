@@ -13,7 +13,7 @@ namespace Spade.Database.Entities
 		string Prefix { get; init; }
 	}
 
-	[CacheKeyFormat("SETTINGS {guild}")]
+	[CacheKeyFormat("SETTINGS guild")]
 	[MongoCollectionName("GuildSettings")]
 	public record GuildSettingsEntry : IGuildSettingsEntry
 	{
