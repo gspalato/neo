@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 namespace Spade.Core.Structures.Attributes
 {
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 	public class RequireOwnerAttribute : BaseCheckAttribute
     {
         public override async ValueTask<CheckResult> CheckAsync(SpadeContext context, IServiceProvider provider)

@@ -33,7 +33,7 @@ namespace Spade.Common.Utilities
             "Spade.Core.Services",
             "Spade.Core.Structures",
             "Spade.Core.Structures.Attributes",
-            "Spade.Core.Structures.Exceptions",
+            "Spade.Core.Structures.Miscellaneous",
             "Spade.Database",
             "Spade.Database.Entities",
             "Spade.Database.Repositories",

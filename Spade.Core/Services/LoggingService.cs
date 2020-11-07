@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Pastel;
-using Spade.Common.Structures;
 using System;
 using System.Text;
 

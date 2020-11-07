@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Spade.Core.Structures
+namespace Spade.Core.Structures.Miscellaneous
 {
     public record DocumentationApiResponse
     {

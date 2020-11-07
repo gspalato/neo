@@ -1,5 +1,4 @@
-﻿using Spade.Common.Structures;
-using Spade.Core.Structures;
+﻿using Spade.Core.Structures.Miscellaneous;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;

@@ -14,22 +14,16 @@
 		<PackageReference Include="Discord.Net" Version="2.2.0-dev-20200331.2" />
 		<PackageReference Include="Discord.Net.Core" Version="2.2.0-dev-20200331.2" />
 		<PackageReference Include="Discord.Net.WebSocket" Version="2.2.0-dev-20200331.2" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0-rc.2.20475.5" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0-preview.2.20160.3" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0-preview.2.20160.3" />
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0-preview.2.20160.3" />
 		<PackageReference Include="MongoDB.Bson" Version="2.10.2" />
 		<PackageReference Include="MongoDB.Driver" Version="2.10.2" />
-		<PackageReference Include="System.Runtime.Caching" Version="5.0.0-rc.2.20475.5" />
 		<PackageReference Include="Victoria" Version="5.1.2" />
 	</ItemGroup>
 	
 	<ItemGroup>
 		<ProjectReference Include="..\Spade.Common\Spade.Common.csproj" />
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <Folder Include="Structures\Attributes\" />
 	</ItemGroup>
 
 </Project>

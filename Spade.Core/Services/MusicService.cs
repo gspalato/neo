@@ -1,5 +1,4 @@
 ﻿using Spade.Common.Extensions;
-using Spade.Common.Structures;
 using Discord;
 using Discord.WebSocket;
 using System.Threading.Tasks;

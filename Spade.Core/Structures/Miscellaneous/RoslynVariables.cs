@@ -2,7 +2,7 @@ using Spade.Core.Commands;
 using Discord;
 using Discord.WebSocket;
 
-namespace Spade.Core.Structures
+namespace Spade.Core.Structures.Miscellaneous
 {
 	public class RoslynVariables
 	{

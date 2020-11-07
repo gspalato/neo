@@ -1,13 +1,10 @@
-﻿using Spade.Common.Structures;
-using Spade.Common.Structures.Attributes;
+﻿using Spade.Common.Structures.Attributes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
-using System.Text.RegularExpressions;
 
-namespace Spade.Database.Services
+namespace Spade.Core.Services
 {
     public interface ICacheManagerService
     {
@@ -16,13 +13,15 @@ namespace Spade.Database.Services
         T Get<T>(string key);
         void Set(string key, object data);
         bool IsSet(string key);
-        string Format<T>(ulong guildId = 0, ulong userId = 0, params (string, string)[] args);
+        string Format<T>(ulong guildId = 0, ulong userId = 0, params string[] args);
         void Remove(string key);
         void Clear();
     }
 
     public class CacheManagerService : ServiceBase, ICacheManagerService
     {
+        private ILoggingService m_LoggingService;
+
         public MemoryCache Cache => m_Cache;
         private MemoryCache m_Cache;
 
@@ -31,8 +30,10 @@ namespace Spade.Database.Services
             SlidingExpiration = new TimeSpan(0, 30, 0)
         };
 
-        public CacheManagerService()
+        public CacheManagerService(ILoggingService loggingService)
         {
+            m_LoggingService = loggingService;
+
             Clear();
         }
 
@@ -55,7 +56,7 @@ namespace Spade.Database.Services
         public bool IsSet(string key)
             => m_Cache.Get(key) is not null;
 
-        public string Format<T>(ulong guildId = 0, ulong userId = 0, params (string, string)[] args)
+        public string Format<T>(ulong guildId = 0, ulong userId = 0, params string[] args)
         {
             var entityType = typeof(T);
             var ckfaType = typeof(CacheKeyFormatAttribute);
@@ -71,14 +72,15 @@ namespace Spade.Database.Services
                 { "user", userId.ToString() }
             };
 
-            var formatted = format;
+            var idSubstituted = format;
             foreach (var (key, value) in predefinedValues)
-                formatted = formatted.Replace(key, value);
+                idSubstituted = idSubstituted.Replace(key, value);
 
-            foreach (var (key, value) in args)
-                formatted = formatted.Replace(key, value);
+            var argsFormatted = string.Format(idSubstituted, args);
 
-            return formatted;
+            m_LoggingService.Debug($"Formatted cache key: {argsFormatted}");
+
+            return argsFormatted;
         }
 
         public void Remove(string key)

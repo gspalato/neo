@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Spade.Core.Structures
+namespace Spade.Core.Structures.Miscellaneous
 {
 	public class Set<T> : IEnumerable<T>
 	{

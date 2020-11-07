@@ -1,11 +1,10 @@
-﻿using Discord;
+﻿using Spade.Common.Utilities;
+using Spade.Common.Extensions;
+using Spade.Core.Structures.Attributes;
+using Spade.Core.Structures.Miscellaneous;
+using Discord;
 using Microsoft.CodeAnalysis;
 using Qmmands;
-using Spade.Common.Extensions;
-using Spade.Common.Utilities;
-using Spade.Core.Structures;
-using Spade.Core.Structures.Attributes;
-using Spade.Core.Structures.Exceptions;
 using System;
 using System.Collections;
 using System.Linq;
@@ -20,18 +19,12 @@ namespace Spade.Core.Commands.Modules.Administration
 	{
 		[Command]
 		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
-		[RequireTrustedUser]
+		[RequireOwner]
 		public async Task ExecuteAsync([Remainder] string text)
 		{
-			Console.WriteLine(text);
-			var match = Regex.Match(text, @"(?<=^`{3}([a-z]\n)*)[\s\S]*?(?=\n?`{3}$)");
+			var match = Regex.Match(text, @"(?<=^```[a-z]*\n)[\s\S]*?(?=\n?```$)");
 			if (!match.Success)
-			{
-				var error = "You need to wrap the code into a code block\n"
-					+ "(Don't forget to put a newline after the first three backticks!)";
-
-				throw new UserFriendlyCommandError(error);
-			}
+				throw new ArgumentException("You need to wrap the code into a code block.");
 
 			var code = match.Value;
 
