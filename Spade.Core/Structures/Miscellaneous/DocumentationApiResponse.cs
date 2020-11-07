@@ -4,7 +4,7 @@ namespace Spade.Core.Structures.Miscellaneous
 {
     public record DocumentationApiResponse
     {
-        public List<DocumentationMember> Results { get; init; };
+        public List<DocumentationMember> Results { get; init; } = new();
 
         public int Count { get; init; }
 
