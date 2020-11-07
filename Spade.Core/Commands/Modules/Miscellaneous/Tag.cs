@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Spade.Core.Services;
-using SpadeEntities = Spade.Database.Entities;
+using Spade.Database.Entities;
 
 namespace Spade.Core.Commands.Modules.Miscellaneous
 {
@@ -21,17 +21,17 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 		[Command]
 		public async Task ExecuteAsync([Remainder] string name)
 		{
-			SpadeEntities::ITag tag;
+			ITagEntry tag;
 
-			string key = CacheManagerService.Format<SpadeEntities::Tag>(Context.Guild.Id, 0, name);
+			string key = CacheManagerService.Format<TagEntry>(Context.Guild.Id, 0, name);
 			if (CacheManagerService.IsSet(key))
-				tag = CacheManagerService.Get<SpadeEntities::Tag>(key);
+				tag = CacheManagerService.Get<TagEntry>(key);
 			else
-            {
+			{
 				tag = await TagsRepository.GetTagAsync(Context.Guild, name);
 
 				if (!CacheManagerService.IsSet(key) && tag is not null)
-                {
+				{
 					LoggingService.Debug($"Appended tag {tag.Name} from guild {tag.GuildId} to cache");
 					CacheManagerService.Set(key, tag);
 				}
@@ -70,7 +70,10 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			await TagsRepository.CreateTagAsync(Context.Guild, Context.User, name, content);
+			ITagEntry fetchedTag = await TagsRepository.CreateTagAsync(Context.Guild, Context.User, name, content);
+
+			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
+			CacheManagerService.Set(cacheKey, fetchedTag);
 
 			await Context.ReplyAsync($"Tag \"{name}\" created.");
 		}
@@ -94,6 +97,9 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				}
 			}
 
+			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
+			CacheManagerService.Remove(cacheKey);
+
 			await TagsRepository.DeleteTagAsync(Context.Guild, name);
 
 			await Context.ReplyAsync($"Tag \"{name}\" deleted.");
@@ -115,7 +121,11 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			await TagsRepository.EditTagAsync(Context.Guild, name, content);
+			ITagEntry edited = await TagsRepository.EditTagAsync(Context.Guild, name, content);
+
+			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
+			CacheManagerService.Set(cacheKey, edited);
+
 			await Context.ReplyAsync($"Tag \"{name}\" edited.");
 		}
 
