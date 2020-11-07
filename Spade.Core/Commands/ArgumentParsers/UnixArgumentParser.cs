@@ -42,7 +42,7 @@ namespace Spade.Core.Commands.ArgumentParsers
 				switch (token)
 				{
 					// Second dash in dash sequence
-					case '-' when state == UnixParserState.DashSequence:
+					case '-' when state is UnixParserState.DashSequence:
 						state = UnixParserState.ArgumentName;
 						break;
 
@@ -52,7 +52,7 @@ namespace Spade.Core.Commands.ArgumentParsers
 						break;
 
 					// Name set
-					case '=' when state == UnixParserState.ArgumentName:
+					case '=' when state is UnixParserState.ArgumentName:
 						// Lookup parameter
 						var argumentName = parameterName.ToString();
 						currentParameter = GetParameter(context, argumentName);
@@ -71,10 +71,10 @@ namespace Spade.Core.Commands.ArgumentParsers
 					// If the argument name is interrupted,
 					// check for a boolean (making sure not to overwrite a default value); 
 					// otherwise return error.
-					case ' ' when state == UnixParserState.ArgumentName:
+					case ' ' when state is UnixParserState.ArgumentName:
 						{
 							currentParameter = GetParameter(context, parameterName.ToString());
-							if (currentParameter is not null && currentParameter.Type == typeof(bool))
+							if (currentParameter is not null && currentParameter is bool)
 							{
 								parameters.TryAdd(currentParameter, true);
 								parameterName.Clear();
@@ -89,10 +89,10 @@ namespace Spade.Core.Commands.ArgumentParsers
 						}
 
 					// End argument k/v
-					case ' ' when state == UnixParserState.ArgumentValue:
+					case ' ' when state is UnixParserState.ArgumentValue:
 						{
 							state = UnixParserState.Neutral;
-							if (currentParameter == null)
+							if (currentParameter is null)
 							{
 								// This should never happen
 								return UnixArgumentParserResult.UnknownParameter(context, parameters, parameterName.ToString(), tokenPosition);
@@ -104,15 +104,15 @@ namespace Spade.Core.Commands.ArgumentParsers
 						}
 
 					// Quote start
-					case '"' when state == UnixParserState.ArgumentValue && !inQuote:
+					case '"' when state is UnixParserState.ArgumentValue && !inQuote:
 						inQuote = true;
 						break;
 
 					// Quote end
-					case '"' when state == UnixParserState.ArgumentValue && inQuote:
+					case '"' when state is UnixParserState.ArgumentValue && inQuote:
 						{
 							inQuote = false;
-							if (currentParameter == null)
+							if (currentParameter is null)
 							{
 								// Theoretically, this should never happen
 								return UnixArgumentParserResult.UnknownParameter(context, parameters, parameterName.ToString(), tokenPosition);
@@ -154,7 +154,7 @@ namespace Spade.Core.Commands.ArgumentParsers
 			{
 				if (!parameters.ContainsKey(expectedParameter))
 				{
-					if (expectedParameter.Type == typeof(bool) && expectedParameter.DefaultValue == null)
+					if (expectedParameter is bool) && expectedParameter.DefaultValue is null)
 					{
 						parameters.TryAdd(expectedParameter, false);
 						continue;
