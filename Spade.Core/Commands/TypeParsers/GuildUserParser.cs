@@ -14,7 +14,7 @@ namespace Spade.Core.Commands.TypeParsers
 
 		private GuildUserParser() { }
 
-		private readonly Regex _userRegex = new Regex(@"^<@\!?(\d+?)>$", RegexOptions.ECMAScript | RegexOptions.Compiled);
+		private readonly Regex m_UserRegex = new Regex(@"^<@\!?(\d+?)>$", RegexOptions.ECMAScript | RegexOptions.Compiled);
 
 		public override async ValueTask<TypeParserResult<IGuildUser>> ParseAsync(Parameter parameter, string value,
 			SpadeContext context, IServiceProvider provider)
@@ -30,7 +30,7 @@ namespace Spade.Core.Commands.TypeParsers
 					: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user."); ;
 			}
 
-			var m = _userRegex.Match(value);
+			var m = m_UserRegex.Match(value);
 			if (m.Success && ulong.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uid))
 			{
 				var result = await context.Guild.GetUserAsync(uid);

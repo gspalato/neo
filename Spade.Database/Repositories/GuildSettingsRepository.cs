@@ -15,16 +15,16 @@ namespace Spade.Database.Repositories
 
 	public sealed class GuildSettingsRepository : RepositoryBase<GuildSettingsEntry>, IGuildSettingsRepository
 	{
-		private readonly IConfiguration _configuration;
+		private readonly IConfiguration m_Configuration;
 
 		public GuildSettingsRepository(IConfiguration configuration, IConnect connect) : base(connect)
 		{
-			_configuration = configuration;
+			m_Configuration = configuration;
 		}
 
 		public async Task<IGuildSettingsEntry> CreateForGuildAsync(ulong guildId, string prefix = null)
 		{
-			prefix ??= _configuration.GetValue<string>("PREFIX");
+			prefix ??= m_Configuration.GetValue<string>("PREFIX");
 
 			var settings = new GuildSettingsEntry
 			{

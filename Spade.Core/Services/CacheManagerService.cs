@@ -23,7 +23,7 @@ namespace Spade.Core.Services
         private ILoggingService m_LoggingService;
 
         public MemoryCache Cache => _cache;
-        private MemoryCache _cache;
+        private MemoryCache m_Cache;
 
         private CacheItemPolicy m_DefaultCacheItemPolicy = new CacheItemPolicy
         {
@@ -39,10 +39,10 @@ namespace Spade.Core.Services
 
         public T Get<T>(string key)
         {
-            if (!_cache.Contains(key))
+            if (!m_Cache.Contains(key))
                 return default;
             else
-                return (T)_cache.Get(key);
+                return (T)m_Cache.Get(key);
         }
 
         public void Set(string key, object data)
@@ -50,11 +50,11 @@ namespace Spade.Core.Services
             if (data == null)
                 return;
 
-            _cache.Set(key, data, m_DefaultCacheItemPolicy);
+            m_Cache.Set(key, data, m_DefaultCacheItemPolicy);
         }
 
         public bool IsSet(string key)
-            => _cache.Get(key) is not null;
+            => m_Cache.Get(key) is not null;
 
         public string Format<T>(ulong guildId = 0, ulong userId = 0, params string[] args)
         {
@@ -84,17 +84,17 @@ namespace Spade.Core.Services
         }
 
         public void Remove(string key)
-            => _cache.Remove(key);
+            => m_Cache.Remove(key);
 
         public void Clear()
         {
-            _cache?.Dispose();
-            _cache = new MemoryCache("spade_default_cache");
+            m_Cache?.Dispose();
+            m_Cache = new MemoryCache("spade_default_cache");
         }
 
         public void Dispose()
         {
-            _cache?.Dispose();
+            m_Cache?.Dispose();
         }
     }
 }
