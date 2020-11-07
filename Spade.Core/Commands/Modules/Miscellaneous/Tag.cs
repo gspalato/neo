@@ -43,7 +43,9 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			_ = TagsRepository.UpdateTagUsage(Context.Guild, name);
+			ITagEntry updatedTag = await TagsRepository.UpdateTagUsage(Context.Guild, name);
+			CacheManagerService.Set(key, updatedTag);
+
 			await Context.ReplyAsync(tag.Content);
 		}
 
@@ -89,17 +91,16 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 
 			if (tag.Author != Context.User.Id.ToString())
 			{
-				if (!Context.User.GuildPermissions.Has(GuildPermission.Administrator))
+				if (!Context.PermissionsUser.GuildPermissions.Has(GuildPermission.Administrator))
 				{
 					await Context.ReplyAsync("You can't delete someone else's tag.");
 					return;
 				}
 			}
 
+			await TagsRepository.DeleteTagAsync(Context.Guild, name);
 			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
 			CacheManagerService.Remove(cacheKey);
-
-			await TagsRepository.DeleteTagAsync(Context.Guild, name);
 
 			await Context.ReplyAsync($"Tag \"{name}\" deleted.");
 		}
@@ -130,7 +131,22 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 		[Command("info")]
 		public async Task InfoAsync([Remainder] string name)
 		{
-			var tag = await TagsRepository.GetTagAsync(Context.Guild, name);
+			ITagEntry tag;
+
+			string key = CacheManagerService.Format<TagEntry>(Context.Guild.Id, 0, name);
+			if (CacheManagerService.IsSet(key))
+				tag = CacheManagerService.Get<TagEntry>(key);
+			else
+			{
+				tag = await TagsRepository.GetTagAsync(Context.Guild, name);
+
+				if (!CacheManagerService.IsSet(key) && tag is not null)
+				{
+					LoggingService.Debug($"Appended tag {tag.Name} from guild {tag.GuildId} to cache");
+					CacheManagerService.Set(key, tag);
+				}
+			}
+
 			if (tag is null)
 			{
 				await Context.ReplyAsync($"Tag \"{name}\" doesn't exist.");
