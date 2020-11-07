@@ -29,9 +29,9 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 					return;
 				}
 
-			var (results, total) = await DocumentationService.GetDocumentationResultsAsync(query);
+			var (results, totalResults) = await DocumentationService.GetDocumentationResultsAsync(query);
 
-			if (results.Count() is 0)
+			if (totalResults is 0)
 			{
 				await Context.ReplyAsync("Could not find documentation for your requested query.");
 				return;
@@ -66,7 +66,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 
 				if (chunkNumber == chunkCount - 1)
 				{
-					description.Append($"{totalMatchCount} of {total} results shown · ");
+					description.Append($"{totalMatchCount} of {totalResults} results shown · ");
 					description.Append("[click here for more results](https://docs.microsoft.com/dotnet/api/?term={query})");
 				}
 

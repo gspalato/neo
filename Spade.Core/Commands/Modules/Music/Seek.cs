@@ -24,7 +24,7 @@ namespace Spade.Core.Commands.Modules.Music
 				return;
 			}
 
-			if (player.PlayerState is not PlayerState.Playing)
+			if (player.PlayerState != PlayerState.Playing)
 			{
 				await SendDefaultEmbedAsync("I'm not playing anything!.");
 				return;

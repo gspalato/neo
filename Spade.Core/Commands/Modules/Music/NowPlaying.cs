@@ -27,7 +27,7 @@ namespace Spade.Core.Commands.Modules.Music
 				return;
 			}
 
-			if (player.PlayerState is not PlayerState.Playing)
+			if (player.PlayerState != PlayerState.Playing)
 			{
 				await SendDefaultEmbedAsync("Nothing's playing right now.");
 				return;
@@ -81,7 +81,7 @@ namespace Spade.Core.Commands.Modules.Music
 
 		private string GenerateSlider(LavaTrack track)
 		{
-			StringBuilder slider = new StringBuilder();
+			StringBuilder slider = new();
 			for (int i = 0; i <= 29; i++)
 				slider.Append("▬");
 

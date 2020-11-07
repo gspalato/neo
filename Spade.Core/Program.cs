@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Qmmands;
+using Spade.Core;
 using Spade.Core.Services;
 using Spade.Database.Repositories;
 using System;
@@ -39,30 +40,30 @@ Host.CreateDefaultBuilder(args)
 				Authorization = lavalinkPassword,
 				LogSeverity = LogSeverity.Debug
 			});
-	})
-	.ConfigureServices((hostContext, services) =>
-	{
-		services
-			.AddSingleton<DiscordSocketClient>()
-			.AddSingleton<ICacheManagerService, CacheManagerService>()
-			.AddSingleton<ICommandHandlingService, CommandHandlingService>()
-			.AddSingleton<ICommandService, CommandService>()
-			.AddSingleton<IDocumentationService, DocumentationService>()
-			.AddSingleton<IEventService, EventService>()
-			.AddSingleton<ILoggingService, LoggingService>()
-			.AddSingleton<IMusicService, MusicService>()
-			.AddSingleton<LavaNode>()
-			.AddSingleton<Random>()
-			.AddHostedService<App>();
-	})
-	.ConfigureServices((hostContext, services) =>
-	{
-		services
-			.AddScoped<IConfig, Config>()
-			.AddScoped<IConnect, Connect>()
-			.AddScoped<IGuildSettingsRepository, GuildSettingsRepository>()
-			.AddScoped<IQueueRepository, QueueRepository>()
-			.AddScoped<ITagsRepository, TagsRepository>();
-	})
-	.Build()
-	.Run();
+		})
+		.ConfigureServices((hostContext, services) =>
+		{
+			services
+				.AddSingleton<DiscordSocketClient>()
+				.AddSingleton<ICacheManagerService, CacheManagerService>()
+				.AddSingleton<ICommandHandlingService, CommandHandlingService>()
+				.AddSingleton<ICommandService, CommandService>()
+				.AddSingleton<IDocumentationService, DocumentationService>()
+				.AddSingleton<IEventService, EventService>()
+				.AddSingleton<ILoggingService, LoggingService>()
+				.AddSingleton<IMusicService, MusicService>()
+				.AddSingleton<LavaNode>()
+				.AddSingleton<Random>()
+				.AddHostedService<App>();
+		})
+		.ConfigureServices((hostContext, services) =>
+		{
+			services
+				.AddScoped<IConfig, Config>()
+				.AddScoped<IConnect, Connect>()
+				.AddScoped<IGuildSettingsRepository, GuildSettingsRepository>()
+				.AddScoped<IQueueRepository, QueueRepository>()
+				.AddScoped<ITagsRepository, TagsRepository>();
+		})
+		.Build()
+		.Run();

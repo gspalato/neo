@@ -10,7 +10,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class UserParser : BaseTypeParser<IUser>
 	{
-		public static readonly UserParser Instance = new UserParser();
+		public static readonly UserParser Instance = new();
 
 		private UserParser() { }
 
@@ -41,14 +41,14 @@ namespace Spade.Core.Commands.TypeParsers
 			value = value.ToLowerInvariant();
 
 			var sep = value.IndexOf('#');
-			var username = sep is not -1 ? value.Substring(0, sep) : value;
-			var discrim = sep is not -1 ? value.Substring(sep + 1) : null;
+			var username = sep != -1 ? value.Substring(0, sep) : value;
+			var discrim = sep != -1 ? value.Substring(sep + 1) : null;
 
 			var us = context.Client.Guilds
 				.SelectMany(guild => guild.Users)
 				.Where(user =>
 					user.Username.ToLowerInvariant() == username
-					&& ((discrim is not null && user.Discriminator == discrim) || discrim is null));
+					&& ((discrim is not null && user.Discriminator == discrim) || discrim == null));
 
 			var usr = us.FirstOrDefault();
 			return usr is not null
