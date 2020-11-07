@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Spade.Database.Entities
 {
-	public interface IGuildSettings
+	public interface IGuildSettingsEntry
 	{
 		ObjectId Id { get; init; }
 
@@ -13,7 +13,7 @@ namespace Spade.Database.Entities
 	}
 
 	[MongoCollectionName("GuildSettings")]
-	public record GuildSettings : IGuildSettings
+	public record GuildSettingsEntry : IGuildSettingsEntry
 	{
 		[BsonId]
 		public ObjectId Id { get; init; }
