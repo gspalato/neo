@@ -3,6 +3,7 @@ using Canducci.MongoDB.Repository.Connection;
 using Canducci.MongoDB.Repository.Contracts;
 using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
+using Spade.Database.Services;
 
 namespace Spade.Database.Repositories
 {
@@ -17,9 +18,14 @@ namespace Spade.Database.Repositories
 	{
 		private readonly IConfiguration m_Configuration;
 
-		public GuildSettingsRepository(IConfiguration configuration, IConnect connect) : base(connect)
+		private readonly ICacheManagerService m_CacheManagerService;
+
+		public GuildSettingsRepository(IConfiguration configuration, ICacheManagerService cacheManagerService,
+			IConnect connect) : base(connect)
 		{
 			m_Configuration = configuration;
+
+			m_CacheManagerService = cacheManagerService;
 		}
 
 		public async Task<IGuildSettingsEntry> CreateForGuildAsync(ulong guildId, string prefix = null)
@@ -32,11 +38,29 @@ namespace Spade.Database.Repositories
 				Prefix = prefix
 			};
 
+			string cacheKey = m_CacheManagerService.Format<GuildSettingsEntry>(guildId, 0);
+			m_CacheManagerService.Set(cacheKey, settings);
+
 			return await AddAsync(settings);
 		}
 
-		public async Task<IGuildSettingsEntry> GetForGuildAsync(ulong guildId) =>
-			await FindAsync(x => x.GuildId == guildId.ToString());
+		public async Task<IGuildSettingsEntry> GetForGuildAsync(ulong guildId)
+		{
+			GuildSettingsEntry settings;
+
+			string cacheKey = m_CacheManagerService.Format<GuildSettingsEntry>(guildId, 0);
+			if (m_CacheManagerService.IsSet(cacheKey))
+				settings = m_CacheManagerService.Get<GuildSettingsEntry>(cacheKey);
+			else
+			{
+				settings = await FindAsync(x => x.GuildId == guildId.ToString());
+
+				if (!m_CacheManagerService.IsSet(cacheKey) && settings is not null)
+					m_CacheManagerService.Set(cacheKey, settings);
+			}
+
+			return settings;
+		}
 
 		public async Task<IGuildSettingsEntry> GetOrCreateForGuildAsync(ulong guildId, string prefix = null) =>
 			await GetForGuildAsync(guildId) ?? await CreateForGuildAsync(guildId, prefix);

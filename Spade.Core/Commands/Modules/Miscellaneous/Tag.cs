@@ -1,4 +1,5 @@
-﻿using Spade.Core.Structures.Attributes;
+﻿using Spade.Database.Services;
+using Spade.Core.Structures.Attributes;
 using Spade.Database.Repositories;
 using Discord;
 using Qmmands;
@@ -21,21 +22,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 		[Command]
 		public async Task ExecuteAsync([Remainder] string name)
 		{
-			ITagEntry tag;
-
-			string key = CacheManagerService.Format<TagEntry>(Context.Guild.Id, 0, name);
-			if (CacheManagerService.IsSet(key))
-				tag = CacheManagerService.Get<TagEntry>(key);
-			else
-			{
-				tag = await TagsRepository.GetTagAsync(Context.Guild, name);
-
-				if (!CacheManagerService.IsSet(key) && tag is not null)
-				{
-					LoggingService.Debug($"Appended tag {tag.Name} from guild {tag.GuildId} to cache");
-					CacheManagerService.Set(key, tag);
-				}
-			}
+			ITagEntry tag = await TagsRepository.GetTagAsync(Context.Guild, name);
 
 			if (tag is null)
 			{
@@ -43,8 +30,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			ITagEntry updatedTag = await TagsRepository.UpdateTagUsage(Context.Guild, name);
-			CacheManagerService.Set(key, updatedTag);
+			await TagsRepository.UpdateTagUsage(Context.Guild, name);
 
 			await Context.ReplyAsync(tag.Content);
 		}
@@ -71,10 +57,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			ITagEntry fetchedTag = await TagsRepository.CreateTagAsync(Context.Guild, Context.User, name, content);
-
-			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
-			CacheManagerService.Set(cacheKey, fetchedTag);
+			await TagsRepository.CreateTagAsync(Context.Guild, Context.User, name, content);
 
 			await Context.ReplyAsync($"Tag \"{name}\" created.");
 		}
@@ -99,8 +82,6 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 			}
 
 			await TagsRepository.DeleteTagAsync(Context.Guild, name);
-			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
-			CacheManagerService.Remove(cacheKey);
 
 			await Context.ReplyAsync($"Tag \"{name}\" deleted.");
 		}
@@ -120,10 +101,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			ITagEntry edited = await TagsRepository.EditTagAsync(Context.Guild, name, content);
-
-			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
-			CacheManagerService.Set(cacheKey, edited);
+			await TagsRepository.EditTagAsync(Context.Guild, name, content);
 
 			await Context.ReplyAsync($"Tag \"{name}\" edited.");
 		}
@@ -131,21 +109,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 		[Command("info")]
 		public async Task InfoAsync([Remainder] string name)
 		{
-			ITagEntry tag;
-
-			string key = CacheManagerService.Format<TagEntry>(Context.Guild.Id, 0, name);
-			if (CacheManagerService.IsSet(key))
-				tag = CacheManagerService.Get<TagEntry>(key);
-			else
-			{
-				tag = await TagsRepository.GetTagAsync(Context.Guild, name);
-
-				if (!CacheManagerService.IsSet(key) && tag is not null)
-				{
-					LoggingService.Debug($"Appended tag {tag.Name} from guild {tag.GuildId} to cache");
-					CacheManagerService.Set(key, tag);
-				}
-			}
+			ITagEntry tag = await TagsRepository.GetTagAsync(Context.Guild, name);
 
 			if (tag is null)
 			{

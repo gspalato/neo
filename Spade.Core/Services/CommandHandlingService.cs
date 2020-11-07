@@ -1,10 +1,12 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Qmmands;
+using Spade.Common.Structures;
 using Spade.Core.Commands;
 using Spade.Core.Commands.ArgumentParsers;
 using Spade.Core.Commands.TypeParsers;
 using Spade.Core.Structures.Attributes;
+using Spade.Core.Structures.Exceptions;
 using Spade.Database.Repositories;
 using System;
 using System.Linq;
@@ -18,7 +20,7 @@ namespace Spade.Core.Services
 	{
 		void Start();
 
-		Task HandleCommandResult(IResult result, IUserMessage msg);
+		Task HandleCommandResult(IResult result, IUserMessage msg, SpadeContext context = null);
 	}
 
 	public class CommandHandlingService : ServiceBase, ICommandHandlingService
@@ -56,19 +58,8 @@ namespace Spade.Core.Services
 		{
 			_commandService.CommandExecutionFailed += async args =>
 			{
-				var builder = new StringBuilder();
-
-				builder.Append($"{args.Result.Exception.Message}\n{args.Result.Exception.StackTrace}");
-
-				if (args.Result.Exception.InnerException is not null)
-				{
-					var inner = args.Result.Exception.InnerException;
-					builder.Append($"\nINNER EXCEPTION | {inner.Message}\n{inner.StackTrace}");
-				}
-
-				_loggingService.Error(builder.ToString());
-
-				await Task.CompletedTask;
+				var context = args.Context as SpadeContext;
+				await HandleCommandResult(args.Result, context.Message, context);
 			};
 
 			_client.MessageReceived += OnMessageReceivedAsync;
@@ -113,8 +104,8 @@ namespace Spade.Core.Services
 			await HandleCommandResult(result, msg);
 		}
 
-		public async Task HandleCommandResult(IResult result, IUserMessage msg)
-        {
+		public async Task HandleCommandResult(IResult result, IUserMessage msg, SpadeContext context = null)
+		{
 			switch (result)
 			{
 				case ArgumentParseFailedResult argParse:
@@ -152,6 +143,43 @@ namespace Spade.Core.Services
 				case OverloadsFailedResult overloads:
 					{
 						await SendErrorResultEmbedAsync(msg, overloads.Reason);
+					}
+					break;
+
+				case ExecutionFailedResult execution:
+					{
+						if (context is null)
+							return;
+
+						var exception = execution.Exception;
+
+						if (execution.Exception is UserFriendlyCommandError)
+						{
+							await SendErrorResultEmbedAsync(msg, execution.Exception.Message);
+							return;
+						}
+
+						var app = await context.Client.GetApplicationInfoAsync();
+						var owner = app.Owner;
+
+						var description = new StringBuilder();
+						description.AppendLine(exception.Message);
+						description.AppendLine(Format.Code(exception.StackTrace, ""));
+
+						if (exception.InnerException is not null)
+						{
+							description.AppendLine(exception.InnerException.Message);
+							description.AppendLine(Format.Code(exception.InnerException.StackTrace, ""));
+						}
+
+						var errorEmbed = new EmbedBuilder()
+							.WithTitle("⚠️ Error")
+							.WithColor(Color.Red)
+							.WithDescription(description.ToString())
+							.WithFooter($"{context.Guild.Name} at #{context.Channel.Name}")
+							.WithCurrentTimestamp();
+
+						await owner.SendMessageAsync(embed: errorEmbed.Build());
 					}
 					break;
 			}
