@@ -22,7 +22,7 @@ namespace Spade.Core.Services
     {
         private ILoggingService m_LoggingService;
 
-        public MemoryCache Cache => _cache;
+        public MemoryCache Cache => m_Cache;
         private MemoryCache m_Cache;
 
         private CacheItemPolicy m_DefaultCacheItemPolicy = new CacheItemPolicy
