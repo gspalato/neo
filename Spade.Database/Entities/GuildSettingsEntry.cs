@@ -1,6 +1,7 @@
 ﻿using Canducci.MongoDB.Repository.MongoAttribute;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Spade.Common.Structures.Attributes;
 
 namespace Spade.Database.Entities
 {
@@ -12,6 +13,7 @@ namespace Spade.Database.Entities
 		string Prefix { get; init; }
 	}
 
+	[CacheKeyFormat("SETTINGS {guild}")]
 	[MongoCollectionName("GuildSettings")]
 	public record GuildSettingsEntry : IGuildSettingsEntry
 	{
