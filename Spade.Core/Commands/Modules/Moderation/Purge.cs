@@ -15,7 +15,7 @@ namespace Spade.Core.Commands.Modules.Moderation
 	[Group("purge", "clear")]
 	public class Purge : SpadeModule
 	{
-		[Command]
+		/*[Command]
 		[RequireChannelUserPermissions(ChannelPermission.ManageMessages)]
 		[RequireChannelBotPermissions(ChannelPermission.ManageMessages)]
 		[OverrideArgumentParser(typeof(UnixArgumentParser))]
@@ -31,7 +31,7 @@ namespace Spade.Core.Commands.Modules.Moderation
 			[Name("BotOnly")] bool botsOnly = false,
 			[Name("Silent")] bool silent = false)
 		{
-			if (afterMessageId is not null && beforeMessageId is not null)
+			if (afterMessageId != null && beforeMessageId != null)
 			{
 				var error = await SendErrorAsync("You can't use both --before and --after.");
 				await Task.Delay(3000);
@@ -43,7 +43,7 @@ namespace Spade.Core.Commands.Modules.Moderation
 			var ch = channel ?? Context.Channel;
 
 			var id = afterMessageId ?? beforeMessageId ?? Context.Message.Id;
-			var direction = afterMessageId is not null ? Direction.After : Direction.Before;
+			var direction = afterMessageId != null ? Direction.After : Direction.Before;
 
 			var request = await ch.GetMessagesAsync(id, direction, count).ElementAtOrDefaultAsync(1);
 			if (!request.Any())
@@ -56,7 +56,7 @@ namespace Spade.Core.Commands.Modules.Moderation
 			var filtered = request
 				.Where(m =>
 				{
-					if (user is not null && m.Author.Id != user.Id)
+					if (user != null && m.Author.Id != user.Id)
 						return false;
 
 					if (embeds && !m.Embeds.Any())
@@ -97,7 +97,7 @@ namespace Spade.Core.Commands.Modules.Moderation
 			var ok = await SendOkAsync(sb.ToString());
 			await Task.Delay(3000);
 			await ok.DeleteAsync();
-		}
+		}*/
 
 		[Command]
 		[RequireChannelUserPermissions(ChannelPermission.ManageMessages)]
@@ -146,7 +146,7 @@ namespace Spade.Core.Commands.Modules.Moderation
 			sb.AppendLine($"Deleted `{messageCount}` messages.");
 			sb.AppendLine();
 
-			List<string> deletedMessageUsers = new();
+			List<string> deletedMessageUsers = new List<string>();
 
 			foreach (var author in messages.GroupBy(b => b.Author.Id))
 			{

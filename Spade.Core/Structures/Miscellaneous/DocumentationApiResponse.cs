@@ -8,11 +8,8 @@ namespace Spade.Core.Structures.Miscellaneous
 
         public int Count { get; init; }
 
-        public void Deconstruct(out List<DocumentationMember> results, out int count)
-        {
-            results = Results;
-            count = Count;
-        }
+        public void Deconstruct(out List<DocumentationMember> members, out int count)
+            => (members, count) = (Results, Count);
     }
 
     public record DocumentationMember

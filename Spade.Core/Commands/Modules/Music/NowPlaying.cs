@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Victoria;
 using Victoria.Enums;
+using Victoria.Interfaces;
 
 namespace Spade.Core.Commands.Modules.Music
 {
@@ -26,7 +27,7 @@ namespace Spade.Core.Commands.Modules.Music
 				return;
 			}
 
-			if (player.PlayerState != PlayerState.Playing)
+			if (player.PlayerState is not PlayerState.Playing)
 			{
 				await SendDefaultEmbedAsync("Nothing's playing right now.");
 				return;
@@ -53,7 +54,7 @@ namespace Spade.Core.Commands.Modules.Music
 			await SendEmbedAsync(embed);
 		}
 
-		private string GetNearestTracksAsString(DefaultQueue<LavaTrack> queue)
+		private string GetNearestTracksAsString(DefaultQueue<IQueueable> queue)
 		{
 			if (queue.Count == 0)
 				return "";
@@ -80,7 +81,7 @@ namespace Spade.Core.Commands.Modules.Music
 
 		private string GenerateSlider(LavaTrack track)
 		{
-			StringBuilder slider = new();
+			StringBuilder slider = new StringBuilder();
 			for (int i = 0; i <= 29; i++)
 				slider.Append("▬");
 

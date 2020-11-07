@@ -3,44 +3,41 @@ using System.Text;
 
 namespace Spade.Common.Extensions
 {
-    public static class DateTimeExtensions
-    {
-        public static string ToHumanDuration(this TimeSpan duration, bool displaySign = false)
-        {
-            if (duration == null)
-                return null;
+	public static class DateTimeExtensions
+	{
+		public static string ToHumanDuration(this TimeSpan duration, bool displaySign = false)
+		{
+			StringBuilder builder = new();
+			if (displaySign)
+				builder.Append(duration.TotalMilliseconds < 0 ? "-" : "+");
 
-            StringBuilder builder = new();
-            if (displaySign)
-                builder.Append(duration.TotalMilliseconds < 0 ? "-" : "+");
+			duration = duration.Duration();
 
-            duration = duration.Duration();
+			if (duration.Days > 0)
+				builder.Append($"{duration.Days}d ");
 
-            if (duration.Days > 0)
-                builder.Append($"{duration.Days}d ");
+			if (duration.Hours > 0)
+				builder.Append($"{duration.Hours}h ");
 
-            if (duration.Hours > 0)
-                builder.Append($"{duration.Hours}h ");
+			if (duration.Minutes > 0)
+				builder.Append($"{duration.Minutes}m ");
 
-            if (duration.Minutes > 0)
-                builder.Append($"{duration.Minutes}m ");
+			if (duration.TotalHours < 1)
+				if (duration.Seconds > 0)
+				{
+					builder.Append(duration.Seconds);
+					builder.Append("s ");
+				}
+				else
+					if (duration.Milliseconds > 0)
+					builder.Append($"{duration.Milliseconds}ms ");
 
-            if (duration.TotalHours < 1)
-                if (duration.Seconds > 0)
-                {
-                    builder.Append(duration.Seconds);
-                    builder.Append("s ");
-                }
-                else
-                    if (duration.Milliseconds > 0)
-                    builder.Append($"{duration.Milliseconds}ms ");
+			if (builder.Length <= 1)
+				builder.Append(" <1ms ");
 
-            if (builder.Length <= 1)
-                builder.Append(" <1ms ");
+			builder.Remove(builder.Length - 1, 1);
 
-            builder.Remove(builder.Length - 1, 1);
-
-            return builder.ToString();
-        }
-    }
+			return builder.ToString();
+		}
+	}
 }

@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using System.Threading.Tasks;
 using Victoria;
 using Victoria.EventArgs;
+using System;
 
 namespace Spade.Core.Services
 {
@@ -43,6 +44,7 @@ namespace Spade.Core.Services
 
 		private async Task OnTrackEnded(TrackEndedEventArgs args)
 		{
+			Console.WriteLine("reached track end event");
 			if (!args.Reason.ShouldPlayNext())
 				return;
 
@@ -50,14 +52,14 @@ namespace Spade.Core.Services
 			if (!player.Queue.TryDequeue(out var queueable))
 				return;
 
-			if (!(queueable is LavaTrack track))
+			if (queueable is not LavaTrack track)
 			{
 				Logger.Warn("Next item in queue is not a track.");
 
 				var errorEmbed = new EmbedBuilder()
 					.WithTitle("Error")
 					.WithWarning()
-					.WithDescription($"An exception occurred.\n`MU0001`");
+					.WithDescription($"An exception occurred.\n`SPD001`");
 
 				await args.Player.TextChannel.SendMessageAsync(embed: errorEmbed.Build())
 					.ConfigureAwait(false);

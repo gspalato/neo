@@ -3,9 +3,9 @@
 	public static class Version
 	{
 		private const int Major = 1;
-		private const int Minor = 5;
-		private const int Patch = 3;
-		private const int Hotfix = 0;
+		private const int Minor = 6;
+		private const int Patch = 4;
+		private const int Hotfix = 2;
 
 #if (DEBUG)
 		public static ReleaseType ReleaseType = ReleaseType.Development;
@@ -14,7 +14,8 @@
 #endif
 
 		public static System.Version DotnetVersion = new System.Version(Major, Minor, Patch, Hotfix);
-		public static string FullVersion => $"{Major}.{Minor}.{Patch}.{Hotfix}{(ReleaseType == ReleaseType.Development ? "DEV" : "PROD")}";
+		public static string FullVersion => string.Format("{0}.{1}.{2}.{3}{4}",
+				Major, Minor, Patch, Hotfix, (ReleaseType == ReleaseType.Development ? "DEV" : "PROD"));
 	}
 
 	public enum ReleaseType

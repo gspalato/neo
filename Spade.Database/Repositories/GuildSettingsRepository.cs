@@ -6,27 +6,27 @@ using System.Threading.Tasks;
 
 namespace Spade.Database.Repositories
 {
-	public interface IGuildSettingsRepository : IRepository<GuildSettings>
+	public interface IGuildSettingsRepository : IRepository<GuildSettingsEntry>
 	{
-		Task<GuildSettings> CreateForGuildAsync(ulong guildId, string prefix = null);
-		Task<GuildSettings> GetForGuildAsync(ulong guildId);
-		Task<GuildSettings> GetOrCreateForGuildAsync(ulong guildId, string prefix = null);
+		Task<IGuildSettingsEntry> CreateForGuildAsync(ulong guildId, string prefix = null);
+		Task<IGuildSettingsEntry> GetForGuildAsync(ulong guildId);
+		Task<IGuildSettingsEntry> GetOrCreateForGuildAsync(ulong guildId, string prefix = null);
 	}
 
-	public sealed class GuildSettingsRepository : RepositoryBase<GuildSettings>, IGuildSettingsRepository
+	public sealed class GuildSettingsRepository : RepositoryBase<GuildSettingsEntry>, IGuildSettingsRepository
 	{
-		private readonly IConfiguration _configuration;
+		private readonly IConfiguration m_Configuration;
 
 		public GuildSettingsRepository(IConfiguration configuration, IConnect connect) : base(connect)
 		{
-			_configuration = configuration;
+			m_Configuration = configuration;
 		}
 
-		public async Task<GuildSettings> CreateForGuildAsync(ulong guildId, string prefix = null)
+		public async Task<IGuildSettingsEntry> CreateForGuildAsync(ulong guildId, string prefix = null)
 		{
-			prefix ??= _configuration.GetValue<string>("PREFIX");
+			prefix ??= m_Configuration.GetValue<string>("PREFIX");
 
-			var settings = new GuildSettings
+			var settings = new GuildSettingsEntry
 			{
 				GuildId = guildId.ToString(),
 				Prefix = prefix
@@ -35,10 +35,10 @@ namespace Spade.Database.Repositories
 			return await AddAsync(settings);
 		}
 
-		public async Task<GuildSettings> GetForGuildAsync(ulong guildId) =>
+		public async Task<IGuildSettingsEntry> GetForGuildAsync(ulong guildId) =>
 			await FindAsync(x => x.GuildId == guildId.ToString());
 
-		public async Task<GuildSettings> GetOrCreateForGuildAsync(ulong guildId, string prefix = null) =>
+		public async Task<IGuildSettingsEntry> GetOrCreateForGuildAsync(ulong guildId, string prefix = null) =>
 			await GetForGuildAsync(guildId) ?? await CreateForGuildAsync(guildId, prefix);
 	}
 }

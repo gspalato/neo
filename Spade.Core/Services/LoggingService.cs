@@ -61,8 +61,12 @@ namespace Spade.Core.Services
 			BaseLog("info:", "#00ddff", message, exception, className);
 
 		public void Debug(string message, Exception exception = null,
-			string className = null) =>
-			BaseLog("debug:", "#00dd44", message, exception, className);
+			string className = null)
+		{
+#if DEBUG
+			BaseLog("debug:", "#8a2be2", message, exception, className);
+#endif
+		}
 
 		public void Verbose(string message, Exception exception = null,
 			string className = null) =>
@@ -86,7 +90,7 @@ namespace Spade.Core.Services
 		{
 			var output = new StringBuilder();
 
-			if (message is null || message.Length < 1)
+			if (string.IsNullOrEmpty(message))
 				return;
 
 			if (className is not null)

@@ -9,7 +9,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class MessageParser : BaseTypeParser<IMessage>
 	{
-		public static readonly MessageParser Instance = new();
+		public static readonly MessageParser Instance = new MessageParser();
 
 		private MessageParser() { }
 
@@ -27,7 +27,7 @@ namespace Spade.Core.Commands.TypeParsers
 			ulong mid;
 			if (Uri.TryCreate(msguri, UriKind.Absolute, out var uri))
 			{
-				if (uri.Host != "discordapp.com" && !uri.Host.EndsWith(".discordapp.com"))
+				if (uri.Host is not "discordapp.com" && !uri.Host.EndsWith(".discordapp.com"))
 					return TypeParserResult<IMessage>.Unsuccessful("Couldn't parse message.");
 
 				var uripath = _messagePathRegex.Match(uri.AbsolutePath);

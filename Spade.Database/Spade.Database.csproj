@@ -3,8 +3,8 @@
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
 		<LangVersion>preview</LangVersion>
-		<PublishSingleFile>true</PublishSingleFile>
-		<SelfContained>true</SelfContained>
+		<!--<PublishSingleFile>true</PublishSingleFile>-->
+		<!--<SelfContained>true</SelfContained>-->
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<PublishTrimmed>true</PublishTrimmed>
 	</PropertyGroup>
@@ -14,12 +14,16 @@
 		<PackageReference Include="Discord.Net" Version="2.2.0-dev-20200331.2" />
 		<PackageReference Include="Discord.Net.Core" Version="2.2.0-dev-20200331.2" />
 		<PackageReference Include="Discord.Net.WebSocket" Version="2.2.0-dev-20200331.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0-preview.2.20160.3" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0-preview.2.20160.3" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0-preview.2.20160.3" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0-preview.2.20160.3" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0-preview.2.20160.3" />
 		<PackageReference Include="MongoDB.Bson" Version="2.10.2" />
 		<PackageReference Include="MongoDB.Driver" Version="2.10.2" />
 		<PackageReference Include="Victoria" Version="5.1.2" />
-  </ItemGroup>
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\Spade.Common\Spade.Common.csproj" />
+	</ItemGroup>
 
 </Project>

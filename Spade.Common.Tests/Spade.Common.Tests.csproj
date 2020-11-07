@@ -3,9 +3,9 @@
   <PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
 		<LangVersion>preview</LangVersion>
-    <RootNamespace>Spade.Common.Tests</RootNamespace>
-		<PublishSingleFile>true</PublishSingleFile>
-		<SelfContained>true</SelfContained>
+		<RootNamespace>Spade.Common.Tests</RootNamespace>
+		<!--<PublishSingleFile>true</PublishSingleFile>-->
+		<!--<SelfContained>true</SelfContained>-->
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>

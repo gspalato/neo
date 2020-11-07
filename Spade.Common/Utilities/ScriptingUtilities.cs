@@ -23,6 +23,7 @@ namespace Spade.Common.Utilities
         private static readonly IReadOnlyList<string> Imports = new ReadOnlyCollection<string>(new List<string>()
         {
             "Spade.Common.Extensions",
+            "Spade.Common.Structures.Attributes",
             "Spade.Common.Utilities",
             "Spade.Core",
             "Spade.Core.Commands",

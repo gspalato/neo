@@ -5,6 +5,8 @@ using Qmmands;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Spade.Core.Services;
+using Spade.Database.Entities;
 
 namespace Spade.Core.Commands.Modules.Miscellaneous
 {
@@ -12,12 +14,29 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 	[Group("tag")]
 	public class Tag : SpadeModule
 	{
+		public ICacheManagerService CacheManagerService { get; set; }
+		public ILoggingService LoggingService { get; set; }
 		public ITagsRepository TagsRepository { get; set; }
 
 		[Command]
 		public async Task ExecuteAsync([Remainder] string name)
 		{
-			var tag = await TagsRepository.GetTagAsync(Context.Guild, name);
+			ITagEntry tag;
+
+			string key = CacheManagerService.Format<TagEntry>(Context.Guild.Id, 0, name);
+			if (CacheManagerService.IsSet(key))
+				tag = CacheManagerService.Get<TagEntry>(key);
+			else
+			{
+				tag = await TagsRepository.GetTagAsync(Context.Guild, name);
+
+				if (!CacheManagerService.IsSet(key) && tag is not null)
+				{
+					LoggingService.Debug($"Appended tag {tag.Name} from guild {tag.GuildId} to cache");
+					CacheManagerService.Set(key, tag);
+				}
+			}
+
 			if (tag is null)
 			{
 				await Context.ReplyAsync($"Tag \"{name}\" doesn't exist.");
@@ -37,8 +56,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			var tag = await TagsRepository.GetTagAsync(Context.Guild, name);
-			if (tag is not null)
+			if (await TagsRepository.GetTagAsync(Context.Guild, name) is not null)
 			{
 				await Context.ReplyAsync($"Tag \"{name}\" already exists.");
 				return;
@@ -51,7 +69,10 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			await TagsRepository.CreateTagAsync(Context.Guild, Context.User, name, content);
+			ITagEntry fetchedTag = await TagsRepository.CreateTagAsync(Context.Guild, Context.User, name, content);
+
+			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
+			CacheManagerService.Set(cacheKey, fetchedTag);
 
 			await Context.ReplyAsync($"Tag \"{name}\" created.");
 		}
@@ -75,6 +96,9 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				}
 			}
 
+			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
+			CacheManagerService.Remove(cacheKey);
+
 			await TagsRepository.DeleteTagAsync(Context.Guild, name);
 
 			await Context.ReplyAsync($"Tag \"{name}\" deleted.");
@@ -83,8 +107,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 		[Command("update", "edit")]
 		public async Task EditAsync(string name, [Remainder] string content)
 		{
-			var tag = await TagsRepository.GetTagAsync(Context.Guild, name);
-			if (tag is null)
+			if (await TagsRepository.GetTagAsync(Context.Guild, name) is not ITagEntry tag)
 			{
 				await Context.ReplyAsync($"Tag \"{name}\" doesn't exist.");
 				return;
@@ -96,7 +119,11 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			await TagsRepository.EditTagAsync(Context.Guild, name, content);
+			ITagEntry edited = await TagsRepository.EditTagAsync(Context.Guild, name, content);
+
+			string cacheKey = CacheManagerService.Format<TagEntry>(Context.Guild.Id, Context.User.Id, name);
+			CacheManagerService.Set(cacheKey, edited);
+
 			await Context.ReplyAsync($"Tag \"{name}\" edited.");
 		}
 

@@ -15,7 +15,7 @@ namespace Spade.Core.Commands.Modules.Moderation
 		[Command]
 		public async Task ExecuteAsync(IGuildUser target)
 		{
-			if (!(target is SocketGuildUser member))
+			if (target is not SocketGuildUser member)
 				return;
 
 			var escapedUsername = Format.Sanitize(member.Username);
