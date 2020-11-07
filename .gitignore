@@ -1,9 +1,8 @@
-/.vs
-/.vscode
-/.idea
-/packages/
-riderModule.iml
-/_ReSharper.Caches/
+bin
+obj
+.vs
+.vscode
+.github
 
 # Specific locations
 /Spade.Docker/Lavalink/application.yml
