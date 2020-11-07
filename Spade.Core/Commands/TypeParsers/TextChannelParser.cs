@@ -11,7 +11,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class TextChannelParser : BaseTypeParser<ITextChannel>
 	{
-		public static readonly TextChannelParser Instance = new();
+		public static readonly TextChannelParser Instance = new TextChannelParser();
 
 		private TextChannelParser() { }
 

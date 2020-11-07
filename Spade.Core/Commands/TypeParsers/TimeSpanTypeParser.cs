@@ -11,7 +11,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class TimeSpanTypeParser : BaseTypeParser<TimeSpan>
 	{
-		public static readonly TimeSpanTypeParser Instance = new();
+		public static readonly TimeSpanTypeParser Instance = new TimeSpanTypeParser();
 
         private static readonly string[] Formats = {
             "%d'd'%h'h'%m'm'%s's'",

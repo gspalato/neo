@@ -7,7 +7,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class CommandTypeParser : BaseTypeParser<Command>
 	{
-		public static readonly CommandTypeParser Instance = new();
+		public static readonly CommandTypeParser Instance = new CommandTypeParser();
 
 		private CommandTypeParser() { }
 
