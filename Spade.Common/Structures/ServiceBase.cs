@@ -1,4 +1,4 @@
-﻿namespace Spade.Core.Services
+﻿namespace Spade.Common.Structures
 {
     public class ServiceBase
     {
