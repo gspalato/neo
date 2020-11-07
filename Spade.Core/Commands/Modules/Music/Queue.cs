@@ -23,7 +23,6 @@ namespace Spade.Core.Commands.Modules.Music
 	public class Queue : SpadeModule
 	{
 		public LavaNode LavaNode { get; set; }
-		public IQueueRepository QueueRepository { get; set; }
 
 		[Command]
 		[IgnoresExtraArguments]
@@ -94,6 +93,26 @@ namespace Spade.Core.Commands.Modules.Music
 			}
 		}
 
+		[Command("clear")]
+		public async Task ClearQueueAsync()
+		{
+			if (!LavaNode.TryGetPlayer(Context.Guild, out var player))
+			{
+				await SendDefaultEmbedAsync("I'm not connected to a voice channel.");
+				return;
+			}
+
+			if (player.Queue.Count is 0 && player.Track != null)
+			{
+				await SendDefaultEmbedAsync("The queue is empty.");
+				return;
+			}
+
+			player?.Queue.Clear();
+
+			await Context.Message.AddReactionAsync(new Emoji("✅"));
+		}
+
 		private void ReadTrackStatusAsync(SearchResponse search, LavaPlayer player, ref int count)
 		{
 			switch (search.LoadStatus)
@@ -130,26 +149,6 @@ namespace Spade.Core.Commands.Modules.Music
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-		}
-
-		[Command("clear")]
-		public async Task ClearQueueAsync()
-		{
-			if (!LavaNode.TryGetPlayer(Context.Guild, out var player))
-			{
-				await SendDefaultEmbedAsync("I'm not connected to a voice channel.");
-				return;
-			}
-
-			if (player.Queue.Count is 0 && player.Track != null)
-			{
-				await SendDefaultEmbedAsync("The queue is empty.");
-				return;
-			}
-
-			player?.Queue.Clear();
-
-			await Context.Message.AddReactionAsync(new Emoji("✅"));
 		}
 	}
 }
