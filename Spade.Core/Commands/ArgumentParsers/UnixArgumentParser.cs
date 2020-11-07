@@ -17,7 +17,7 @@ namespace Spade.Core.Commands.ArgumentParsers
 
 	public class UnixArgumentParser : IArgumentParser
 	{
-		public static readonly UnixArgumentParser Instance = new();
+		public static readonly UnixArgumentParser Instance = new UnixArgumentParser();
 
 		private UnixArgumentParser() { }
 

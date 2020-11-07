@@ -10,7 +10,7 @@ namespace Spade.Core.Commands.TypeParsers
 {
 	public class GuildUserParser : BaseTypeParser<IGuildUser>
 	{
-		public static readonly GuildUserParser Instance = new();
+		public static readonly GuildUserParser Instance = new GuildUserParser();
 
 		private GuildUserParser() { }
 
@@ -42,12 +42,12 @@ namespace Spade.Core.Commands.TypeParsers
 			value = value.ToLowerInvariant();
 
 			var di = value.IndexOf('#');
-			var un = di != -1 ? value.Substring(0, di) : value;
-			var dv = di != -1 ? value.Substring(di + 1) : null;
+			var un = di is not -1 ? value.Substring(0, di) : value;
+			var dv = di is not -1 ? value.Substring(di + 1) : null;
 
 			var mbr = (await context.Guild.GetUsersAsync()).FirstOrDefault(u =>
 				u.Username.ToLowerInvariant() == un
-				&& (dv is not null && u.Discriminator == dv || dv == null)
+				&& (dv is not null && u.Discriminator == dv || dv is null)
 				|| u.Nickname?.ToLowerInvariant() == value);
 
 			return mbr is not null

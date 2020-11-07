@@ -24,7 +24,7 @@ namespace Spade.Core.Commands.Modules.Music
 				return;
 			}
 
-			if (player.PlayerState != PlayerState.Paused)
+			if (player.PlayerState is not PlayerState.Paused)
 			{
 				await SendDefaultEmbedAsync("The song's not paused!");
 				return;

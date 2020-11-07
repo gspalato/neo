@@ -117,7 +117,7 @@ namespace Spade.Core.Commands.Modules.Music
 
 							await SendDefaultEmbedAsync($"Queued **[{track.Title.TruncateAndSanitize()}]({track.Url})**");
 						}
-						else if (player.PlayerState is not PlayerState.Disconnected)
+						else if (player.PlayerState != PlayerState.Disconnected)
 						{
 							await player.PlayAsync(track);
 

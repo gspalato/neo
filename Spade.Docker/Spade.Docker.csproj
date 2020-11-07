@@ -4,9 +4,9 @@
     <OutputType>Exe</OutputType>
 		<TargetFramework>net5.0</TargetFramework>
 		<LangVersion>preview</LangVersion>
-    <StartupObject>Spade.Docker.Program</StartupObject>
-		<PublishSingleFile>true</PublishSingleFile>
-		<SelfContained>true</SelfContained>
+		<StartupObject>Spade.Docker.Program</StartupObject>
+		<!--<PublishSingleFile>true</PublishSingleFile>-->
+		<!--<SelfContained>true</SelfContained>-->
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
