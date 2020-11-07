@@ -4,10 +4,10 @@ using Discord.WebSocket;
 
 namespace Spade.Core.Structures.Miscellaneous
 {
-	public class RoslynVariables
+	public record RoslynVariables
 	{
-		public DiscordSocketClient Client;
-		public IUserMessage Message;
-		public SpadeContext Context;
+		public DiscordSocketClient Client { get; init; }
+		public IUserMessage Message { get; init; }
+		public SpadeContext Context { get; init; }
 	}
 }
