@@ -1,10 +1,7 @@
-﻿using Spade.Database.Entities;
-using Canducci.MongoDB.Repository.Connection;
-using Canducci.MongoDB.Repository.Contracts;
-using Discord;
-using System.Threading.Tasks;
+﻿using Canducci.MongoDB.Repository.Connection;
+using Spade.Database.Entities;
 using Spade.Database.Services;
-using System;
+using System.Threading.Tasks;
 
 namespace Spade.Database.Repositories
 {
