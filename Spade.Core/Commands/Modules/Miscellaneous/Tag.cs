@@ -56,8 +56,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 				return;
 			}
 
-			var tag = await TagsRepository.GetTagAsync(Context.Guild, name);
-			if (tag is not null)
+			if (await TagsRepository.GetTagAsync(Context.Guild, name) is not null)
 			{
 				await Context.ReplyAsync($"Tag \"{name}\" already exists.");
 				return;
@@ -108,8 +107,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 		[Command("update", "edit")]
 		public async Task EditAsync(string name, [Remainder] string content)
 		{
-			var tag = await TagsRepository.GetTagAsync(Context.Guild, name);
-			if (tag is null)
+			if (await TagsRepository.GetTagAsync(Context.Guild, name) is not ITagEntry tag)
 			{
 				await Context.ReplyAsync($"Tag \"{name}\" doesn't exist.");
 				return;

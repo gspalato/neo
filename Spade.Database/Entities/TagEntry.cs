@@ -5,7 +5,7 @@ using Spade.Common.Structures.Attributes;
 
 namespace Spade.Database.Entities
 {
-	public interface ITag
+	public interface ITagEntry
 	{
 		ObjectId Id { get; init; }
 
@@ -18,7 +18,7 @@ namespace Spade.Database.Entities
 	
 	[CacheKeyFormat("TAG %guild% {0}")]
 	[MongoCollectionName("Tags")]
-	public record Tag : ITag
+	public record TagEntry : ITagEntry
 	{
 		[BsonId]
 		public ObjectId Id { get; init; }
