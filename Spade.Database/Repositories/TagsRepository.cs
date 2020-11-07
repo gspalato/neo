@@ -3,6 +3,7 @@ using Canducci.MongoDB.Repository.Connection;
 using Canducci.MongoDB.Repository.Contracts;
 using Discord;
 using System.Threading.Tasks;
+using Spade.Database.Services;
 
 namespace Spade.Database.Repositories
 {
@@ -26,7 +27,12 @@ namespace Spade.Database.Repositories
 
 	public sealed class TagsRepository : RepositoryBase<TagEntry>, ITagsRepository
 	{
-		public TagsRepository(IConnect connect) : base(connect) { }
+		private ICacheManagerService m_CacheManagerService;
+
+		public TagsRepository(ICacheManagerService cacheManagerService, IConnect connect) : base(connect)
+		{
+			m_CacheManagerService = cacheManagerService;
+		}
 
 		public async Task<ITagEntry> CreateTagAsync(ulong guildId, ulong authorId, string name, string content)
 		{
@@ -38,18 +44,27 @@ namespace Spade.Database.Repositories
 				Author = authorId.ToString()
 			};
 
+			string cacheKey = m_CacheManagerService.Format<TagEntry>(guildId, 0, ("name", name));
+			m_CacheManagerService.Set(cacheKey, tag);
+
 			return await AddAsync(tag);
 		}
 		public Task<ITagEntry> CreateTagAsync(IGuild guild, IUser author, string name, string content) =>
 			CreateTagAsync(guild.Id, author.Id, name, content);
 
-		public async Task DeleteTagAsync(ulong guildId, string name) =>
+		public async Task DeleteTagAsync(ulong guildId, string name)
+		{
+			string cacheKey = m_CacheManagerService.Format<TagEntry>(guildId, 0, ("name", name));
+			m_CacheManagerService.Remove(cacheKey);
+
 			await DeleteAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower());
+		}
+
 		public Task DeleteTagAsync(IGuild guild, string name) => DeleteTagAsync(guild.Id, name);
 
 		public async Task<ITagEntry> EditTagAsync(ulong guildId, string name, string content)
 		{
-            if (await GetTagAsync(guildId, name) is not TagEntry tag)
+			if (await GetTagAsync(guildId, name) is not TagEntry tag)
 				return default;
 
 			var update = MongoDB.Driver.Builders<TagEntry>.Update.Set("content", content);
@@ -57,14 +72,32 @@ namespace Spade.Database.Repositories
 			// Client prediction!
 			var editedTag = tag with { Content = content };
 
+			string cacheKey = m_CacheManagerService.Format<TagEntry>(guildId, 0, ("name", name));
+			m_CacheManagerService.Set(cacheKey, editedTag);
+
 			await UpdateAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower(), update);
 
 			return editedTag;
 		}
 		public Task<ITagEntry> EditTagAsync(IGuild guild, string name, string content) => EditTagAsync(guild.Id, name, content);
 
-		public async Task<ITagEntry> GetTagAsync(ulong guildId, string name) =>
-			await FindAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower());
+		public async Task<ITagEntry> GetTagAsync(ulong guildId, string name)
+		{
+			TagEntry tag;
+
+			string cacheKey = m_CacheManagerService.Format<TagEntry>(guildId, 0, ("name", name));
+			if (m_CacheManagerService.IsSet(cacheKey))
+				tag = m_CacheManagerService.Get<TagEntry>(cacheKey);
+			else
+			{
+				tag = await FindAsync(x => x.GuildId == guildId.ToString());
+
+				if (!m_CacheManagerService.IsSet(cacheKey) && tag is not null)
+					m_CacheManagerService.Set(cacheKey, tag);
+			}
+
+			return tag;
+		}
 		public Task<ITagEntry> GetTagAsync(IGuild guild, string name) => GetTagAsync(guild.Id, name);
 
 		public async Task<ITagEntry> UpdateTagUsage(ulong guildId, string name)
@@ -76,6 +109,9 @@ namespace Spade.Database.Repositories
 
 			// Client prediction!
 			var editedTag = tag with { Uses = tag.Uses + 1 };
+
+			string cacheKey = m_CacheManagerService.Format<TagEntry>(guildId, 0, ("name", name));
+			m_CacheManagerService.Set(cacheKey, editedTag);
 
 			await UpdateAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower(), update);
 

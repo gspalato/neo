@@ -13,7 +13,7 @@ namespace Spade.Core.Commands.Modules.Administration
         public ICommandHandlingService CommandHandlingService { get; set; }
 
         [Command]
-        [RequireOwner]
+        [RequireTrustedUser]
         public async Task SudoAsync(IGuildUser user, [Remainder] string command)
         {
             var context = new SpadeContext(Context.Message, Context.Me, Context.ServiceProvider, user, Context.User);

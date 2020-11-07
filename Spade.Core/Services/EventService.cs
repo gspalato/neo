@@ -1,8 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Hangfire;
+using Spade.Common.Structures;
 using Spade.Core.Structures.Attributes;
-using System;
 using System.Threading.Tasks;
 using Victoria;
 

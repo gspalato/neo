@@ -15,8 +15,8 @@ namespace Spade.Database.Entities
 		string Author { get; init; }
 		int Uses { get; init; }
 	}
-	
-	[CacheKeyFormat("TAG guild {0}")]
+
+	[CacheKeyFormat("TAG guild name")]
 	[MongoCollectionName("Tags")]
 	public record TagEntry : ITagEntry
 	{

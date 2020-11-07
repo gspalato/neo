@@ -45,4 +45,8 @@
 	  <ProjectReference Include="..\Spade.Database\Spade.Database.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Structures\Miscellaneous\" />
+	</ItemGroup>
+
 </Project>
