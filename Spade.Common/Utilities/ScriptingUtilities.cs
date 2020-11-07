@@ -62,7 +62,7 @@ namespace Spade.Common.Utilities
 
 			var options = ScriptOptions.Default
 				.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
-					.Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(Assembly.GetExecutingAssembly().Location)))
+					.Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)))
 				.WithImports(Imports);
 
 			var script = CSharpScript.Create(code, options, typeof(T));
