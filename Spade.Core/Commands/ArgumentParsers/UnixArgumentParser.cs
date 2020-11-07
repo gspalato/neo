@@ -74,7 +74,7 @@ namespace Spade.Core.Commands.ArgumentParsers
 					case ' ' when state is UnixParserState.ArgumentName:
 						{
 							currentParameter = GetParameter(context, parameterName.ToString());
-							if (currentParameter is not null && currentParameter is bool)
+							if (currentParameter is not null && currentParameter.Type == typeof(bool))
 							{
 								parameters.TryAdd(currentParameter, true);
 								parameterName.Clear();
@@ -154,7 +154,7 @@ namespace Spade.Core.Commands.ArgumentParsers
 			{
 				if (!parameters.ContainsKey(expectedParameter))
 				{
-					if (expectedParameter is bool) && expectedParameter.DefaultValue is null)
+					if (expectedParameter.Type == typeof(bool) && expectedParameter.DefaultValue is null)
 					{
 						parameters.TryAdd(expectedParameter, false);
 						continue;
