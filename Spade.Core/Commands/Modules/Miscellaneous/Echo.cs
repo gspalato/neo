@@ -9,7 +9,7 @@ namespace Spade.Core.Commands.Modules.Miscellaneous
 	public class Echo : SpadeModule
 	{
 		[Command]
-		[RequireOwner]
+		//[RequireOwner]
 		public async Task ExecuteAsync([Remainder] string text)
 		{
 			await Context.ReplyAsync(text);
