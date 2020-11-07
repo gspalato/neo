@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Spade.Database.Repositories
 {
-	public interface IGuildSettingsRepository : IRepository<GuildSettingsEntry>
+	public interface IGuildSettingsRepository : IRepository<GuildSettings>
 	{
-		Task<GuildSettingsEntry> CreateForGuildAsync(ulong guildId, string prefix = null);
-		Task<GuildSettingsEntry> GetForGuildAsync(ulong guildId);
-		Task<GuildSettingsEntry> GetOrCreateForGuildAsync(ulong guildId, string prefix = null);
+		Task<GuildSettings> CreateForGuildAsync(ulong guildId, string prefix = null);
+		Task<GuildSettings> GetForGuildAsync(ulong guildId);
+		Task<GuildSettings> GetOrCreateForGuildAsync(ulong guildId, string prefix = null);
 	}
 
-	public sealed class GuildSettingsRepository : RepositoryBase<GuildSettingsEntry>, IGuildSettingsRepository
+	public sealed class GuildSettingsRepository : RepositoryBase<GuildSettings>, IGuildSettingsRepository
 	{
 		private readonly IConfiguration _configuration;
 
@@ -22,11 +22,11 @@ namespace Spade.Database.Repositories
 			_configuration = configuration;
 		}
 
-		public async Task<GuildSettingsEntry> CreateForGuildAsync(ulong guildId, string prefix = null)
+		public async Task<GuildSettings> CreateForGuildAsync(ulong guildId, string prefix = null)
 		{
 			prefix ??= _configuration.GetValue<string>("PREFIX");
 
-			var settings = new GuildSettingsEntry
+			var settings = new GuildSettings
 			{
 				GuildId = guildId.ToString(),
 				Prefix = prefix
@@ -35,10 +35,10 @@ namespace Spade.Database.Repositories
 			return await AddAsync(settings);
 		}
 
-		public async Task<GuildSettingsEntry> GetForGuildAsync(ulong guildId) =>
+		public async Task<GuildSettings> GetForGuildAsync(ulong guildId) =>
 			await FindAsync(x => x.GuildId == guildId.ToString());
 
-		public async Task<GuildSettingsEntry> GetOrCreateForGuildAsync(ulong guildId, string prefix = null) =>
+		public async Task<GuildSettings> GetOrCreateForGuildAsync(ulong guildId, string prefix = null) =>
 			await GetForGuildAsync(guildId) ?? await CreateForGuildAsync(guildId, prefix);
 	}
 }

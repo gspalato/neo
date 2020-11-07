@@ -6,31 +6,31 @@ using System.Threading.Tasks;
 
 namespace Spade.Database.Repositories
 {
-	public interface ITagsRepository : IRepository<TagEntry>
+	public interface ITagsRepository : IRepository<Tag>
 	{
-		Task<ITagEntry> CreateTagAsync(ulong guildId, ulong authorId, string name, string content);
-		Task<ITagEntry> CreateTagAsync(IGuild guild, IUser author, string name, string content);
+		Task CreateTagAsync(ulong guildId, ulong authorId, string name, string content);
+		Task CreateTagAsync(IGuild guild, IUser author, string name, string content);
 
 		Task DeleteTagAsync(ulong guildId, string name);
 		Task DeleteTagAsync(IGuild guild, string name);
 
-		Task<ITagEntry> EditTagAsync(ulong guildId, string name, string content);
-		Task<ITagEntry> EditTagAsync(IGuild guild, string name, string content);
+		Task EditTagAsync(ulong guildId, string name, string content);
+		Task EditTagAsync(IGuild guild, string name, string content);
 
-		Task<ITagEntry> GetTagAsync(ulong guildId, string name);
-		Task<ITagEntry> GetTagAsync(IGuild guild, string name);
+		Task<Entities.ITag> GetTagAsync(ulong guildId, string name);
+		Task<Entities.ITag> GetTagAsync(IGuild guild, string name);
 
 		Task UpdateTagUsage(ulong guildId, string name);
 		Task UpdateTagUsage(IGuild guild, string name);
 	}
 
-	public sealed class TagsRepository : RepositoryBase<TagEntry>, ITagsRepository
+	public sealed class TagsRepository : RepositoryBase<Tag>, ITagsRepository
 	{
 		public TagsRepository(IConnect connect) : base(connect) { }
 
-		public async Task<ITagEntry> CreateTagAsync(ulong guildId, ulong authorId, string name, string content)
+		public async Task CreateTagAsync(ulong guildId, ulong authorId, string name, string content)
 		{
-			var tag = new TagEntry
+			var tag = new Tag
 			{
 				GuildId = guildId.ToString(),
 				Name = name,
@@ -39,39 +39,37 @@ namespace Spade.Database.Repositories
 			};
 
 			await AddAsync(tag);
-
-			return tag;
 		}
-		public Task<ITagEntry> CreateTagAsync(IGuild guild, IUser author, string name, string content) =>
+		public Task CreateTagAsync(IGuild guild, IUser author, string name, string content) =>
 			CreateTagAsync(guild.Id, author.Id, name, content);
 
 		public async Task DeleteTagAsync(ulong guildId, string name) =>
 			await DeleteAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower());
 		public Task DeleteTagAsync(IGuild guild, string name) => DeleteTagAsync(guild.Id, name);
 
-		public async Task<ITagEntry> EditTagAsync(ulong guildId, string name, string content)
+		public async Task EditTagAsync(ulong guildId, string name, string content)
 		{
-            if (await GetTagAsync(guildId, name) is not TagEntry tag)
-                return default;
+			var tag = await GetTagAsync(guildId, name);
+			if (tag is null)
+				return;
 
-            var update = MongoDB.Driver.Builders<TagEntry>.Update.Set("content", content);
+			var update = MongoDB.Driver.Builders<Tag>.Update.Set("content", content);
 
 			await UpdateAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower(), update);
-
-			return tag with { Content = content };
 		}
-		public Task<ITagEntry> EditTagAsync(IGuild guild, string name, string content) => EditTagAsync(guild.Id, name, content);
+		public Task EditTagAsync(IGuild guild, string name, string content) => EditTagAsync(guild.Id, name, content);
 
-		public async Task<ITagEntry> GetTagAsync(ulong guildId, string name) =>
+		public async Task<Entities.ITag> GetTagAsync(ulong guildId, string name) =>
 			await FindAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower());
-		public Task<ITagEntry> GetTagAsync(IGuild guild, string name) => GetTagAsync(guild.Id, name);
+		public Task<Entities.ITag> GetTagAsync(IGuild guild, string name) => GetTagAsync(guild.Id, name);
 
 		public async Task UpdateTagUsage(ulong guildId, string name)
 		{
-			if (await GetTagAsync(guildId, name) is not TagEntry tag)
+			var tag = await GetTagAsync(guildId, name);
+			if (tag is null)
 				return;
 
-			var update = MongoDB.Driver.Builders<TagEntry>.Update.Set("uses", tag.Uses + 1);
+			var update = MongoDB.Driver.Builders<Tag>.Update.Set("uses", tag.Uses + 1);
 
 			await UpdateAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower(), update);
 		}
