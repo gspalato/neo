@@ -7,6 +7,16 @@ using System.Threading.Tasks;
 
 namespace Spade.Core.Commands
 {
+	/*
+	 * This context has override parameters.
+	 * They're meant to be used as a sudo system.
+	 * 
+	 * overrideUser (User): Changes the context's user to a specific one.
+	 * overridePermissionsUser (PermissionsUser): User which permissions will be used to perform checks.
+	 * 
+	 * Every check (including check attributes) must always use the PermissionsUser to perform checks.
+	 */
+
 	public class SpadeContext : CommandContext
 	{
 		public readonly ITextChannel Channel;
@@ -16,8 +26,10 @@ namespace Spade.Core.Commands
 		public readonly IUserMessage Message;
 		public readonly DateTimeOffset Now;
 		public readonly IGuildUser User;
+		public readonly IGuildUser PermissionsUser;
 
-		public SpadeContext(IUserMessage msg, IGuildUser me, IServiceProvider services) : base(services)
+		public SpadeContext(IUserMessage msg, IGuildUser me, IServiceProvider services,
+			IGuildUser overrideUser = null, IGuildUser overridePermissionsUser = null) : base(services)
 		{
 			Channel = (ITextChannel)msg.Channel;
 			Client = services.GetService<DiscordSocketClient>();
@@ -25,7 +37,8 @@ namespace Spade.Core.Commands
 			Me = me;
 			Message = msg;
 			Now = DateTimeOffset.UtcNow;
-			User = (IGuildUser)msg.Author;
+			User = overrideUser ?? (IGuildUser)msg.Author;
+			PermissionsUser = overridePermissionsUser ?? User;
 		}
 
 		public T GetService<T>() =>

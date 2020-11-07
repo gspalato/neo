@@ -24,7 +24,7 @@ namespace Spade.Core.Structures.Attributes
 			if (app.Owner.Id == context.User.Id)
 				return CheckResult.Successful;
 
-			var member = await context.Guild.GetUserAsync(context.User.Id);
+			var member = context.PermissionsUser;
 
 			return member.GuildPermissions.Has(Value)
 				? CheckResult.Successful

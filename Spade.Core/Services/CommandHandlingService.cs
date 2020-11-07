@@ -17,6 +17,8 @@ namespace Spade.Core.Services
 	public interface ICommandHandlingService
 	{
 		void Start();
+
+		Task HandleCommandResult(IResult result, IUserMessage msg);
 	}
 
 	public class CommandHandlingService : ServiceBase, ICommandHandlingService
@@ -108,6 +110,11 @@ namespace Spade.Core.Services
 			var context = new SpadeContext(msg, me, _services);
 			var result = await _commandService.ExecuteAsync(output, context);
 
+			await HandleCommandResult(result, msg);
+		}
+
+		public async Task HandleCommandResult(IResult result, IUserMessage msg)
+        {
 			switch (result)
 			{
 				case ArgumentParseFailedResult argParse:
