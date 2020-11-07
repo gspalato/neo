@@ -2,17 +2,14 @@
 
 namespace Spade.Core.Structures.Miscellaneous
 {
-    public record DocumentationApiResponse
+    public class DocumentationApiResponse
     {
-        public List<DocumentationMember> Results { get; init; } = new();
+        public List<DocumentationMember> Results;
 
         public int Count { get; init; }
 
-        public void Deconstruct(out List<DocumentationMember> results, out int count)
-        {
-            results = Results;
-            count = Count;
-        }
+        public void Deconstruct(out List<DocumentationMember> members, out int count)
+            => (members, count) = (Results, Count);
     }
 
     public record DocumentationMember
