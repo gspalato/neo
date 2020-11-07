@@ -20,8 +20,8 @@ namespace Spade.Database.Repositories
 		Task<ITagEntry> GetTagAsync(ulong guildId, string name);
 		Task<ITagEntry> GetTagAsync(IGuild guild, string name);
 
-		Task UpdateTagUsage(ulong guildId, string name);
-		Task UpdateTagUsage(IGuild guild, string name);
+		Task<ITagEntry> UpdateTagUsage(ulong guildId, string name);
+		Task<ITagEntry> UpdateTagUsage(IGuild guild, string name);
 	}
 
 	public sealed class TagsRepository : RepositoryBase<TagEntry>, ITagsRepository
@@ -38,9 +38,7 @@ namespace Spade.Database.Repositories
 				Author = authorId.ToString()
 			};
 
-			await AddAsync(tag);
-
-			return tag;
+			return await AddAsync(tag);
 		}
 		public Task<ITagEntry> CreateTagAsync(IGuild guild, IUser author, string name, string content) =>
 			CreateTagAsync(guild.Id, author.Id, name, content);
@@ -69,15 +67,20 @@ namespace Spade.Database.Repositories
 			await FindAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower());
 		public Task<ITagEntry> GetTagAsync(IGuild guild, string name) => GetTagAsync(guild.Id, name);
 
-		public async Task UpdateTagUsage(ulong guildId, string name)
+		public async Task<ITagEntry> UpdateTagUsage(ulong guildId, string name)
 		{
-			if (await GetTagAsync(guildId, name) is not ITagEntry tag)
-				return;
+			if (await GetTagAsync(guildId, name) is not TagEntry tag)
+				return default;
 
 			var update = MongoDB.Driver.Builders<TagEntry>.Update.Set("uses", tag.Uses + 1);
 
+			// Client prediction!
+			var editedTag = tag with { Uses = tag.Uses + 1 };
+
 			await UpdateAsync(t => t.GuildId == guildId.ToString() && t.Name.ToLower() == name.ToLower(), update);
+
+			return editedTag;
 		}
-		public Task UpdateTagUsage(IGuild guild, string name) => UpdateTagUsage(guild.Id, name);
+		public Task<ITagEntry> UpdateTagUsage(IGuild guild, string name) => UpdateTagUsage(guild.Id, name);
 	}
 }
