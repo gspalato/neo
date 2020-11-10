@@ -12,52 +12,52 @@ namespace Spade.Common.Utilities
 	{
 		public static string InspectInheritance(object obj) => Inheritance(obj.GetType());
 
-        public static string Inheritance<T>() => Inheritance(typeof(T));
+		public static string Inheritance<T>() => Inheritance(typeof(T));
 
-        public static string Inheritance(Type type)
-        {
-            var baseTypes = new List<Type>() { type };
-            var latestType = type.BaseType;
+		public static string Inheritance(Type type)
+		{
+			var baseTypes = new List<Type>() { type };
+			var latestType = type.BaseType;
 
-            while (latestType is not null)
-            {
-                baseTypes.Add(latestType);
-                latestType = latestType.BaseType;
-            }
+			while (latestType is not null)
+			{
+				baseTypes.Add(latestType);
+				latestType = latestType.BaseType;
+			}
 
-            var sb = new StringBuilder().AppendLine($"Inheritance graph for type [{type.FullName}]").AppendLine();
+			var sb = new StringBuilder().AppendLine($"Inheritance graph for type [{type.FullName}]").AppendLine();
 
-            foreach (var baseType in baseTypes)
-            {
-                sb.Append($"[{FormatType(baseType)}]");
-                IList<Type> inheritors = baseType.GetInterfaces();
-                if (baseType.BaseType is not null)
-                {
-                    inheritors = inheritors.ToList();
-                    inheritors.Add(baseType.BaseType);
-                }
-                if (inheritors.Any()) sb.Append($": {string.Join(", ", inheritors.Select(b => b.FullName))}");
+			foreach (var baseType in baseTypes)
+			{
+				sb.Append($"[{FormatType(baseType)}]");
+				IList<Type> inheritors = baseType.GetInterfaces();
+				if (baseType.BaseType is not null)
+				{
+					inheritors = inheritors.ToList();
+					inheritors.Add(baseType.BaseType);
+				}
+				if (inheritors.Any()) sb.Append($": {string.Join(", ", inheritors.Select(b => b.FullName))}");
 
-                sb.AppendLine();
-            }
+				sb.AppendLine();
+			}
 
-            return Format.Code(sb.ToString(), "ini");
-        }
+			return Format.Code(sb.ToString(), "ini");
+		}
 
 
-        private static string FormatType(Type atype)
-        {
-            var vs = new StringBuilder($"{atype.Namespace}.{atype.Name}");
+		private static string FormatType(Type atype)
+		{
+			var vs = new StringBuilder($"{atype.Namespace}.{atype.Name}");
 
-            var t = atype.GenericTypeArguments;
+			var t = atype.GenericTypeArguments;
 
-            if (t.Length > 0)
-                vs.Append($"<{string.Join(", ", t.Select(a => a.Name))}>");
+			if (t.Length > 0)
+				vs.Append($"<{string.Join(", ", t.Select(a => a.Name))}>");
 
-            return vs.ToString();
-        }
-        
-        public static string SerializeObject(object obj, bool serializeInner = true)
+			return vs.ToString();
+		}
+		
+		public static string SerializeObject(object obj, bool serializeInner = true)
 		{
 			var type = obj.GetType();
 

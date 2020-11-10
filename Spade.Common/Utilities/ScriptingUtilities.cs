@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -66,6 +67,7 @@ namespace Spade.Common.Utilities
 
             var script = CSharpScript.Create(code, options, typeof(T));
 
+
             var compilationTimer = Stopwatch.StartNew();
             var compilationDiagnostics = script.Compile();
             compilationTimer.Stop();
@@ -86,7 +88,7 @@ namespace Spade.Common.Utilities
                 executionTimer.Stop();
                 var returnValue = executionResult.ReturnValue;
 
-                GC.Collect();
+                //GC.Collect();
 
                 return ScriptingResult.FromSuccess(returnValue, compilationTimer.ElapsedMilliseconds,
                     executionTimer.ElapsedMilliseconds);
@@ -102,12 +104,12 @@ namespace Spade.Common.Utilities
     public sealed class ScriptingResult
     {
         private ScriptingResult(bool success = true, object returnValue = null,
-            IEnumerable<Diagnostic> compilationDiagnostics = null, Exception exception = null,
+            ImmutableArray<Diagnostic> compilationDiagnostics = default, Exception exception = null,
             long compilationTime = -1, long executionTime = -1, ScriptStage failedStage = default)
         {
             ReturnValue = returnValue;
             IsSuccess = success;
-            CompilationDiagnostics = compilationDiagnostics?.ToList();
+            CompilationDiagnostics = compilationDiagnostics;
             Exception = exception;
             CompilationTime = compilationTime;
             ExecutionTime = executionTime;
@@ -116,7 +118,7 @@ namespace Spade.Common.Utilities
 
         public object ReturnValue { get; }
         public bool IsSuccess { get; }
-        public List<Diagnostic> CompilationDiagnostics { get; }
+        public ImmutableArray<Diagnostic> CompilationDiagnostics { get; }
         public Exception Exception { get; }
         public ScriptStage FailedStage { get; }
 
@@ -130,7 +132,7 @@ namespace Spade.Common.Utilities
                 compilationTime: compilationTime);
         }
 
-        public static ScriptingResult FromError(IEnumerable<Diagnostic> diagnostics, ScriptStage failedStage,
+        public static ScriptingResult FromError(ImmutableArray<Diagnostic> diagnostics, ScriptStage failedStage,
             Exception exception = null, long compilationTime = -1, long executionTime = -1)
         {
             return new ScriptingResult(false, compilationDiagnostics: diagnostics, exception: exception,
