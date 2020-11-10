@@ -20,9 +20,12 @@ namespace Spade.Core.Structures.Attributes
 		{
 			var context = (SpadeContext)_;
 
+			if (context.Channel is not ITextChannel textChannel)
+				return CheckResult.Unsuccessful("This command's not available on DMs.");
+
 			var member = await context.Guild.GetCurrentUserAsync();
 
-			return member.GetPermissions(context.Channel).Has(Value)
+			return member.GetPermissions(textChannel).Has(Value)
 				? CheckResult.Successful
 				: CheckResult.Unsuccessful("You don't have enough permissions to do this.");
 		}
