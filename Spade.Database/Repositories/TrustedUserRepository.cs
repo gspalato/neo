@@ -15,7 +15,7 @@ namespace Spade.Database.Repositories
 
     public class TrustedUserRepository : RepositoryBase<TrustedUserEntry>, ITrustedUserRepository
     {
-        private ICacheManagerService m_CacheManagerService;
+        private readonly ICacheManagerService m_CacheManagerService;
 
         public TrustedUserRepository(ICacheManagerService cacheManagerService, IConnect connect) : base(connect)
         {

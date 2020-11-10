@@ -1,12 +1,11 @@
-﻿using Spade.Core.Commands.ArgumentParsers;
-using Spade.Core.Structures.Attributes;
-using Discord;
+﻿using Discord;
 using Qmmands;
+using Spade.Core.Structures.Attributes;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace Spade.Core.Commands.Modules.Moderation
 {
@@ -107,9 +106,10 @@ namespace Spade.Core.Commands.Modules.Moderation
 			[Name("Count")] int count,
 			[Name("User")] IGuildUser user = null)
 		{
-			var ch = Context.Channel;
+			if (Context.Channel is not ITextChannel ch)
+				return;
 
-			var request = await ch.GetMessagesAsync(count + 1).ElementAtOrDefaultAsync(1);
+			var request = await AsyncEnumerableExtensions.FlattenAsync(ch.GetMessagesAsync(count + 1));
 			if (!request.Any())
 			{
 				await Context.ReactAsync("❌");
@@ -157,7 +157,7 @@ namespace Spade.Core.Commands.Modules.Moderation
 			var truncatedUsers = deletedMessageUsers.Take(3);
 
 			sb.AppendJoin("\n", truncatedUsers);
-			if (truncatedUsers.Count() < deletedMessageUsers.Count())
+			if (truncatedUsers.Count() < deletedMessageUsers.Count)
 				sb.AppendLine("...");
 
 			var ok = await SendOkAsync(sb.ToString());
