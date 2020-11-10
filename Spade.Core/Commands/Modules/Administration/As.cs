@@ -7,24 +7,20 @@ using System.Threading.Tasks;
 namespace Spade.Core.Commands.Modules.Administration
 {
 	[Category(Category.Admin)]
-	[Description("Enables use of internal bot commands.")]
-	[Group("sudo")]
-	public sealed class Sudo : SpadeModule
+	[Group("as")]
+	public sealed class As : SpadeModule
 	{
 		public ICommandHandlingService CommandHandlingService { get; set; }
 
-		[Command("sudo", "#")]
-		[RequireTrustedUser]
-		public async Task SudoAsync([Remainder] string command)
+		[Command]
+		[RequireSudo]
+		public async Task ExecuteAsAsync(IGuildUser user, [Remainder] string command)
 		{
 			var context = new SpadeContext(Context.Message, Context.Me, Context.ServiceProvider,
-				isSudo: true, overrideUser: Context.User, overridePermissionsUser: Context.User);
+				overrideUser: user, overridePermissionsUser: Context.User);
 			var result = await CommandService.ExecuteAsync(command, context);
 
-			if (result.IsSuccessful)
-				await Context.Message.AddReactionAsync(new Emoji("\u2705"));
-			else
-				await Context.Message.AddReactionAsync(new Emoji("\u274c"));
+			await Context.Message.AddReactionAsync(new Emoji("\u2705"));
 
 			_ = CommandHandlingService.HandleCommandResult(result, Context.Message);
 		}
