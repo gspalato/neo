@@ -22,16 +22,8 @@ namespace Spade.Core.Commands.TypeParsers
 			if (context.Guild is null)
 				return TypeParserResult<IGuildUser>.Unsuccessful("You're not in a guild.");
 
-			if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))
-			{
-				var result = await context.Guild.GetUserAsync(uid);
-				return result is not null
-					? TypeParserResult<IGuildUser>.Successful(result)
-					: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user."); ;
-			}
-
 			var m = m_UserRegex.Match(value);
-			if (m.Success && ulong.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uid))
+			if (m.Success && ulong.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))
 			{
 				var result = await context.Guild.GetUserAsync(uid);
 				return result is not null
@@ -50,9 +42,18 @@ namespace Spade.Core.Commands.TypeParsers
 				&& (dv is not null && u.Discriminator == dv || dv is null)
 				|| u.Nickname?.ToLowerInvariant() == value);
 
-			return mbr is not null
-				? TypeParserResult<IGuildUser>.Successful(mbr)
-				: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
+			if (mbr is not null)
+				return TypeParserResult<IGuildUser>.Successful(mbr);
+
+			if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uid))
+			{
+				var result = await context.Guild.GetUserAsync(uid);
+				return result is not null
+					? TypeParserResult<IGuildUser>.Successful(result)
+					: TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user."); ;
+			}
+
+			return TypeParserResult<IGuildUser>.Unsuccessful("Couldn't parse user.");
 		}
 	}
 }

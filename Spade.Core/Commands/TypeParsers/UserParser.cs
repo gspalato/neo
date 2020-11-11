@@ -19,17 +19,8 @@ namespace Spade.Core.Commands.TypeParsers
 		public override ValueTask<TypeParserResult<IUser>> ParseAsync(Parameter parameter, string value,
 			SpadeContext context, IServiceProvider provider)
 		{
-			if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))
-			{
-				var result = context.Client.GetUser(uid);
-				var ret = result is not null
-					? TypeParserResult<IUser>.Successful(result)
-					: TypeParserResult<IUser>.Unsuccessful("Couldn't parse user.");
-				return ret;
-			}
-
 			var m = _userRegex.Match(value);
-			if (m.Success && ulong.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uid))
+			if (m.Success && ulong.TryParse(m.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var uid))
 			{
 				var result = context.Client.GetUser(uid);
 				var ret = result is not null
@@ -51,9 +42,19 @@ namespace Spade.Core.Commands.TypeParsers
 					&& ((discrim is not null && user.Discriminator == discrim) || discrim is null));
 
 			var usr = us.FirstOrDefault();
-			return usr is not null
-				? TypeParserResult<IUser>.Successful(usr)
-				: TypeParserResult<IUser>.Unsuccessful("Couldn't parse users.");
+			if (usr is not null)
+				return TypeParserResult<IUser>.Successful(usr);
+
+			if (ulong.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out uid))
+			{
+				var result = context.Client.GetUser(uid);
+				var ret = result is not null
+					? TypeParserResult<IUser>.Successful(result)
+					: TypeParserResult<IUser>.Unsuccessful("Couldn't parse user.");
+				return ret;
+			}
+
+			return TypeParserResult<IUser>.Unsuccessful("Couldn't parse users.");
 		}
 	}
 }
