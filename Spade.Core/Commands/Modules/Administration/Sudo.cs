@@ -8,12 +8,12 @@ namespace Spade.Core.Commands.Modules.Administration
 {
 	[Category(Category.Admin)]
 	[Description("Enables use of internal bot commands.")]
-	[Group("sudo")]
+	[Group("sudo", "#")]
 	public sealed class Sudo : SpadeModule
 	{
 		public ICommandHandlingService CommandHandlingService { get; set; }
 
-		[Command("sudo", "#")]
+		[Command]
 		[RequireTrustedUser]
 		public async Task SudoAsync([Remainder] string command)
 		{
