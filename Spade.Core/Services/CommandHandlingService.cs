@@ -101,7 +101,7 @@ namespace Spade.Core.Services
 			var context = new SpadeContext(msg, me, _services);
 			var result = await _commandService.ExecuteAsync(output, context);
 
-			await HandleCommandResult(result, msg);
+			_ = HandleCommandResult(result, msg);
 		}
 
 		public async Task HandleCommandResult(IResult result, IUserMessage msg, SpadeContext context = null)
@@ -137,6 +137,18 @@ namespace Spade.Core.Services
 						var reason = parameterResult.Reason;
 
 						await SendErrorResultEmbedAsync(msg, reason);
+					}
+					break;
+
+				case ChecksFailedResult checksFailed:
+					{
+						var sb = new StringBuilder();
+						sb.AppendLine("Some checks have failed before executing the command:");
+
+						foreach (var (check, res) in checksFailed.FailedChecks)
+							sb.AppendLine($"> {res.Reason}");
+
+						await SendErrorResultEmbedAsync(msg, sb.ToString());
 					}
 					break;
 
