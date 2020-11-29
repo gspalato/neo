@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Spade.Common.Extensions;
+using Oculus.Common.Extensions;
 using System;
 
-namespace Spade.Tests.Extensions
+namespace Oculus.Tests.Extensions
 {
     [TestClass]
     public class DateTimeExtensionsTests

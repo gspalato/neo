@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Spade.Common.Extensions;
+using Oculus.Common.Extensions;
 
-namespace Spade.Tests.Extensions
+namespace Oculus.Tests.Extensions
 {
     [TestClass]
     public class StringExtensionsTests
