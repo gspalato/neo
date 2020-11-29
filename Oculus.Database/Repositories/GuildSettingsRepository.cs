@@ -1,11 +1,11 @@
-﻿using Spade.Database.Entities;
-using Canducci.MongoDB.Repository.Connection;
+﻿using Canducci.MongoDB.Repository.Connection;
 using Canducci.MongoDB.Repository.Contracts;
 using Microsoft.Extensions.Configuration;
+using Oculus.Database.Entities;
+using Oculus.Database.Services;
 using System.Threading.Tasks;
-using Spade.Database.Services;
 
-namespace Spade.Database.Repositories
+namespace Oculus.Database.Repositories
 {
 	public interface IGuildSettingsRepository : IRepository<GuildSettingsEntry>
 	{
@@ -67,7 +67,7 @@ namespace Spade.Database.Repositories
 			await GetForGuildAsync(guildId) ?? await CreateForGuildAsync(guildId, prefix);
 
 		public async Task<IGuildSettingsEntry> UpdatePrefixAsync(ulong guildId, string prefix)
-        {
+		{
 			if (await GetOrCreateForGuildAsync(guildId) is not GuildSettingsEntry settings)
 				return default;
 

@@ -1,9 +1,9 @@
 ﻿using Canducci.MongoDB.Repository.MongoAttribute;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using Spade.Common.Structures.Attributes;
+using Oculus.Common.Structures.Attributes;
 
-namespace Spade.Database.Entities
+namespace Oculus.Database.Entities
 {
 	public interface ITrustedUserEntry
 	{

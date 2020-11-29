@@ -1,7 +1,7 @@
 ﻿using Canducci.MongoDB.Repository.Connection;
 using Canducci.MongoDB.Repository.Contracts;
 
-namespace Spade.Database.Repositories
+namespace Oculus.Database.Repositories
 {
 	public abstract class RepositoryBase<T> : Repository<T> where T : class, new()
 	{

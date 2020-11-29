@@ -61,7 +61,7 @@ namespace Oculus.Core.Commands
 			if (!ShouldInlineReply)
 				reference = null;
 			else if (reply)
-				reference = Message.Reference;
+				reference = new MessageReference(Message.Id);
 			
 			return await Channel.SendMessageAsync(content, embed: embed, messageReference: reference);
 		}

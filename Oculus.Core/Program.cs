@@ -17,14 +17,26 @@ using Discord.Webhook;
 Host.CreateDefaultBuilder(args)
 	.ConfigureServices((hostContext, services) =>
 	{
-		string lavalinkPassword = hostContext.Configuration.GetValue<string>("LAVALINK");
-		if (lavalinkPassword.Length == 0)
-		{
+		if (hostContext.Configuration is null)
+        {
+			services
+				.BuildServiceProvider()
+				.GetRequiredService<ILoggingService>()
+				.Critical("No appsettings.json file was found.");
+			return;
+		}
+
+		string lavalinkPassword = "";
+		try
+        {
+			lavalinkPassword = hostContext.Configuration.GetValue<string>("LAVALINK");
+		}
+		catch
+        {
 			services
 				.BuildServiceProvider()
 				.GetRequiredService<ILoggingService>()
 				.Critical("No Lavalink password was provided.");
-
 			return;
 		}
 

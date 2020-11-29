@@ -26,5 +26,24 @@ namespace Oculus.Core.Commands.Modules.Miscellaneous
 
 			await SendEmbedAsync(embed);
 		}
+
+		[Command]
+		[RequireReference]
+		public async Task QuoteAsync()
+		{
+			var reply = Context.Message.ReferencedMessage;
+
+			var embedAuthor = new EmbedAuthorBuilder()
+				.WithName(reply.Author.Username)
+				.WithIconUrl(reply.Author.GetAvatarUrl());
+
+			var embed = new EmbedBuilder()
+				.WithAuthor(embedAuthor)
+				.WithDefaultColor()
+				.WithDescription($"{reply.Content}\n\n[Jump To]({reply.GetJumpUrl()})")
+				.WithTimestamp(reply.Timestamp);
+
+			await SendEmbedAsync(embed);
+		}
 	}
 }

@@ -1,11 +1,11 @@
-﻿using Spade.Database.Entities;
-using Canducci.MongoDB.Repository.Connection;
+﻿using Canducci.MongoDB.Repository.Connection;
 using Canducci.MongoDB.Repository.Contracts;
 using Discord;
+using Oculus.Database.Entities;
+using Oculus.Database.Services;
 using System.Threading.Tasks;
-using Spade.Database.Services;
 
-namespace Spade.Database.Repositories
+namespace Oculus.Database.Repositories
 {
 	public interface ITagsRepository : IRepository<TagEntry>
 	{

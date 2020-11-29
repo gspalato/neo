@@ -73,6 +73,7 @@ namespace Oculus.Core.Services
 		private void AddTypeParsers()
 		{
 			_commandService.AddTypeParser(CommandTypeParser.Instance);
+			_commandService.AddTypeParser(GuildChannelParser.Instance);
 			_commandService.AddTypeParser(GuildUserParser.Instance);
 			_commandService.AddTypeParser(MessageParser.Instance);
 			_commandService.AddTypeParser(ModuleTypeParser.Instance);
