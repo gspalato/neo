@@ -60,7 +60,7 @@ namespace Oculus.Core.Services
 				var errorEmbed = new EmbedBuilder()
 					.WithTitle("Error")
 					.WithWarning()
-					.WithDescription($"An exception occurred.\n`SPD001`");
+					.WithDescription($"An exception occurred.\n`OCL001`");
 
 				await args.Player.TextChannel.SendMessageAsync(embed: errorEmbed.Build())
 					.ConfigureAwait(false);

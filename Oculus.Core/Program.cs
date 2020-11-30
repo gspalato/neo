@@ -18,7 +18,7 @@ Host.CreateDefaultBuilder(args)
 	.ConfigureServices((hostContext, services) =>
 	{
 		if (hostContext.Configuration is null)
-        {
+		{
 			services
 				.BuildServiceProvider()
 				.GetRequiredService<ILoggingService>()
@@ -28,11 +28,11 @@ Host.CreateDefaultBuilder(args)
 
 		string lavalinkPassword = "";
 		try
-        {
+		{
 			lavalinkPassword = hostContext.Configuration.GetValue<string>("LAVALINK");
 		}
 		catch
-        {
+		{
 			services
 				.BuildServiceProvider()
 				.GetRequiredService<ILoggingService>()
@@ -43,7 +43,8 @@ Host.CreateDefaultBuilder(args)
 		services
 			.AddSingleton(new DiscordSocketConfig
 			{
-				ExclusiveBulkDelete = true
+				ExclusiveBulkDelete = true,
+				
 			})
 			.AddSingleton(new CommandServiceConfiguration
 			{
@@ -59,7 +60,6 @@ Host.CreateDefaultBuilder(args)
 	{
 		services
 			.AddSingleton<DiscordSocketClient>()
-			.AddSingleton<DiscordWebhookClient>()
 			.AddSingleton<ICacheManagerService, CacheManagerService>()
 			.AddSingleton<ICommandHandlingService, CommandHandlingService>()
 			.AddSingleton<ICommandService, CommandService>()

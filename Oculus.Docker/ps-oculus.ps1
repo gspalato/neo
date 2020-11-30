@@ -59,7 +59,7 @@ function PromptLoop($prompt) {
         } elseif ($latestStatus -eq $false) {
             Write-Host -NoNewline "$([char]10008) " -ForegroundColor Red
         }
-        Write-Host "<adu> " -NoNewline -ForegroundColor Gray
+        Write-Host "<odu> " -NoNewline -ForegroundColor Gray
         $prompt = Read-Host
 
         RunCommand $prompt
@@ -72,6 +72,6 @@ if ($Args[0] -ne $null) {
     RunCommand $Args[0]
 }
 
-Write-Host "[Spade Docker Utility]" -ForegroundColor Cyan
+Write-Host "[Oculus Docker Utility]" -ForegroundColor Cyan
 Write-Host "Type 'run' to start, 'build' to create an image." -ForegroundColor Cyan
 PromptLoop

@@ -1,13 +1,13 @@
 using System.Diagnostics;
 
-namespace Spade.Docker
+namespace Oculus.Docker
 {
 	internal static class Program
 	{
 		private static void Main()
 		{
 			var processInfo = new ProcessStartInfo("powershell.exe",
-				"-File " + "ps-spade.ps1")
+				"-File " + "ps-oculus.ps1")
 			{
 				CreateNoWindow = false,
 				UseShellExecute = false

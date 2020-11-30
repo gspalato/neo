@@ -28,8 +28,4 @@
 		<ProjectReference Include="..\Oculus.Common\Oculus.Common.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="Structures\Attributes\" />
-	</ItemGroup>
-
 </Project>

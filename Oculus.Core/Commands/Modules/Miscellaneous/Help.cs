@@ -14,13 +14,18 @@ namespace Oculus.Core.Commands.Modules.Miscellaneous
 	[Group("help")]
 	public class Help : OculusModule
 	{
+		private readonly List<Category> ignoreCategories = new()
+		{
+			Category.Admin
+		};
+
 		[Command]
 		public async Task ExecuteAsync()
 		{
 			var embed = new EmbedBuilder()
 				.WithDescription("")
 				.WithInfo()
-				.WithFooter($"by ace.　|　v{Version.FullVersion}");
+				.WithFooter($"by ace · v{Version.FullVersion}");
 
 			var modules = CommandService.GetAllModules();
 			var categories = new Dictionary<string, List<string>>();
@@ -39,7 +44,7 @@ namespace Oculus.Core.Commands.Modules.Miscellaneous
 				}
 
 				var category = categoryAttribute.Category.ToString();
-				if (category is null)
+				if (category is null || ignoreCategories.Any(c => c.ToString() == category))
 					continue;
 
 				if (!categories.TryGetValue(category, out var cmds))

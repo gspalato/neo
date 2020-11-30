@@ -22,8 +22,10 @@ namespace Oculus.Core.Services
 	{
 		private readonly object _lock = new object();
 
+		private string _name = "oculus";
+
 		public void Log(LogSeverity severity, string message,
-			Exception exception = null, string className = "spade")
+			Exception exception = null, string className = null)
 		{
 			switch (severity)
 			{
@@ -71,7 +73,7 @@ namespace Oculus.Core.Services
 
 		public void Verbose(string message, Exception exception = null,
 			string className = null) =>
-			BaseLog("verbose:", "#00ff33", message, exception, className);
+			BaseLog("verb:", "#00ff33", message, exception, className);
 
 		public void Warn(string message, Exception exception = null,
 			string className = null) =>
@@ -89,16 +91,15 @@ namespace Oculus.Core.Services
 		private void BaseLog(string name, string color,
 			string message, Exception exception = null, string className = null)
 		{
-			var output = new StringBuilder();
-
 			if (string.IsNullOrEmpty(message))
 				return;
 
-			if (className is not null)
-				output = new StringBuilder($"{className.Pastel("#888888")} ");
-
-			output.Append($"{name.Pastel(color)} ");
-			output.Append(message?.Pastel("#cfcfcf"));
+			string padded = (className ?? _name).PadRight(_name.Length);
+			var output = new StringBuilder();
+			output.Append($"[{DateTime.Now.ToLongTimeString()}] ".Pastel("#666666"));
+			output.Append($"{padded.Pastel("#888888")} ");
+			output.Append($"{name.PadLeft(6).Pastel(color)} ");
+			output.Append(message.Pastel("#cfcfcf"));
 
 			if (exception is not null)
 				output.Append($"\n{exception.Message}");
@@ -107,19 +108,6 @@ namespace Oculus.Core.Services
 			{
 				Console.WriteLine(output);
 			}
-		}
-
-		public static LoggingService operator |(string text, LoggingService loggingService)
-		{
-			loggingService.Info(text);
-			return loggingService;
-		}
-
-		public static LoggingService operator |(ValueTuple<string, LogSeverity> tuple, LoggingService loggingService)
-		{
-			var (text, logSeverity) = tuple;
-			loggingService.Log(logSeverity, text);
-			return loggingService;
 		}
 	}
 }

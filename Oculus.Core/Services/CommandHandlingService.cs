@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Qmmands;
 using Oculus.Common.Structures;
 using Oculus.Core.Commands;
 using Oculus.Core.Commands.ArgumentParsers;
@@ -8,6 +7,7 @@ using Oculus.Core.Commands.TypeParsers;
 using Oculus.Core.Structures.Attributes;
 using Oculus.Core.Structures.Exceptions;
 using Oculus.Database.Repositories;
+using Qmmands;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -25,23 +25,23 @@ namespace Oculus.Core.Services
 
 	public class CommandHandlingService : ServiceBase, ICommandHandlingService
 	{
-		private readonly DiscordSocketClient _client;
-		private readonly ICommandService _commandService;
-		private readonly ILoggingService _loggingService;
+		private readonly DiscordSocketClient Client;
+		private readonly ICommandService CommandService;
+		private readonly ILoggingService Logger;
 
-		private readonly IGuildSettingsRepository _guildSettingsRepository;
+		private readonly IGuildSettingsRepository GuildSettingsRepository;
 
-		private readonly IServiceProvider _services;
+		private readonly IServiceProvider Services;
 
 		public CommandHandlingService(DiscordSocketClient client,
 			ICommandService commandService, ILoggingService loggingService,
 			IGuildSettingsRepository guildSettingsRepository, IServiceProvider services)
 		{
-			_commandService = commandService;
-			_client = client;
-			_guildSettingsRepository = guildSettingsRepository;
-			_loggingService = loggingService;
-			_services = services;
+			CommandService = commandService;
+			Client = client;
+			GuildSettingsRepository = guildSettingsRepository;
+			Logger = loggingService;
+			Services = services;
 		}
 
 		public void Start()
@@ -51,35 +51,43 @@ namespace Oculus.Core.Services
 			AddArgumentParsers();
 			AddTypeParsers();
 
-			_commandService.AddModules(Assembly.GetExecutingAssembly());
+			CommandService.AddModules(Assembly.GetExecutingAssembly());
+
+			Logger.Info($"Loaded {CommandService.GetAllCommands().Count} commands.");
 		}
 
 		private void LinkEvents()
 		{
-			_commandService.CommandExecutionFailed += async args =>
+			CommandService.CommandExecutionFailed += async args =>
 			{
 				var context = args.Context as OculusContext;
 				await HandleCommandResult(args.Result, context.Message, context);
 			};
 
-			_client.MessageReceived += OnMessageReceivedAsync;
+			Client.MessageReceived += OnMessageReceivedAsync;
+
+			Logger.Debug("Attached command handler events.");
 		}
 
 		private void AddArgumentParsers()
 		{
-			_commandService.AddArgumentParser(UnixArgumentParser.Instance);
+			CommandService.AddArgumentParser(UnixArgumentParser.Instance);
+
+			Logger.Debug($"Added argument parsers.");
 		}
 
 		private void AddTypeParsers()
 		{
-			_commandService.AddTypeParser(CommandTypeParser.Instance);
-			_commandService.AddTypeParser(GuildChannelParser.Instance);
-			_commandService.AddTypeParser(GuildUserParser.Instance);
-			_commandService.AddTypeParser(MessageParser.Instance);
-			_commandService.AddTypeParser(ModuleTypeParser.Instance);
-			_commandService.AddTypeParser(TextChannelParser.Instance);
-			_commandService.AddTypeParser(TimeSpanTypeParser.Instance);
-			_commandService.AddTypeParser(UserParser.Instance);
+			CommandService.AddTypeParser(CommandTypeParser.Instance);
+			CommandService.AddTypeParser(GuildChannelParser.Instance);
+			CommandService.AddTypeParser(GuildUserParser.Instance);
+			CommandService.AddTypeParser(MessageParser.Instance);
+			CommandService.AddTypeParser(ModuleTypeParser.Instance);
+			CommandService.AddTypeParser(TextChannelParser.Instance);
+			CommandService.AddTypeParser(TimeSpanTypeParser.Instance);
+			CommandService.AddTypeParser(UserParser.Instance);
+
+			Logger.Debug($"Added type parsers.");
 		}
 
 		private async Task OnMessageReceivedAsync(IMessage m)
@@ -94,13 +102,13 @@ namespace Oculus.Core.Services
 			if (!me.GetPermissions(textChannel).SendMessages)
 				return;
 
-			var settings = await _guildSettingsRepository.GetOrCreateForGuildAsync(textChannel.GuildId);
+			var settings = await GuildSettingsRepository.GetOrCreateForGuildAsync(textChannel.GuildId);
 
 			if (!CommandUtilities.HasPrefix(msg.Content, settings.Prefix, out var output))
 				return;
 
-			var context = new OculusContext(msg, me, _services);
-			var result = await _commandService.ExecuteAsync(output, context);
+			var context = new OculusContext(msg, me, Services);
+			var result = await CommandService.ExecuteAsync(output, context);
 
 			_ = HandleCommandResult(result, msg);
 		}
