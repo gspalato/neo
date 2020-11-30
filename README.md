@@ -26,7 +26,7 @@
 ```json
 {
     "TOKEN": "lmao.u.dumb",
-    "PREFIX": "> ",
+    "PREFIX": ">",
     "LAVALINK": "",
     "MongoDB": {
         "Database": "oculus",
