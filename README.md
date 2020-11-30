@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://i.ibb.co/31MFSxY/spade-banner.png" width="800"/>
+	<img src="https://i.ibb.co/GchDVq0/Logo-v2-Text.png" width="800"/>
 </p>
 <p align="center">
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/made-with-c-sharp.svg">
@@ -26,18 +26,18 @@
 ```json
 {
     "TOKEN": "lmao.u.dumb",
-    "PREFIX": "",
+    "PREFIX": "> ",
     "LAVALINK": "",
     "MongoDB": {
-        "Database": "spade",
+        "Database": "oculus",
         "ConnectionStrings": "mongodb://localhost:27017"
     }
 }
 ```
 
 #### With Docker
-* Go to `Spade.Docker`;
-* Run the Spade Docker Utility (`ps-spade.ps1`)
+* Go to `Oculus.Docker`;
+* Run the Spade Docker Utility (`ps-oculus.ps1`)
 * Run `build`;
 * To start, run `run`;
 
