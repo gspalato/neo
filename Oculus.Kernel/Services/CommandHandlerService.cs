@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using Discord;
 using System.Reflection;
+using Discord.Rest;
 
 namespace Oculus.Kernel.Services
 {
@@ -60,62 +61,58 @@ namespace Oculus.Kernel.Services
             }
         }
 
-        private Task ContextCommandExecuted(ContextCommandInfo arg1, Discord.IInteractionContext arg2, IResult arg3)
+        private async Task ContextCommandExecuted(ContextCommandInfo arg1, Discord.IInteractionContext arg2, IResult arg3)
         {
             if (!arg3.IsSuccess)
             {
                 switch (arg3.Error)
                 {
                     case InteractionCommandError.UnmetPrecondition:
-                        // implement
+                        await arg2.Interaction.RespondAsync($"Unmet Precondition: {arg3.ErrorReason}");
                         break;
                     case InteractionCommandError.UnknownCommand:
-                        // implement
+                        await arg2.Interaction.RespondAsync("Unknown command");
                         break;
                     case InteractionCommandError.BadArgs:
-                        // implement
+                        await arg2.Interaction.RespondAsync("Invalid number or arguments");
                         break;
                     case InteractionCommandError.Exception:
-                        // implement
+                        await arg2.Interaction.RespondAsync($"Command exception: {arg3.ErrorReason}");
                         break;
                     case InteractionCommandError.Unsuccessful:
-                        // implement
+                        await arg2.Interaction.RespondAsync("Command could not be executed");
                         break;
                     default:
                         break;
                 }
             }
-
-            return Task.CompletedTask;
         }
 
-        private Task SlashCommandExecuted(SlashCommandInfo arg1, Discord.IInteractionContext arg2, IResult arg3)
+        private async Task SlashCommandExecuted(SlashCommandInfo arg1, Discord.IInteractionContext arg2, IResult arg3)
         {
             if (!arg3.IsSuccess)
             {
                 switch (arg3.Error)
                 {
                     case InteractionCommandError.UnmetPrecondition:
-                        // implement
+                        await arg2.Interaction.RespondAsync($"Unmet Precondition: {arg3.ErrorReason}");
                         break;
                     case InteractionCommandError.UnknownCommand:
-                        // implement
+                        await arg2.Interaction.RespondAsync("Unknown command");
                         break;
                     case InteractionCommandError.BadArgs:
-                        // implement
+                        await arg2.Interaction.RespondAsync("Invalid number or arguments");
                         break;
                     case InteractionCommandError.Exception:
-                        // implement
+                        await arg2.Interaction.RespondAsync($"Command exception: {arg3.ErrorReason}");
                         break;
                     case InteractionCommandError.Unsuccessful:
-                        // implement
+                        await arg2.Interaction.RespondAsync("Command could not be executed");
                         break;
                     default:
                         break;
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         private async Task HandleInteraction(SocketInteraction arg)
