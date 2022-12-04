@@ -37,7 +37,8 @@ Host.CreateDefaultBuilder(args)
         services
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<DiscordRestClient>()
-            .AddSingleton((services) => {
+            .AddSingleton((services) =>
+            {
                 return new InteractionService(
                     services.GetRequiredService<DiscordSocketClient>(),
                     services.GetRequiredService<InteractionServiceConfig>()
