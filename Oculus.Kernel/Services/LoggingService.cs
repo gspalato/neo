@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Microsoft.Extensions.Logging;
+using Oculus.Common.Utilities.Extensions;
 using Pastel;
 
 namespace Oculus.Kernel.Services
@@ -86,7 +87,7 @@ namespace Oculus.Kernel.Services
             if (string.IsNullOrEmpty(message))
                 return;
 
-            string padded = (className ?? _name).PadRight(_name.Length);
+            string padded = (className ?? _name).Truncate(8, false).PadRight(_name.Length + 3);
             var output = new StringBuilder();
             output.Append($"[{DateTime.Now.ToLongTimeString()}] ".Pastel("#666666"));
             output.Append($"{padded.Pastel("#888888")} ");
