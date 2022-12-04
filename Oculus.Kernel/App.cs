@@ -1,15 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Discord;
-using Discord.WebSocket;
+﻿using Discord;
 using Discord.Interactions;
-using System.Reflection;
-using Oculus.Kernel.Services;
-using System.Windows.Input;
-using Lavalink4NET;
-using Microsoft.Extensions.Logging;
-using Oculus.Database.Services;
+using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Oculus.Database.Models;
+using Oculus.Database.Services;
+using Oculus.Kernel.Services;
 
 namespace Oculus.Kernel
 {
@@ -58,7 +54,8 @@ namespace Oculus.Kernel
                 try
                 {
                     _databaseService.InitializeAsync(databaseUrl!, databaseKey!);
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     _logger.Error(e.Message, e, "Database");
                 }
@@ -88,7 +85,7 @@ namespace Oculus.Kernel
             await _interactionService.RegisterCommandsToGuildAsync(mainGuildId);
 
             await _musicService.InitializeAsync();
-            
+
             foreach (var guild in _client.Guilds)
             {
                 GuildSettings? settings = await _databaseService.GetGuildSettings(guild.Id);
