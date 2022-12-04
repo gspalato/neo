@@ -19,19 +19,17 @@ Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         services
-            .AddSingleton(new DiscordSocketConfig
-            {
-
-            })
             .AddSingleton(new InteractionServiceConfig
             {
-                AutoServiceScopes = true
+                AutoServiceScopes = true,
+                DefaultRunMode = RunMode.Async
             })
             .AddSingleton(new LavalinkNodeOptions
             {
                 RestUri = hostContext.Configuration.GetValue<string>("LAVALINK:RestHost")!,
                 WebSocketUri = hostContext.Configuration.GetValue<string>("LAVALINK:WebsocketHost")!,
-                Password = hostContext.Configuration.GetValue<string>("LAVALINK:Password")!
+                Password = hostContext.Configuration.GetValue<string>("LAVALINK:Password")!,
+                DisconnectOnStop = false
             });
 
         services
