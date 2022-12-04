@@ -1,27 +1,36 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
-using Victoria;
-using Victoria.Node.EventArgs;
-using Victoria.Node;
-using Victoria.Player;
-using System.Text.Json;
-using Lavalink4NET;
-using Lavalink4NET.Events;
+﻿using Lavalink4NET;
 
 namespace Oculus.Kernel.Services
 {
-    public sealed class MusicService
+    public interface IMusicService : IAudioService
     {
-        private readonly IAudioService _audioService;
+        public bool IsInitialized { get; }
+    }
 
-        public MusicService(IAudioService audioService)
+    public sealed class MusicService : LavalinkNode, IMusicService
+    {
+        public bool IsInitialized { get; private set; } = false;
+        private readonly ILoggingService _logger;
+
+        public MusicService(LavalinkNodeOptions options, IDiscordClientWrapper client,
+            ILoggingService logger) : base(options, client)
         {
-            _audioService = audioService;
+            _logger = logger;
         }
 
-        public async Task StartAsync()
+        public new async Task InitializeAsync()
         {
-            await _audioService.InitializeAsync();
+            try
+            {
+                await base.InitializeAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex.Message, ex);
+                return;
+            }
+
+            IsInitialized = true;
         }
     }
 }
