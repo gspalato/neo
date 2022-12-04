@@ -1,13 +1,11 @@
 ﻿using Discord;
-using Discord.Interactions;
-using Lavalink4NET.Player;
-using Lavalink4NET;
-using Discord.WebSocket;
-using System.Text;
-using Oculus.Common.Utilities.Extensions;
 using Discord.Commands;
-using Lavalink4NET.Logging;
+using Discord.Interactions;
+using Discord.WebSocket;
+using Lavalink4NET.Player;
+using Oculus.Common.Utilities.Extensions;
 using Oculus.Kernel.Services;
+using System.Text;
 
 namespace Oculus.Kernel.Commands.Modules
 {
@@ -65,7 +63,8 @@ namespace Oculus.Kernel.Commands.Modules
 
             _logger.Debug(track is not null ? $"Now playing: {track.Title.Truncate()}" : "No song matches found.");
 
-            if (track is null) {
+            if (track is null)
+            {
                 await RespondAsync("No song matches found.", ephemeral: true);
                 return;
             }
@@ -139,7 +138,7 @@ namespace Oculus.Kernel.Commands.Modules
 
         [SlashCommand("volume", "Sets the bot's volume.")]
 
-        public async Task VolumeAsync([MinValue(0)] [MaxValue(100)] int volume = 100)
+        public async Task VolumeAsync([MinValue(0)][MaxValue(100)] int volume = 100)
         {
             if (await PrecheckVoiceConditions() is not QueuedLavalinkPlayer player)
                 return;
@@ -330,8 +329,8 @@ namespace Oculus.Kernel.Commands.Modules
                 await RespondAsync(embed: notConnectedEmbed.Build(), ephemeral: true);
 
                 return null;
-            
-            } 
+
+            }
             // If it is but it's not doing anything (and moveIfAvailable is true),
             // Move to the user's voice channel.
             else if (!inSameVoiceChannel && firstPlayer.State is not PlayerState.Playing && moveIfAvailable)
