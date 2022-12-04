@@ -13,19 +13,31 @@ namespace Oculus.Kernel.Commands.Modules
 {
     public class MusicModule : InteractionModuleBase
     {
-        private readonly IAudioService _audioService;
+        private readonly IMusicService _musicService;
         private readonly ILoggingService _logger;
 
-        public MusicModule(IAudioService audioService, ILoggingService logger)
+        public MusicModule(IMusicService musicService, ILoggingService logger)
         {
-            _audioService = audioService;
+            _musicService = musicService;
             _logger = logger;
+        }
+
+        public override void BeforeExecute(ICommandInfo command)
+        {
+            if (!_musicService.IsInitialized)
+            {
+                _logger.Error($"Failed to execute command '{command.Name}': MusicService was not initialized properly.");
+                RespondAsync("Oh shi-! There was a problem when trying to do this. Try again later.", ephemeral: true);
+                return;
+            }
+
+            base.BeforeExecute(command);
         }
 
         private async Task<QueuedLavalinkPlayer> GetPlayerAsync(SocketVoiceChannel voiceChannel)
         {
-            var player = _audioService.GetPlayer<QueuedLavalinkPlayer>(voiceChannel.Guild.Id)
-                ?? await _audioService.JoinAsync<QueuedLavalinkPlayer>(voiceChannel.Guild.Id, voiceChannel.Id);
+            var player = _musicService.GetPlayer<QueuedLavalinkPlayer>(voiceChannel.Guild.Id)
+                ?? await _musicService.JoinAsync<QueuedLavalinkPlayer>(voiceChannel.Guild.Id, voiceChannel.Id);
 
             return player;
         }
@@ -41,24 +53,28 @@ namespace Oculus.Kernel.Commands.Modules
             await RespondAsync($"Connected to {voiceChannel}.");
         }
 
-        [SlashCommand("play", "Plays the selected song!")]
-        public async Task PlayAsync(string queryOrLink)
+        [SlashCommand("play", "Plays the selected song or adds it to the queue.")]
+        public async Task PlayAsync(string search)
         {
             var user = Context.User as SocketGuildUser;
             var voiceChannel = user!.VoiceChannel;
 
             var player = await GetPlayerAsync(voiceChannel);
 
+            var track = await _musicService.GetTrackAsync(search, Lavalink4NET.Rest.SearchMode.YouTube);
 
-            var track = await _audioService.GetTrackAsync(queryOrLink, Lavalink4NET.Rest.SearchMode.YouTube);
+            _logger.Debug(track is not null ? $"Now playing: {track.Title.Truncate()}" : "No song matches found.");
 
-            _logger.Debug(track.Title ?? "No song matches found.");
+            if (track is null) {
+                await RespondAsync("No song matches found.", ephemeral: true);
+                return;
+            }
 
             var position = await player.PlayAsync(track);
             if (position is 0)
             {
                 var embed = new EmbedBuilder()
-                    .WithTitle("🎶 **now playing**")
+                    .WithTitle("🎶 **Now Playing**")
                     .WithDescription($"[{track.Title.TruncateAndSanitize(60)}]({track.Uri})")
                     .WithColor(new Color(0x2F3136));
 
@@ -67,14 +83,14 @@ namespace Oculus.Kernel.Commands.Modules
             else
             {
                 var embed = new EmbedBuilder()
-                    .WithDescription($"Queued [{track.Title.TruncateAndSanitize(60)}]({track.Uri})")
+                    .WithDescription($"**Queued** [{track.Title.TruncateAndSanitize(60)}]({track.Uri})")
                     .WithColor(new Color(0x2F3136));
 
                 await RespondAsync(embed: embed.Build());
             }
         }
 
-        [SlashCommand("skip", "Skips to the next song!")]
+        [SlashCommand("skip", "Skips to the next song.")]
         [Discord.Interactions.RequireUserPermission(GuildPermission.ManageGuild)]
         public async Task SkipAsync()
         {
@@ -140,7 +156,7 @@ namespace Oculus.Kernel.Commands.Modules
             }
         }
 
-        [SlashCommand("stop", "Stop playing all songs.")]
+        [SlashCommand("stop", "Stops playing all songs.")]
         public async Task StopAsync()
         {
             if (await PrecheckVoiceConditions() is not QueuedLavalinkPlayer player)
@@ -204,7 +220,7 @@ namespace Oculus.Kernel.Commands.Modules
             }
         }
 
-        [SlashCommand("nowplaying", "Shows the currently playing song!")]
+        [SlashCommand("nowplaying", "Shows the currently playing song.")]
         [Alias("np")]
         public async Task NowPlayingAsync()
         {

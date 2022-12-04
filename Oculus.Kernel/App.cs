@@ -8,6 +8,8 @@ using Oculus.Kernel.Services;
 using System.Windows.Input;
 using Lavalink4NET;
 using Microsoft.Extensions.Logging;
+using Oculus.Database.Services;
+using Oculus.Database.Models;
 
 namespace Oculus.Kernel
 {
@@ -20,19 +22,21 @@ namespace Oculus.Kernel
         private readonly InteractionService _interactionService;
 
         private readonly CommandHandlerService _commandHandlerService;
-        private readonly IAudioService _audioService;
+        private readonly DatabaseService _databaseService;
+        private readonly IMusicService _musicService;
         private readonly ILoggingService _logger;
 
         public App(IConfiguration configuration, DiscordSocketClient client,
             InteractionService interactionService, CommandHandlerService commandHandlerService,
-            IAudioService audioService, ILoggingService logger)
+            DatabaseService databaseService, IMusicService musicService, ILoggingService logger)
         {
             _configuration = configuration;
             _client = client;
             _interactionService = interactionService;
 
             _commandHandlerService = commandHandlerService;
-            _audioService = audioService;
+            _databaseService = databaseService;
+            _musicService = musicService;
             _logger = logger;
         }
 
@@ -40,6 +44,25 @@ namespace Oculus.Kernel
         {
             _client.Log += LogAsync;
             _client.Ready += ReadyAsync;
+
+            var databaseUrl = _configuration.GetValue<string>("SUPABASE:URL");
+            var databaseKey = _configuration.GetValue<string>("SUPABASE:KEY");
+            if (databaseUrl is null || databaseKey is null)
+            {
+                _logger.Critical("Database URL or key were not set.");
+                return;
+            }
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    _databaseService.InitializeAsync(databaseUrl!, databaseKey!);
+                } catch (Exception e)
+                {
+                    _logger.Error(e.Message, e, "Database");
+                }
+            });
 
             await _client.LoginAsync(TokenType.Bot, _configuration.GetValue<string>("TOKEN"));
             await _client.StartAsync();
@@ -51,7 +74,7 @@ namespace Oculus.Kernel
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _audioService.Dispose();
+            _musicService.Dispose();
 
             await _client.LogoutAsync();
             await _client.StopAsync();
@@ -64,7 +87,18 @@ namespace Oculus.Kernel
             _logger.Info($"In debug mode, adding commands to {mainGuildId}...", className: "App");
             await _interactionService.RegisterCommandsToGuildAsync(mainGuildId);
 
-            await _audioService.InitializeAsync();
+            await _musicService.InitializeAsync();
+            
+            foreach (var guild in _client.Guilds)
+            {
+                GuildSettings? settings = await _databaseService.GetGuildSettings(guild.Id);
+                settings ??= await _databaseService.CreateGuildSettings(guild.Id);
+
+                if (settings is null)
+                {
+                    _logger.Error($"Failed to create guild settings for guild {guild.Id}.");
+                }
+            }
         }
         private Task LogAsync(LogMessage msg)
         {

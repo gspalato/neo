@@ -1,4 +1,5 @@
 ﻿using Discord.Interactions;
+using Discord.Rest;
 using Discord.WebSocket;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Oculus.Database.Services;
 using Oculus.Kernel;
 using Oculus.Kernel.Services;
 
@@ -34,6 +36,7 @@ Host.CreateDefaultBuilder(args)
 
         services
             .AddSingleton<DiscordSocketClient>()
+            .AddSingleton<DiscordRestClient>()
             .AddSingleton((services) => {
                 return new InteractionService(
                     services.GetRequiredService<DiscordSocketClient>(),
@@ -43,11 +46,12 @@ Host.CreateDefaultBuilder(args)
 
         services
             .AddSingleton<CommandHandlerService>()
+            .AddSingleton<DatabaseService>()
             .AddSingleton<ILogger, LoggingService>()
             .AddSingleton<ILoggingService, LoggingService>();
 
         services
-            .AddSingleton<IAudioService, LavalinkNode>()
+            .AddSingleton<IMusicService, MusicService>()
             .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>();
 
         services
