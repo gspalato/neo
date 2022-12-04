@@ -17,9 +17,9 @@ namespace Oculus.Common.Utilities.Extensions
             return Convert.ToBase64String(plainTextBytes);
         }
 
-        public static string Truncate(this string s, int maxLength = 40)
+        public static string Truncate(this string s, int maxLength = 40, bool ellipsis = true)
         {
-            return (s.Length > maxLength) ? s.Substring(0, maxLength) + "..." : s;
+            return (s.Length > maxLength) ? s.Substring(0, maxLength) + (ellipsis ? "..." : "") : s;
         }
 
         public static string TruncateAndSanitize(this string s, int maxLength = 40) =>
