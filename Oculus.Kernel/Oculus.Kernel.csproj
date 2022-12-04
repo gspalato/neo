@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Oculus.Common\Oculus.Common.csproj" />
+    <ProjectReference Include="..\Oculus.Database\Oculus.Database.csproj" />
   </ItemGroup>
 
 </Project>
