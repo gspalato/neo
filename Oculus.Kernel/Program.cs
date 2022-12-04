@@ -1,0 +1,59 @@
+﻿using Discord.Interactions;
+using Discord.WebSocket;
+using Lavalink4NET;
+using Lavalink4NET.DiscordNet;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Oculus.Kernel;
+using Oculus.Kernel.Services;
+
+Host.CreateDefaultBuilder(args)
+    .ConfigureAppConfiguration(config =>
+    {
+        config
+            .AddJsonFile("appsettings.json")
+            .AddEnvironmentVariables();
+    })
+    .ConfigureServices((hostContext, services) =>
+    {
+        services
+            .AddSingleton(new DiscordSocketConfig
+            {
+
+            })
+            .AddSingleton(new InteractionServiceConfig
+            {
+                AutoServiceScopes = true
+            })
+            .AddSingleton(new LavalinkNodeOptions
+            {
+                RestUri = hostContext.Configuration.GetValue<string>("LAVALINK:RestHost")!,
+                WebSocketUri = hostContext.Configuration.GetValue<string>("LAVALINK:WebsocketHost")!,
+                Password = hostContext.Configuration.GetValue<string>("LAVALINK:Password")!
+            });
+
+        services
+            .AddSingleton<DiscordSocketClient>()
+            .AddSingleton((services) => {
+                return new InteractionService(
+                    services.GetRequiredService<DiscordSocketClient>(),
+                    services.GetRequiredService<InteractionServiceConfig>()
+                );
+            });
+
+        services
+            .AddSingleton<CommandHandlerService>()
+            .AddSingleton<ILogger, LoggingService>()
+            .AddSingleton<ILoggingService, LoggingService>();
+
+        services
+            .AddSingleton<IAudioService, LavalinkNode>()
+            .AddSingleton<IDiscordClientWrapper, DiscordClientWrapper>();
+
+        services
+            .AddHostedService<App>();
+    })
+    .Build()
+    .Run();

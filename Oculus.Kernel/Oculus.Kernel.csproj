@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>8cb5bcc1-0c33-4ed3-a84a-a786a5387ac2</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Discord.Net" Version="3.8.1" />
+    <PackageReference Include="Lavalink4NET.Discord.NET" Version="3.0.0-preview.13" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
+    <PackageReference Include="Pastel" Version="4.0.2" />
+    <PackageReference Include="Victoria" Version="6.0.1026" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Structures\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Oculus.Common\Oculus.Common.csproj" />
+  </ItemGroup>
+
+</Project>
