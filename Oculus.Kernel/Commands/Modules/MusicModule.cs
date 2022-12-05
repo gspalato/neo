@@ -2,7 +2,11 @@
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Fergun.Interactive.Pagination;
+using Fergun.Interactive;
 using Lavalink4NET.Player;
+using Microsoft.VisualBasic;
+using Oculus.Common.Utilities;
 using Oculus.Common.Utilities.Extensions;
 using Oculus.Kernel.Services;
 using System.Text;
@@ -11,11 +15,14 @@ namespace Oculus.Kernel.Commands.Modules
 {
     public class MusicModule : InteractionModuleBase
     {
+        private readonly InteractiveService _interactiveService;
         private readonly IMusicService _musicService;
         private readonly ILoggingService _logger;
 
-        public MusicModule(IMusicService musicService, ILoggingService logger)
+        public MusicModule(InteractiveService interactiveService, IMusicService musicService,
+            ILoggingService logger)
         {
+            _interactiveService = interactiveService;
             _musicService = musicService;
             _logger = logger;
         }
@@ -72,19 +79,14 @@ namespace Oculus.Kernel.Commands.Modules
             var position = await player.PlayAsync(track);
             if (position is 0)
             {
-                var embed = new EmbedBuilder()
-                    .WithTitle("🎶 **Now Playing**")
-                    .WithDescription($"[{track.Title.TruncateAndSanitize(60)}]({track.Uri})")
-                    .WithColor(new Color(0x2F3136));
-
+                var embed = Utilities.CreateDefaultEmbed("🎶 **Now Playing**",
+                    $"[{track.Title.TruncateAndSanitize(60)}]({track.Uri})");
                 await RespondAsync(embed: embed.Build());
             }
             else
             {
-                var embed = new EmbedBuilder()
-                    .WithDescription($"**Queued** [{track.Title.TruncateAndSanitize(60)}]({track.Uri})")
-                    .WithColor(new Color(0x2F3136));
-
+                var embed = Utilities.CreateDefaultEmbed(
+                    description: $"**Queued** [{track.Title.TruncateAndSanitize(60)}]({track.Uri})");
                 await RespondAsync(embed: embed.Build());
             }
         }
@@ -98,10 +100,8 @@ namespace Oculus.Kernel.Commands.Modules
 
             if (!player.Queue.Any())
             {
-                var emptyQueueEmbed = new EmbedBuilder()
-                    .WithDescription($"There' no songs to play next.")
-                    .WithColor(new Color(0x2F3136));
-
+                var emptyQueueEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"There' no songs to play next.");;
                 await RespondAsync(embed: emptyQueueEmbed.Build(), ephemeral: true);
 
                 return;
@@ -109,11 +109,8 @@ namespace Oculus.Kernel.Commands.Modules
 
             await player.SkipAsync();
             var current = player.CurrentTrack!;
-            var embed = new EmbedBuilder()
-                    .WithTitle("🎶 **Now Playing**")
-                    .WithDescription($"[{current.Title.TruncateAndSanitize(60)}]({current.Uri})")
-                    .WithColor(new Color(0x2F3136));
-
+            var embed = Utilities.CreateDefaultEmbed("🎶 **Now Playing**",
+                    $"[{current.Title.TruncateAndSanitize(60)}]({current.Uri})");
             await RespondAsync(embed: embed.Build());
         }
 
@@ -128,10 +125,8 @@ namespace Oculus.Kernel.Commands.Modules
                 var current = player.CurrentTrack!;
                 await player.PauseAsync();
 
-                var emptyQueueEmbed = new EmbedBuilder()
-                        .WithDescription($"⏸️  **Paused** [{current.Title.TruncateAndSanitize(40)}]({current.Uri})")
-                        .WithColor(new Color(0x2F3136));
-
+                var emptyQueueEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"⏸️  **Paused** [{current.Title.TruncateAndSanitize(40)}]({current.Uri})");
                 await RespondAsync(embed: emptyQueueEmbed.Build());
             }
         }
@@ -147,10 +142,8 @@ namespace Oculus.Kernel.Commands.Modules
             {
                 await player.SetVolumeAsync(volume / 100f, true);
 
-                var setVolumeEmbed = new EmbedBuilder()
-                        .WithDescription($"{(volume is 0 ? "🔇" : "🔊")}  Set the volume to `{volume}%`")
-                        .WithColor(new Color(0x2F3136));
-
+                var setVolumeEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"{(volume is 0 ? "🔇" : "🔊")}  Set the volume to `{volume}%`");
                 await RespondAsync(embed: setVolumeEmbed.Build());
             }
         }
@@ -165,10 +158,8 @@ namespace Oculus.Kernel.Commands.Modules
             {
                 await player.StopAsync();
 
-                var stopEmbed = new EmbedBuilder()
-                        .WithDescription($"⏹️  Stopped playing music.")
-                        .WithColor(new Color(0x2F3136));
-
+                var stopEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"⏹️  Stopped playing music.");
                 await RespondAsync(embed: stopEmbed.Build());
             }
         }
@@ -184,10 +175,8 @@ namespace Oculus.Kernel.Commands.Modules
                 var current = player.CurrentTrack!;
                 await player.ResumeAsync();
 
-                var emptyQueueEmbed = new EmbedBuilder()
-                        .WithDescription($"▶️  **Resumed** [{current.Title.TruncateAndSanitize(40)}]({current.Uri})")
-                        .WithColor(new Color(0x2F3136));
-
+                var emptyQueueEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"▶️  **Resumed** [{current.Title.TruncateAndSanitize(40)}]({current.Uri})");
                 await RespondAsync(embed: emptyQueueEmbed.Build());
             }
         }
@@ -198,7 +187,46 @@ namespace Oculus.Kernel.Commands.Modules
             if (await PrecheckVoiceConditions() is not QueuedLavalinkPlayer player)
                 return;
 
+            if (!player.Queue.Any())
+            {
+                var emptyQueueEmbed = Utilities.CreateDefaultEmbed(description: "The queue is empty.");
+                await RespondAsync(embed: emptyQueueEmbed.Build(), ephemeral: true);
+                return;
+            }
 
+            LavalinkTrack[][] queueChunks = Enumerable.Chunk(player.Queue, 7).ToArray();
+
+            var pages = new List<PageBuilder>();
+
+            int pageCount = 0;
+            foreach (var chunk in queueChunks)
+            {
+                var page = new PageBuilder()
+                    .WithTitle($"🎼  Queue | Page {pageCount + 1} / {queueChunks.Count()}")
+                    .WithColor(new Color(47, 49, 54));
+
+                var description = new StringBuilder();
+
+                int trackCount = 0;
+                foreach (var track in chunk)
+                {
+                    description.AppendLine($"**{trackCount + 1}.** [{track.Title.TruncateAndSanitize(60)}]({track.Uri})");
+                    trackCount++;
+                }
+
+                page.WithDescription(description.ToString());
+
+                pages.Add(page);
+
+                pageCount++;
+            }
+
+            var paginator = new StaticPaginatorBuilder()
+                .AddUser(Context.User)
+                .WithPages(pages)
+                .Build();
+
+            var result = await _interactiveService.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
         }
 
         [SlashCommand("seek", "Skip the song to a specific position.")]
@@ -211,10 +239,8 @@ namespace Oculus.Kernel.Commands.Modules
             {
                 await player.SeekPositionAsync(TimeSpan.FromSeconds(seconds));
 
-                var seekEmbed = new EmbedBuilder()
-                    .WithDescription($"Now set to the moment `{player.Position.Position.ToHumanDuration()}.`")
-                    .WithColor(new Color(0x2F3136));
-
+                var seekEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"Now set to the moment `{player.Position.Position.ToHumanDuration()}.`");
                 await RespondAsync(embed: seekEmbed.Build());
             }
         }
@@ -257,12 +283,8 @@ namespace Oculus.Kernel.Commands.Modules
             }
 
 
-            var embed = new EmbedBuilder()
-                    .WithTitle("🎶 **Now Playing**")
-                    .WithDescription(description.ToString())
-                    .WithColor(new Color(0x2F3136))
-                    .WithFooter(footer);
-
+            var embed = Utilities.CreateDefaultEmbed("🎶 **Now Playing**",
+                description.ToString(), footer: footer);
             await RespondAsync(embed: embed.Build());
         }
 
@@ -275,10 +297,8 @@ namespace Oculus.Kernel.Commands.Modules
             // Check if user is in a voice channel.
             if (voiceChannel is null)
             {
-                var notConnectedEmbed = new EmbedBuilder()
-                    .WithDescription($"You're not connected to any voice chat.")
-                    .WithColor(new Color(0x2F3136));
-
+                var notConnectedEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"You're not connected to any voice chat.");
                 await RespondAsync(embed: notConnectedEmbed.Build(), ephemeral: true);
 
                 return null;
@@ -303,10 +323,8 @@ namespace Oculus.Kernel.Commands.Modules
             // Check if the bot is not in a voice channel.
             if (botMember.VoiceChannel is null)
             {
-                var notConnectedEmbed = new EmbedBuilder()
-                    .WithDescription($"I'm not connected to any voice chat.")
-                    .WithColor(new Color(0x2F3136));
-
+                var notConnectedEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"I'm not connected to any voice chat.");
                 await RespondAsync(embed: notConnectedEmbed.Build(), ephemeral: true);
 
                 return null;
@@ -322,9 +340,8 @@ namespace Oculus.Kernel.Commands.Modules
             // If it is and it's already playing something, alert.
             if (!inSameVoiceChannel && firstPlayer.State is PlayerState.Playing)
             {
-                var notConnectedEmbed = new EmbedBuilder()
-                    .WithDescription($"I'm already playing music in another voice chat.")
-                    .WithColor(new Color(0x2F3136));
+                var notConnectedEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"I'm already playing music in another voice chat.");
 
                 await RespondAsync(embed: notConnectedEmbed.Build(), ephemeral: true);
 
@@ -341,10 +358,8 @@ namespace Oculus.Kernel.Commands.Modules
             // Check if the bot is already playing something.
             if (player.State is PlayerState.NotPlaying)
             {
-                var emptyQueueEmbed = new EmbedBuilder()
-                    .WithDescription($"Nothing's currently playing.")
-                    .WithColor(new Color(0x2F3136));
-
+                var emptyQueueEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"Nothing's currently playing.");
                 await RespondAsync(embed: emptyQueueEmbed.Build(), ephemeral: true);
 
                 return null;

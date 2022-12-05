@@ -1,6 +1,8 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
+using Fergun.Interactive;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Microsoft.Extensions.Configuration;
@@ -21,10 +23,14 @@ Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         services
+            .AddSingleton(new DiscordSocketConfig
+            {
+                GatewayIntents = GatewayIntents.All
+            })
             .AddSingleton(new InteractionServiceConfig
             {
                 AutoServiceScopes = true,
-                DefaultRunMode = RunMode.Async
+                DefaultRunMode = RunMode.Async,
             })
             .AddSingleton(new LavalinkNodeOptions
             {
@@ -50,6 +56,16 @@ Host.CreateDefaultBuilder(args)
             .AddSingleton<DatabaseService>()
             .AddSingleton<ILogger, LoggingService>()
             .AddSingleton<ILoggingService, LoggingService>();
+
+        services
+            .AddSingleton(
+                new InteractiveConfig
+                {
+                    DefaultTimeout = TimeSpan.FromMinutes(5),
+                    ReturnAfterSendingPaginator = true
+                }
+            )
+            .AddSingleton<InteractiveService>();
 
         services
             .AddSingleton<IMusicService, MusicService>()

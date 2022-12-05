@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Fergun.Interactive;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Oculus.Database.Models;
@@ -19,18 +20,21 @@ namespace Oculus.Kernel
 
         private readonly CommandHandlerService _commandHandlerService;
         private readonly DatabaseService _databaseService;
+        private readonly InteractiveService _interactiveService;
         private readonly IMusicService _musicService;
         private readonly ILoggingService _logger;
 
         public App(IConfiguration configuration, DiscordSocketClient client,
             InteractionService interactionService, CommandHandlerService commandHandlerService,
-            DatabaseService databaseService, IMusicService musicService, ILoggingService logger)
+            DatabaseService databaseService, InteractiveService interactiveService,
+            IMusicService musicService, ILoggingService logger)
         {
             _configuration = configuration;
             _client = client;
             _interactionService = interactionService;
 
             _commandHandlerService = commandHandlerService;
+            _interactiveService = interactiveService;
             _databaseService = databaseService;
             _musicService = musicService;
             _logger = logger;
@@ -40,6 +44,8 @@ namespace Oculus.Kernel
         {
             _client.Log += LogAsync;
             _client.Ready += ReadyAsync;
+
+            _interactiveService.Log += LogAsync;
 
             var databaseUrl = _configuration.GetValue<string>("SUPABASE:URL");
             var databaseKey = _configuration.GetValue<string>("SUPABASE:KEY");
