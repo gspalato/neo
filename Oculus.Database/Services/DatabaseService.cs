@@ -49,7 +49,7 @@ namespace Oculus.Database.Services
             var settings = new GuildSettings
             {
                 GuildId = guildId.ToString(),
-                isInRadioMode = false,
+                IsInRadioMode = false,
                 RadioChannelId = ""
             };
 
