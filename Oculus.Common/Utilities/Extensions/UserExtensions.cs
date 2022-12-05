@@ -10,15 +10,35 @@ namespace Oculus.Common.Utilities.Extensions
         {
             var text = new StringBuilder();
 
-            var customStatus = user.Activities.First((act) => act.Type is ActivityType.CustomStatus) as CustomStatusGame;
+            if (!user.Activities.Any())
+                return "";
+
+            CustomStatusGame customStatus;
+            try
+            {
+                customStatus = (CustomStatusGame)user.Activities.First((act) => act.Type is ActivityType.CustomStatus);
+            }
+            catch (Exception ex)
+            {
+                customStatus = null;
+            }
+
 
             if (customStatus is not null)
             {
-                text.AppendLine($"{customStatus.Emote} {customStatus.State}");
+                text.AppendLine($"> {customStatus.Emote} {customStatus.State}");
                 text.AppendLine();
             }
 
-            var activity = user.Activities.First((act) => act.Type is not ActivityType.CustomStatus);
+            IActivity activity;
+            try
+            {
+                activity = user.Activities.First((act) => act.Type is not ActivityType.CustomStatus);
+            }
+            catch (Exception ex)
+            {
+                activity = null;
+            }
 
             if (activity is null)
                 return text.ToString();

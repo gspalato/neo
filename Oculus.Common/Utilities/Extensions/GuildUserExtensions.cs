@@ -6,19 +6,39 @@ namespace Oculus.Common.Utilities.Extensions
 {
     public static class GuildUserExtension
     {
-        public static string GetStatus(this SocketGuildUser member)
+        public static string GetStatus(this SocketGuildUser user)
         {
             var text = new StringBuilder();
 
-            var customStatus = member.Activities.First((act) => act.Type is ActivityType.CustomStatus) as CustomStatusGame;
+            if (!user.Activities.Any())
+                return "";
+
+            CustomStatusGame customStatus;
+            try
+            {
+                customStatus = (CustomStatusGame)user.Activities.First((act) => act.Type is ActivityType.CustomStatus);
+            }
+            catch (Exception ex)
+            {
+                customStatus = null;
+            }
+
 
             if (customStatus is not null)
             {
-                text.AppendLine($"{customStatus.Emote} {customStatus.State}");
+                text.AppendLine($"> {customStatus.Emote} {customStatus.State}");
                 text.AppendLine();
             }
 
-            var activity = member.Activities.First((act) => act.Type is not ActivityType.CustomStatus);
+            IActivity activity;
+            try
+            {
+                activity = user.Activities.First((act) => act.Type is not ActivityType.CustomStatus);
+            }
+            catch (Exception ex)
+            {
+                activity = null;
+            }
 
             if (activity is null)
                 return text.ToString();
@@ -40,9 +60,21 @@ namespace Oculus.Common.Utilities.Extensions
 
         public static Color GetHighestColor(this SocketGuildUser member, Color fallback)
         {
-            List<SocketRole> roles = member.Roles.OrderBy((role) => role.Position).ToList();
+            if (!member.Roles.Any())
+                return fallback;
 
-            return roles.First().Color;
+            var roleList = from role in member.Roles
+                            orderby role.Position descending
+                            select role;
+
+            var colors = from role in roleList
+                         where role.Color.RawValue > 0
+                         select role.Color;
+
+            if (!colors.Any())
+                return fallback;
+
+            return colors.First();
         }
     }
 }

@@ -1,5 +1,4 @@
 using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Oculus.Common.Utilities.Extensions;
@@ -42,7 +41,6 @@ namespace Oculus.Kernel.Commands.Modules
         }
 
         [SlashCommand("say", "Makes the bot say something")]
-        [Alias("echo")]
         public async Task SayAsync(string text)
         {
             await RespondAsync(text);
@@ -51,7 +49,7 @@ namespace Oculus.Kernel.Commands.Modules
         [SlashCommand("whois", "Shows information about that user.")]
         public async Task WhoIsAsync(IUser user)
         {
-            var member = (SocketGuildUser)(await Context.Guild.GetUserAsync(user.Id));
+            var member = (SocketGuildUser) await Context.Guild.GetUserAsync(user.Id);
 
             var escapedUsername = Format.Sanitize(user.Username);
             var escapedNickname = member.Nickname is not null
@@ -66,20 +64,31 @@ namespace Oculus.Kernel.Commands.Modules
 
             var status = member.GetStatus();
 
+            Console.WriteLine(totalName);
+            Console.WriteLine($"#{member.Discriminator}");
+            Console.WriteLine(member.Id.ToString());
+            Console.WriteLine(member.IsBot ? "Yes" : "No");
+            Console.WriteLine(member.Status.ToString());
+            Console.WriteLine(member.JoinedAt?.ToUniversalTime().ToString().Substring(1, 18));
+            Console.WriteLine(rolesList.Any().ToString(), string.Join(", ", rolesList));
+
             var embed = new EmbedBuilder()
                 .WithAuthor($"{member.Username}#{member.Discriminator}", user.GetAvatarUrl())
-                //.WithDescription(status)
+                .WithDescription(status ?? "​")
                 .WithColor(member.Id == Context.Client.CurrentUser.Id
                     ? new Color(0x0066ff)
-                    : member.GetHighestColor(new Color()))
+                    : member.GetHighestColor(new Color(0, 0, 0))
+                 )
                 .AddField("Name", totalName, true)
                 .AddField("Discriminator", $"#{member.Discriminator}", true)
                 .AddField("ID", member.Id.ToString(), true)
                 .AddField("Bot?", member.IsBot ? "Yes" : "No", true)
                 .AddField("Status", member.Status.ToString(), true)
                 .AddField("Joined", member.JoinedAt?.ToUniversalTime().ToString().Substring(1, 18), true)
-                .AddField("Roles", string.Join(", ", rolesList))
                 .WithThumbnailUrl(member.GetAvatarUrl());
+
+            if (rolesList.Any())
+                embed.AddField("Roles", string.Join(", ", rolesList));
 
             await RespondAsync(embed: embed.Build());
         }
