@@ -18,7 +18,9 @@ namespace Oculus.Kernel.Services
             _logger = logger;
         }
 
-        public new async Task InitializeAsync()
+        public new Task InitializeAsync() => InitializeAsync(0);
+
+        private async Task InitializeAsync(int currentAttempt)
         {
             try
             {
@@ -26,10 +28,18 @@ namespace Oculus.Kernel.Services
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex);
+                _logger.Warn($"Failed to initialize Lavalink node. Retrying in 2 seconds. Attempt {currentAttempt + 1} of 10.", null, nameof(MusicService));
+                await Task.Delay(2000);
+
+                if (currentAttempt < 10)
+                    await InitializeAsync(currentAttempt + 1);
+                else
+                    _logger.Error(ex.Message, ex, nameof(MusicService));
+
                 return;
             }
 
+            _logger.Info("Lavalink node initialized.", null, nameof(MusicService));
             IsInitialized = true;
         }
     }

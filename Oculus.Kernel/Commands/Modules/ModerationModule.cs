@@ -13,7 +13,7 @@ namespace Oculus.Kernel.Commands.Modules
 
         public ModerationModule(ILoggingService logger)
         {
-
+            _logger = logger;
         }
 
         [RequireBotPermission(GuildPermission.ManageMessages)]

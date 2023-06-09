@@ -65,12 +65,25 @@ namespace Oculus.Kernel.Commands.Modules
         public async Task<ScriptState<object>> EvaluateAsync(IInteractionContext ctx, string code)
         {
             string[] imports = {
-                "System", "System.Collections.Generic", "System.Linq", "System.Text",
-                "System.Threading.Tasks", "Discord", "Discord.Interactions",
-                "Oculus", "Oculus.Kernel", "Oculus.Kernel.Commands.Modules",
-                "Oculus.Kernel.Services", "Oculus.Kernel.Structures",
-                "Oculus.Common.Utilities.Extensions", "Oculus.Common.Utilities",
-                "Oculus.Database.Services", "Oculus.Database.Models"
+                "System",
+                "System.Collections.Generic",
+                "System.Linq",
+                "System.Text",
+                "System.Threading.Tasks",
+                "Discord",
+                "Discord.Interactions",
+                "Oculus",
+                "Oculus.Kernel",
+                "Oculus.Kernel.Commands",
+                "Oculus.Kernel.Commands.Modules",
+                "Oculus.Kernel.Repositories",
+                "Oculus.Kernel.Services",
+                "Oculus.Kernel.Structures",
+                "Oculus.Common.Data",
+                "Oculus.Common.Entities",
+                "Oculus.Kernel.Repositories",
+                "Oculus.Common.Utilities.Extensions",
+                "Oculus.Common.Utilities",
             };
 
             /*

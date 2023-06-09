@@ -4,8 +4,8 @@ using Discord.WebSocket;
 using Fergun.Interactive;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Oculus.Database.Models;
-using Oculus.Database.Services;
+using Oculus.Common.Entities;
+using Oculus.Kernel.Repositories;
 using Oculus.Kernel.Services;
 
 namespace Oculus.Kernel
@@ -19,15 +19,16 @@ namespace Oculus.Kernel
         private readonly InteractionService _interactionService;
 
         private readonly CommandHandlerService _commandHandlerService;
-        private readonly DatabaseService _databaseService;
         private readonly InteractiveService _interactiveService;
         private readonly IMusicService _musicService;
         private readonly ILoggingService _logger;
 
+        private readonly IGuildSettingsRepository _guildSettingsRepository;
+
         public App(IConfiguration configuration, DiscordSocketClient client,
             InteractionService interactionService, CommandHandlerService commandHandlerService,
-            DatabaseService databaseService, InteractiveService interactiveService,
-            IMusicService musicService, ILoggingService logger)
+            InteractiveService interactiveService, IMusicService musicService,
+            ILoggingService logger, IGuildSettingsRepository guildSettingsRepository)
         {
             _configuration = configuration;
             _client = client;
@@ -35,9 +36,10 @@ namespace Oculus.Kernel
 
             _commandHandlerService = commandHandlerService;
             _interactiveService = interactiveService;
-            _databaseService = databaseService;
             _musicService = musicService;
             _logger = logger;
+
+            _guildSettingsRepository = guildSettingsRepository;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -47,27 +49,7 @@ namespace Oculus.Kernel
 
             _interactiveService.Log += LogAsync;
 
-            var databaseUrl = _configuration.GetValue<string>("SUPABASE:URL");
-            var databaseKey = _configuration.GetValue<string>("SUPABASE:KEY");
-            if (databaseUrl is null || databaseKey is null)
-            {
-                _logger.Critical("Database URL or key were not set.");
-                return;
-            }
-
-            _ = Task.Run(() =>
-            {
-                try
-                {
-                    _databaseService.InitializeAsync(databaseUrl!, databaseKey!);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error(e.Message, e, "Database");
-                }
-            });
-
-            await _client.LoginAsync(TokenType.Bot, _configuration.GetValue<string>("TOKEN"));
+            await _client.LoginAsync(TokenType.Bot, _configuration.GetValue<string>("Discord:Token"));
             await _client.StartAsync();
 
             await _commandHandlerService.InitializeAsync();
@@ -85,7 +67,7 @@ namespace Oculus.Kernel
 
         private async Task ReadyAsync()
         {
-            ulong mainGuildId = _configuration.GetValue<ulong>("MAIN_GUILD");
+            ulong mainGuildId = _configuration.GetValue<ulong>("Discord:MainGuildId");
 
             _logger.Info($"In debug mode, adding commands to {mainGuildId}...", className: "App");
             await _interactionService.RegisterCommandsToGuildAsync(mainGuildId);
@@ -94,13 +76,11 @@ namespace Oculus.Kernel
 
             foreach (var guild in _client.Guilds)
             {
-                GuildSettings? settings = await _databaseService.GetGuildSettings(guild.Id);
-                settings ??= await _databaseService.CreateGuildSettings(guild.Id);
+                GuildSettings? settings = await _guildSettingsRepository.GetGuildSettingsAsync(guild.Id);
+                settings ??= await _guildSettingsRepository.CreateGuildSettingsAsync(guild.Id);
 
                 if (settings is null)
-                {
                     _logger.Error($"Failed to create guild settings for guild {guild.Id}.");
-                }
             }
         }
         private Task LogAsync(LogMessage msg)

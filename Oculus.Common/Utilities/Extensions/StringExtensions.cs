@@ -23,7 +23,7 @@ namespace Oculus.Common.Utilities.Extensions
         }
 
         public static string TruncateAndSanitize(this string s, int maxLength = 40) =>
-            Format.Sanitize(Truncate(s, maxLength));
+            Truncate(Format.Sanitize(s), maxLength);
 
         public static string Sanitize(this string s) =>
             Format.Sanitize(s);

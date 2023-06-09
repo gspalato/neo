@@ -9,19 +9,34 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Oculus.Database.Services;
+using Oculus.Common.Configurations;
+using Oculus.Common.Data;
 using Oculus.Kernel;
+using Oculus.Kernel.Repositories;
 using Oculus.Kernel.Services;
 
 Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(config =>
     {
         config
-            .AddJsonFile("appsettings.json")
-            .AddEnvironmentVariables();
+            .AddEnvironmentVariables(prefix: "OCULUS__");
     })
     .ConfigureServices((hostContext, services) =>
     {
+        // Configurations
+		var config = new BaseConfiguration();
+		hostContext.Configuration.Bind(config);
+
+		services.AddSingleton(config);
+
+		// Database Repositories
+		var databaseContext = new DatabaseContext(config);
+		services.AddSingleton<IDatabaseContext, DatabaseContext>(_ => databaseContext);
+
+		services
+			.AddScoped<IGuildSettingsRepository, GuildSettingsRepository>();
+
+        var lavalinkSection = hostContext.Configuration.GetSection("Lavalink");
         services
             .AddSingleton(new DiscordSocketConfig
             {
@@ -34,9 +49,9 @@ Host.CreateDefaultBuilder(args)
             })
             .AddSingleton(new LavalinkNodeOptions
             {
-                RestUri = hostContext.Configuration.GetValue<string>("LAVALINK:RestHost")!,
-                WebSocketUri = hostContext.Configuration.GetValue<string>("LAVALINK:WebsocketHost")!,
-                Password = hostContext.Configuration.GetValue<string>("LAVALINK:Password")!,
+                RestUri = lavalinkSection.GetValue<string>("RestUri")!,
+                WebSocketUri = lavalinkSection.GetValue<string>("WebSocketUri")!,
+                Password = lavalinkSection.GetValue<string>("Password")!,
                 DisconnectOnStop = false
             });
 
@@ -53,7 +68,6 @@ Host.CreateDefaultBuilder(args)
 
         services
             .AddSingleton<CommandHandlerService>()
-            .AddSingleton<DatabaseService>()
             .AddSingleton<ILogger, LoggingService>()
             .AddSingleton<ILoggingService, LoggingService>();
 

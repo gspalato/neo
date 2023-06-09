@@ -1,0 +1,65 @@
+<p align="center">
+	<img src="https://i.ibb.co/GchDVq0/Logo-v2-Text.png" width="800"/>
+</p>
+<p align="center">
+	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/made-with-c-sharp.svg">
+	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/built-with-love.svg">
+	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/gluten-free.svg">
+	<br/>
+	<img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fgspalato%2Fspade%2Fbadge%3Fref%3Dv2%26token%3Df01e610fbbe81abcbd4fdc800e745acefd140a17&style=for-the-badge">
+</p>
+
+## 📦 Getting Started
+### Prerequisites
+
+-  [x] [.NET Core 3.1](https://dotnet.microsoft.com/)
+-  [x] [Lavalink](https://github.com/Frederikam/Lavalink/)
+-  [x] [MongoDB](https://www.mongodb.com/)
+-  [x] [Docker](https://docker.com/)
+
+### Installing
+
+* Clone the repository;
+* Restore;
+* Compile;
+* Create a `.env` file on the root folder:
+```env
+# Discord
+OCULUS__Discord__Token=MTExNjcyNjY3OTkzOTg0NjE5Ng.GE0Mgn.rwsOhH2gfADi6sqzvM0dlnw5YohQ63G1YGqNOU
+OCULUS__Discord__MainGuildId=1088499387233210418
+
+# Lavalink
+OCULUS__Lavalink__RestUri=http://lavalink:2333
+OCULUS__Lavalink__WebSocketUri=ws://lavalink:2333
+OCULUS__Lavalink__Password=youshallnotpass
+
+# Database
+OCULUS__Database__Url=mongodb://root:example@db
+OCULUS__Database__Name=oculus
+
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=example
+```
+
+#### With Docker
+* Run `docker compose build && docker compose up -d`.
+
+## 👨‍🏫 Authors
+
+- **Gabriel Spalato Marques** (@gspalato) ➔ CEO & Founder of C# shitcode.
+
+## 📝 License
+
+```
+Copyright 2023 Gabriel Spalato Marques
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+## 👥 Acknowledgements
+
+- [**foxbot**](https://github.com/foxbot) and others \- Developer(s) of Discord.NET;

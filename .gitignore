@@ -8,6 +8,9 @@
 *.user
 *.sln.docstates
 
+# Environment files
+.env
+
 # Build results
 
 [Dd]ebug/
