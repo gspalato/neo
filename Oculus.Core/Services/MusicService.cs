@@ -1,6 +1,6 @@
 ﻿using Lavalink4NET;
 
-namespace Oculus.Kernel.Services
+namespace Oculus.Core.Services
 {
     public interface IMusicService : IAudioService
     {

@@ -30,8 +30,6 @@ services:
       - lavalink
     expose:
       - 2333 # lavalink exposes port 2333 to connect to for other containers (this is for documentation purposes only)
-    ports:
-      - 2333:2333 # you only need this if you want to make your lavalink accessible from outside of containers
 
   db:
     hostname: "db"
@@ -39,8 +37,6 @@ services:
     restart: always
     expose:
       - 27017
-    ports:
-      - "27017:27017"
     env_file:
       - ".env"
     volumes:

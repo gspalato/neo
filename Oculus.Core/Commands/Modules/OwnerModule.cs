@@ -3,15 +3,20 @@ using Discord.Interactions;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using Oculus.Common.Utilities;
-using Oculus.Kernel.Structures;
+using Oculus.Core.Structures;
 using System.Reflection;
 
-namespace Oculus.Kernel.Commands.Modules
+namespace Oculus.Core.Commands.Modules
 {
     [RequireOwner]
     public class OwnerModule : InteractionModuleBase
     {
-        public OwnerModule() { }
+        private readonly IServiceProvider _serviceProvider;
+
+        public OwnerModule(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
 
         [SlashCommand("eval", "Evaluates C# code.")]
         public async Task EvaluateAsync(string code)
@@ -70,36 +75,27 @@ namespace Oculus.Kernel.Commands.Modules
                 "System.Linq",
                 "System.Text",
                 "System.Threading.Tasks",
+                "Microsoft.Extensions.DependencyInjection",
                 "Discord",
                 "Discord.Interactions",
                 "Oculus",
-                "Oculus.Kernel",
-                "Oculus.Kernel.Commands",
-                "Oculus.Kernel.Commands.Modules",
-                "Oculus.Kernel.Repositories",
-                "Oculus.Kernel.Services",
-                "Oculus.Kernel.Structures",
                 "Oculus.Common.Data",
                 "Oculus.Common.Entities",
-                "Oculus.Kernel.Repositories",
                 "Oculus.Common.Utilities.Extensions",
                 "Oculus.Common.Utilities",
+                "Oculus.Core",
+                "Oculus.Core.Commands",
+                "Oculus.Core.Commands.Modules",
+                "Oculus.Core.Repositories",
+                "Oculus.Core.Services",
+                "Oculus.Core.Structures",
             };
-
-            /*
-            var cs1 = code.IndexOf("```") + 3;
-            cs1 = code.IndexOf('\n', cs1) + 1;
-            var cs2 = code.LastIndexOf("```");
-
-            if (cs1 == -1 || cs2 == -1)
-                throw new ArgumentException("You need to wrap the code into a code block.");
-            */
 
             var cs = code;
 
             await RespondAsync("Evaluating...", ephemeral: true);
 
-            var globals = new OculusVariables(ctx);
+            var globals = new OculusVariables(ctx, _serviceProvider);
 
             var scriptOptions = ScriptOptions.Default;
             scriptOptions = scriptOptions.WithImports(imports);

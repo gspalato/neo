@@ -11,9 +11,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Oculus.Common.Configurations;
 using Oculus.Common.Data;
-using Oculus.Kernel;
-using Oculus.Kernel.Repositories;
-using Oculus.Kernel.Services;
+using Oculus.Core;
+using Oculus.Core.Repositories;
+using Oculus.Core.Services;
 
 Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(config =>

@@ -8,10 +8,12 @@ using Lavalink4NET.Player;
 using Microsoft.VisualBasic;
 using Oculus.Common.Utilities;
 using Oculus.Common.Utilities.Extensions;
-using Oculus.Kernel.Services;
+using Oculus.Core.Services;
 using System.Text;
+using System.Text.RegularExpressions;
+using Lavalink4NET.Rest;
 
-namespace Oculus.Kernel.Commands.Modules
+namespace Oculus.Core.Commands.Modules
 {
     public class MusicModule : InteractionModuleBase
     {
@@ -65,29 +67,89 @@ namespace Oculus.Kernel.Commands.Modules
             var voiceChannel = user!.VoiceChannel;
 
             var player = await GetPlayerAsync(voiceChannel);
-
-            var track = await _musicService.GetTrackAsync(search, Lavalink4NET.Rest.SearchMode.YouTube);
-
-            _logger.Debug(track is not null ? $"Now playing: {track.Title.Truncate()}" : "No song matches found.");
-
-            if (track is null)
+            
+            async Task HandleSingleTrack(LavalinkTrack? track)
             {
-                await RespondAsync("No song matches found.", ephemeral: true);
-                return;
+                _logger.Debug(track is not null ? $"Now playing: {track.Title.Truncate()}" : "No song matches found.");
+
+                if (track is null)
+                {
+                    await RespondAsync("No song matches found.", ephemeral: true);
+                    return;
+                }
+
+                var position = await player.PlayAsync(track);
+                if (position is 0)
+                {
+                    var embed = Utilities.CreateDefaultEmbed("🎶 **Now Playing**",
+                        $"[{track.Title.TruncateAndSanitize(60)}]({track.Uri})");
+                    await RespondAsync(embed: embed.Build());
+                }
+                else
+                {
+                    var embed = Utilities.CreateDefaultEmbed(
+                        description: $"**Queued** [{track.Title.TruncateAndSanitize(60)}]({track.Uri})");
+                    await RespondAsync(embed: embed.Build());
+                }
             }
 
-            var position = await player.PlayAsync(track);
-            if (position is 0)
+            async Task HandlePlaylist(TrackLoadResponsePayload response)
             {
-                var embed = Utilities.CreateDefaultEmbed("🎶 **Now Playing**",
-                    $"[{track.Title.TruncateAndSanitize(60)}]({track.Uri})");
-                await RespondAsync(embed: embed.Build());
+                var firstTrack = response.Tracks!.First();
+
+                _logger.Debug($"Now playing: {firstTrack.Title.Truncate()} and queueing {response.Tracks!.Length - 1} more songs.");
+
+                if (response.Tracks.Length == 0)
+                {
+                    await RespondAsync("No song matches found.", ephemeral: true);
+                    return;
+                }
+
+                int? firstPosition = null;
+                foreach (LavalinkTrack track in response.Tracks)
+                {
+                    var position = await player.PlayAsync(track);
+                    firstPosition = (firstPosition is null) ? position : firstPosition;
+                }
+
+                if (firstPosition is 0)
+                {
+                    var embed = Utilities.CreateDefaultEmbed("🎶 **Now Playing**",
+                        $"[{firstTrack.Title.TruncateAndSanitize(60)}]({firstTrack.Uri})\n and queued {response.Tracks.Length - 1} more songs.");
+                    await RespondAsync(embed: embed.Build());
+                }
+                else
+                {
+                    var embed = Utilities.CreateDefaultEmbed(
+                        description: $"**Queued** [{firstTrack.Title.TruncateAndSanitize(60)}]({firstTrack.Uri}) and {response.Tracks.Length - 1} more songs.");
+                    await RespondAsync(embed: embed.Build());
+                }
+            }
+
+            var playlistLinkRegex = new Regex(@"^.*(youtu.be\/|list=)([^#\&\?]*).*");
+            if (playlistLinkRegex.Match(search).Success)
+            {
+                var response = await _musicService.LoadTracksAsync(search, SearchMode.YouTube);
+
+                switch (response.LoadType)
+                {
+                    case TrackLoadType.TrackLoaded:
+                        await HandleSingleTrack(response.Tracks!.First());
+                        break;
+
+                    case TrackLoadType.PlaylistLoaded:
+                        await HandlePlaylist(response);
+                        break;
+
+                    case TrackLoadType.NoMatches:
+                        await RespondAsync("No song matches found.", ephemeral: true);
+                        break;
+                }
             }
             else
             {
-                var embed = Utilities.CreateDefaultEmbed(
-                    description: $"**Queued** [{track.Title.TruncateAndSanitize(60)}]({track.Uri})");
-                await RespondAsync(embed: embed.Build());
+                var track = await _musicService.GetTrackAsync(search, SearchMode.YouTube);
+                await HandleSingleTrack(track);
             }
         }
 
@@ -132,7 +194,6 @@ namespace Oculus.Kernel.Commands.Modules
         }
 
         [SlashCommand("volume", "Sets the bot's volume.")]
-
         public async Task VolumeAsync([MinValue(0)][MaxValue(100)] int volume = 100)
         {
             if (await PrecheckVoiceConditions() is not QueuedLavalinkPlayer player)
@@ -226,6 +287,7 @@ namespace Oculus.Kernel.Commands.Modules
                 .WithPages(pages)
                 .Build();
 
+            await DeferAsync();
             var result = await _interactiveService.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
         }
 
@@ -240,7 +302,7 @@ namespace Oculus.Kernel.Commands.Modules
                 await player.SeekPositionAsync(TimeSpan.FromSeconds(seconds));
 
                 var seekEmbed = Utilities.CreateDefaultEmbed(
-                    description: $"Now set to the moment `{player.Position.Position.ToHumanDuration()}.`");
+                    description: $"Now set to the moment `{player.Position.Position.ToHumanDuration()}`.");
                 await RespondAsync(embed: seekEmbed.Build());
             }
         }

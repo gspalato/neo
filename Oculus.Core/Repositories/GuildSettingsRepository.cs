@@ -2,7 +2,7 @@ using Oculus.Common.Data;
 using Oculus.Common.Repositories;
 using Oculus.Common.Entities;
 
-namespace Oculus.Kernel.Repositories
+namespace Oculus.Core.Repositories
 {
     public interface IGuildSettingsRepository : IBaseRepository<GuildSettings>
     {

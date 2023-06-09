@@ -12,7 +12,7 @@
 ## 📦 Getting Started
 ### Prerequisites
 
--  [x] [.NET 8](https://dotnet.microsoft.com/)
+-  [x] [.NET 7](https://dotnet.microsoft.com/)
 -  [x] [Lavalink](https://github.com/Frederikam/Lavalink/)
 -  [x] [MongoDB](https://www.mongodb.com/)
 -  [x] [Docker](https://docker.com/)
@@ -25,8 +25,8 @@
 * Create a `.env` file on the root folder:
 ```env
 # Discord
-OCULUS__Discord__Token=MTExNjcyNjY3OTkzOTg0NjE5Ng.GE0Mgn.rwsOhH2gfADi6sqzvM0dlnw5YohQ63G1YGqNOU
-OCULUS__Discord__MainGuildId=1088499387233210418
+OCULUS__Discord__Token=
+OCULUS__Discord__MainGuildId=
 
 # Lavalink
 OCULUS__Lavalink__RestUri=http://lavalink:2333

@@ -5,10 +5,10 @@ using Fergun.Interactive;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Oculus.Common.Entities;
-using Oculus.Kernel.Repositories;
-using Oculus.Kernel.Services;
+using Oculus.Core.Repositories;
+using Oculus.Core.Services;
 
-namespace Oculus.Kernel
+namespace Oculus.Core
 {
     public interface IApp : IHostedService { }
 

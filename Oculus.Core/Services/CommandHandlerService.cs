@@ -4,7 +4,7 @@ using Discord;
 using System.Reflection;
 using Discord.Rest;
 
-namespace Oculus.Kernel.Services
+namespace Oculus.Core.Services
 {
     public class CommandHandlerService
     {

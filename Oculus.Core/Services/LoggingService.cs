@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Oculus.Common.Utilities.Extensions;
 using Pastel;
 
-namespace Oculus.Kernel.Services
+namespace Oculus.Core.Services
 {
     public interface ILoggingService
     {

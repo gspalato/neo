@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>8cb5bcc1-0c33-4ed3-a84a-a786a5387ac2</UserSecretsId>
@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="3.8.1" />
-    <PackageReference Include="Fergun.Interactive" Version="1.6.0" />
+    <PackageReference Include="Fergun.Interactive" Version="1.7.1" />
     <PackageReference Include="Lavalink4NET.Discord.NET" Version="3.0.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.6.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Oculus.Common\Oculus.Common.csproj" />
-    <ProjectReference Include="..\Oculus.Database\Oculus.Database.csproj" />
   </ItemGroup>
 
 </Project>

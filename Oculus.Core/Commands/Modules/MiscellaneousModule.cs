@@ -2,10 +2,10 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Oculus.Common.Utilities.Extensions;
-using Oculus.Kernel.Services;
+using Oculus.Core.Services;
 using System.Diagnostics;
 
-namespace Oculus.Kernel.Commands.Modules
+namespace Oculus.Core.Commands.Modules
 {
     public class MiscellaneousModule : InteractionModuleBase
     {
@@ -32,7 +32,7 @@ namespace Oculus.Kernel.Commands.Modules
 
             var embed = new EmbedBuilder()
                 .WithTitle("🏓 Pong!")
-                .WithInfo()
+                .WithDefaultColor()
                 .AddField("API Latency", Format.Code($"{apiLatency}ms", ""), true)
                 .AddField("Bot Latency", Format.Code($"{botLatency}ms", ""), true)
                 .AddField("Uptime", Format.Code(uptime.ToHumanDuration(), ""), true);

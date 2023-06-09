@@ -1,11 +1,11 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.Interactions;
-using Oculus.Kernel.Services;
+using Oculus.Core.Services;
 using RequireBotPermissionAttribute = Discord.Interactions.RequireBotPermissionAttribute;
 using RequireUserPermissionAttribute = Discord.Interactions.RequireUserPermissionAttribute;
 
-namespace Oculus.Kernel.Commands.Modules
+namespace Oculus.Core.Commands.Modules
 {
     public class ModerationModule : InteractionModuleBase
     {
@@ -16,6 +16,7 @@ namespace Oculus.Kernel.Commands.Modules
             _logger = logger;
         }
 
+        [SlashCommand("purge", "Delete messages.")]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task PurgeDefaultAsync(
@@ -25,7 +26,7 @@ namespace Oculus.Kernel.Commands.Modules
             if (Context.Channel is not ITextChannel ch)
                 return;
 
-            var request = await AsyncEnumerableExtensions.FlattenAsync(ch.GetMessagesAsync(count + 1));
+            var request = await AsyncEnumerableExtensions.FlattenAsync(ch.GetMessagesAsync(count));
             if (!request.Any())
             {
                 await RespondAsync("Failed to purge.", ephemeral: true);
@@ -73,7 +74,7 @@ namespace Oculus.Kernel.Commands.Modules
                 sb.AppendLine("...");
             */
 
-            await RespondAsync($"Purged {messageCount} messages.");
+            await RespondAsync($"Purged {messageCount} messages.", ephemeral: true);
         }
     }
 }

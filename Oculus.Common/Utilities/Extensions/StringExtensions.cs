@@ -23,7 +23,7 @@ namespace Oculus.Common.Utilities.Extensions
         }
 
         public static string TruncateAndSanitize(this string s, int maxLength = 40) =>
-            Truncate(Format.Sanitize(s), maxLength);
+            Truncate(Format.Sanitize(s), maxLength).Replace("\\.", ".");
 
         public static string Sanitize(this string s) =>
             Format.Sanitize(s);
