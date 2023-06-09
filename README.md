@@ -12,7 +12,7 @@
 ## 📦 Getting Started
 ### Prerequisites
 
--  [x] [.NET Core 3.1](https://dotnet.microsoft.com/)
+-  [x] [.NET 8](https://dotnet.microsoft.com/)
 -  [x] [Lavalink](https://github.com/Frederikam/Lavalink/)
 -  [x] [MongoDB](https://www.mongodb.com/)
 -  [x] [Docker](https://docker.com/)
