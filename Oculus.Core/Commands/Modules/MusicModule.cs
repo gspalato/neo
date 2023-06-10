@@ -246,7 +246,6 @@ namespace Oculus.Core.Commands.Modules
         [SlashCommand("queue", "Displays the current queue.")]
         public async Task QueueAsync()
         {
-        try {
             if (await PrecheckVoiceConditions() is not QueuedLavalinkPlayer player)
                 return;
 
@@ -291,15 +290,7 @@ namespace Oculus.Core.Commands.Modules
 
             var (firstPage, components) = _interactivityService.UsePagination(paginationBuilder);
 
-            await RespondAsync(embed: firstPage, components: components.Build());
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            Console.WriteLine(e.InnerException);
-            Console.WriteLine(e.Message);
-            Console.WriteLine(e.StackTrace);
-        }
+            await ReplyAsync(embed: firstPage, components: components.Build());
         }
 
         [SlashCommand("seek", "Skip the song to a specific position.")]
