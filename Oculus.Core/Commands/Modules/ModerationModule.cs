@@ -1,11 +1,12 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.Interactions;
+using Discord.WebSocket;
 using Oculus.Common.Utilities;
 using Oculus.Common.Utilities.Extensions;
 using Oculus.Core.Services;
 using Oculus.Libraries.Interactivity;
-
+using Oculus.Libraries.Interactivity.Structures;
 using RequireBotPermissionAttribute = Discord.Interactions.RequireBotPermissionAttribute;
 using RequireUserPermissionAttribute = Discord.Interactions.RequireUserPermissionAttribute;
 
@@ -14,7 +15,6 @@ namespace Oculus.Core.Commands.Modules
     public class ModerationModule : InteractionModuleBase
     {
         private readonly InteractivityService _interactivity;
-
         private readonly ILoggingService _logger;
 
         public ModerationModule(InteractivityService interactivity, ILoggingService logger)
@@ -70,73 +70,279 @@ namespace Oculus.Core.Commands.Modules
 		[RequireUserPermission(GuildPermission.KickMembers)]
 		public async Task KickAsync(IGuildUser member, string reason = "Unspecified reason.")
 		{
-            /*
 			var displayReason = reason.Length >= 75 ? Format.Code(reason.TruncateAndSanitize(75)) : reason;
 
-            var promptPage = new PageBuilder()
+            var promptPage = new EmbedBuilder()
                 .WithTitle("Confirmation")
                 .WithDescription($"Are you sure you want to kick {member.Mention} for {displayReason}")
-                .WithColor(Color.Orange);
+                .WithDefaultColor();
 
-            var abortedPage = new PageBuilder()
+            var abortedPage = new EmbedBuilder()
                 .WithTitle("Aborted")
                 .WithDescription("Timed out.");
 
-            var selection = new EmoteSelectionBuilder()
-                .AddUser(Context.User)
-                .AddOption(new Emoji("✅"))
-                .AddOption(new Emoji("❌"))
-                .WithTimeoutPage(abortedPage)
-                .WithInputType(InputType.Buttons)
-                .WithDeletion(DeletionOptions.None)
-                .WithSelectionPage(promptPage);
+            var confirmButton = new ButtonBuilder()
+                .WithLabel("Yes")
+                .WithStyle(ButtonStyle.Secondary);
 
-            var result = await _interactive.SendSelectionAsync(selection.Build(), Context.Channel, TimeSpan.FromSeconds(30));
-            var message = result.Message;
-            var value = result.Value!;
+            var cancelButton = new ButtonBuilder()
+                .WithLabel("No")
+                .WithStyle(ButtonStyle.Primary);
 
-			switch (value.Name)
+            TaskCompletionSource<bool> tcs = new();
+
+            bool OnConfirm(SocketMessageComponent interaction, ButtonRowContext context)
+            {
+                tcs.TrySetResult(true);
+                return true;
+            }
+
+            bool OnCancel(SocketMessageComponent interaction, ButtonRowContext context)
+            {
+                tcs.TrySetResult(false);
+                return true;
+            }
+
+            var buttonRowBuilder = new ButtonRowBuilder()
+                .WithButton(confirmButton, OnConfirm)
+                .WithButton(cancelButton, OnCancel);
+
+            var components = _interactivity.UseButtonRow(buttonRowBuilder);
+            var reply = await ReplyAsync(embed: promptPage.Build(), components: components.Build());
+
+            var confirmed = await tcs.Task;
+			if (confirmed)
 			{
-				case "✅":
-					{
-						try
-						{
-							await member.KickAsync(reason);
+				try
+				{
+					await member.KickAsync(reason);
 
-							var embed = Utilities.CreateDefaultEmbed("Success", $"Kicked {member.Mention} for {displayReason}");
-							await message.ModifyAsync(props =>
-                                {
-                                    props.Embed = embed.Build();
-                                    props.Components = null;
-                                }
-                            );
-						}
-						catch
-						{
-							var embed = Utilities.CreateDefaultEmbed("Error", $"Couldn't kick {member.Mention}. Check if I have enough permissions.");
-							await message.ModifyAsync(props =>
-                                {
-                                    props.Embed = embed.Build();
-                                    props.Components = null;
-                                }
-                            );
-						}
-					}
-					break;
+					var embed = Utilities.CreateDefaultEmbed("Success", $"Kicked {member.Mention} for {displayReason}");
+					await reply.ModifyAsync(props =>
+                        {
+                            props.Embed = embed.Build();
+                            props.Components = null;
+                        }
+                    );
+				}
+				catch
+				{
+					var embed = Utilities.CreateDefaultEmbed("Error", $"Couldn't kick {member.Mention}. Check if I have enough permissions.", Color.Red);
+					await reply.ModifyAsync(props =>
+                        {
+                            props.Embed = embed.Build();
+                            props.Components = null;
+                        }
+                    );
+				}
+            }
+            else
+		    {
+		    	var embed = Utilities.CreateDefaultEmbed("Aborted", "You can go away this time. Only this time.");
+		    	await reply.ModifyAsync(props =>
+                    {
+                        props.Embed = embed.Build();
+                        props.Components = null;
+                    }
+                );
+		    }
+		}
 
-				default:
-					{
-						var embed = Utilities.CreateDefaultEmbed("Aborted", "You can go away this time. Only this time.");
-						await message.ModifyAsync(props =>
-                            {
-                                props.Embed = embed.Build();
-                                props.Components = null;
-                            }
-                        );
-					}
-					break;
-			}
-            */
+        [SlashCommand("Ban", "Ban a user.")]
+		[RequireBotPermission(ChannelPermission.ManageMessages)]
+		[RequireBotPermission(GuildPermission.BanMembers)]
+		[RequireUserPermission(GuildPermission.BanMembers)]
+		public async Task BanAsync(IGuildUser member, string reason = "Unspecified reason.")
+		{
+			var displayReason = Format.Code(reason.Length >= 75 ? reason.TruncateAndSanitize(75) : reason);
+
+            var promptPage = new EmbedBuilder()
+                .WithTitle("Confirmation")
+                .WithDescription($"Are you sure you want to ban {member.Mention} for {displayReason}")
+                .WithDefaultColor();
+
+            var abortedPage = new EmbedBuilder()
+                .WithTitle("Aborted")
+                .WithDescription("Timed out.");
+
+            var confirmButton = new ButtonBuilder()
+                .WithLabel("Yes")
+                .WithStyle(ButtonStyle.Secondary);
+
+            var cancelButton = new ButtonBuilder()
+                .WithLabel("No")
+                .WithStyle(ButtonStyle.Primary);
+
+            TaskCompletionSource<bool> tcs = new();
+
+            bool OnConfirm(SocketMessageComponent interaction, ButtonRowContext context)
+            {
+                tcs.TrySetResult(true);
+                return true;
+            }
+
+            bool OnCancel(SocketMessageComponent interaction, ButtonRowContext context)
+            {
+                tcs.TrySetResult(false);
+                return true;
+            }
+
+            var buttonRowBuilder = new ButtonRowBuilder()
+                .WithButton(confirmButton, OnConfirm)
+                .WithButton(cancelButton, OnCancel);
+
+            var components = _interactivity.UseButtonRow(buttonRowBuilder);
+            var reply = await ReplyAsync(embed: promptPage.Build(), components: components.Build());
+
+            var confirmed = await tcs.Task;
+			if (confirmed)
+			{
+				try
+				{
+					await member.BanAsync(reason: reason);
+
+					var embed = Utilities.CreateDefaultEmbed("Success", $"Banned {member.Mention} for {displayReason}");
+					await reply.ModifyAsync(props =>
+                        {
+                            props.Embed = embed.Build();
+                            props.Components = null;
+                        }
+                    );
+				}
+				catch
+				{
+					var embed = Utilities.CreateDefaultEmbed("Error", $"Couldn't ban {member.Mention}. Check if I have enough permissions.", Color.Red);
+					await reply.ModifyAsync(props =>
+                        {
+                            props.Embed = embed.Build();
+                            props.Components = null;
+                        }
+                    );
+				}
+            }
+            else
+		    {
+		    	var embed = Utilities.CreateDefaultEmbed("Aborted", "You can go away this time. Only this time.");
+		    	await reply.ModifyAsync(props =>
+                    {
+                        props.Embed = embed.Build();
+                        props.Components = null;
+                    }
+                );
+		    }
+		}
+
+        [SlashCommand("unban", "Unban an user.")]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+		[RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task UnbanAsync(ulong id)
+        {
+            var bans = await Context.Guild.GetBansAsync().FlattenAsync();
+
+            IBan? ban;
+            try
+            {
+                ban = bans.First(x => x.User.Id == id);
+            }
+            catch
+            {
+                ban = null;
+            }
+
+            if (ban is not null)
+            {
+                await Context.Guild.RemoveBanAsync(id);
+                await ReplyAsync($"Unbanned {ban.User.Mention}.");
+            }
+            else
+            {
+                await ReplyAsync($"Couldn't unban {id}. Maybe this user wasn't banned before?");
+            }
+        }
+
+        [SlashCommand("softban", "Softban an user.")]
+		[RequireBotPermission(ChannelPermission.ManageMessages)]
+		[RequireBotPermission(GuildPermission.BanMembers)]
+		[RequireUserPermission(GuildPermission.BanMembers)]
+		public async Task SoftbanAsync(IGuildUser member, string reason = "Unspecified reason.")
+		{
+			var displayReason = Format.Code(reason.Length >= 75 ? reason.TruncateAndSanitize(75) : reason);
+
+            var promptPage = new EmbedBuilder()
+                .WithTitle("Confirmation")
+                .WithDescription($"Are you sure you want to softban {member.Mention} for {displayReason}")
+                .WithDefaultColor();
+
+            var abortedPage = new EmbedBuilder()
+                .WithTitle("Aborted")
+                .WithDescription("Timed out.");
+
+            var confirmButton = new ButtonBuilder()
+                .WithLabel("Yes")
+                .WithStyle(ButtonStyle.Secondary);
+
+            var cancelButton = new ButtonBuilder()
+                .WithLabel("No")
+                .WithStyle(ButtonStyle.Primary);
+
+            TaskCompletionSource<bool> tcs = new();
+
+            bool OnConfirm(SocketMessageComponent interaction, ButtonRowContext context)
+            {
+                tcs.TrySetResult(true);
+                return true;
+            }
+
+            bool OnCancel(SocketMessageComponent interaction, ButtonRowContext context)
+            {
+                tcs.TrySetResult(false);
+                return true;
+            }
+
+            var buttonRowBuilder = new ButtonRowBuilder()
+                .WithButton(confirmButton, OnConfirm)
+                .WithButton(cancelButton, OnCancel);
+
+            var components = _interactivity.UseButtonRow(buttonRowBuilder);
+            var reply = await ReplyAsync(embed: promptPage.Build(), components: components.Build());
+
+            var confirmed = await tcs.Task;
+			if (confirmed)
+			{
+				try
+				{
+					await member.BanAsync(reason: reason);
+                    await Context.Guild.RemoveBanAsync(member.Id);
+
+					var embed = Utilities.CreateDefaultEmbed("Success", $"Softbanned {member.Mention} for {displayReason}");
+					await reply.ModifyAsync(props =>
+                        {
+                            props.Embed = embed.Build();
+                            props.Components = null;
+                        }
+                    );
+				}
+				catch
+				{
+					var embed = Utilities.CreateDefaultEmbed("Error", $"Couldn't softban {member.Mention}. Check if I have enough permissions.", Color.Red);
+					await reply.ModifyAsync(props =>
+                        {
+                            props.Embed = embed.Build();
+                            props.Components = null;
+                        }
+                    );
+				}
+            }
+            else
+		    {
+		    	var embed = Utilities.CreateDefaultEmbed("Aborted", "You can go away this time. Only this time.");
+		    	await reply.ModifyAsync(props =>
+                    {
+                        props.Embed = embed.Build();
+                        props.Components = null;
+                    }
+                );
+		    }
 		}
     }
 }
