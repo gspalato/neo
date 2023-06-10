@@ -42,18 +42,25 @@ namespace Oculus.Core.Services
                 {
                     case InteractionCommandError.UnmetPrecondition:
                         await arg2.Interaction.RespondAsync($"Unmet Precondition: {arg3.ErrorReason}");
+                        _logger.Error(arg3.ErrorReason);
                         break;
                     case InteractionCommandError.UnknownCommand:
-                        await arg2.Interaction.RespondAsync("Unknown command");
+                    /*
+                        await arg2.Interaction.RespondAsync("Unknown component command");
+                        _logger.Warn(arg3.ErrorReason);
+                    */
                         break;
                     case InteractionCommandError.BadArgs:
-                        await arg2.Interaction.RespondAsync("Invalid number or arguments");
+                        await arg2.Interaction.RespondAsync("Invalid number of arguments");
+                        _logger.Error(arg3.ErrorReason);
                         break;
                     case InteractionCommandError.Exception:
                         await arg2.Interaction.RespondAsync($"Command exception: {arg3.ErrorReason}");
+                        _logger.Error(arg3.ErrorReason);
                         break;
                     case InteractionCommandError.Unsuccessful:
                         await arg2.Interaction.RespondAsync("Command could not be executed");
+                        _logger.Error(arg3.ErrorReason);
                         break;
                     default:
                         break;
@@ -71,10 +78,10 @@ namespace Oculus.Core.Services
                         await arg2.Interaction.RespondAsync($"Unmet Precondition: {arg3.ErrorReason}");
                         break;
                     case InteractionCommandError.UnknownCommand:
-                        await arg2.Interaction.RespondAsync("Unknown command");
+                        await arg2.Interaction.RespondAsync("Unknown context command");
                         break;
                     case InteractionCommandError.BadArgs:
-                        await arg2.Interaction.RespondAsync("Invalid number or arguments");
+                        await arg2.Interaction.RespondAsync("Invalid number of arguments");
                         break;
                     case InteractionCommandError.Exception:
                         await arg2.Interaction.RespondAsync($"Command exception: {arg3.ErrorReason}");
@@ -98,7 +105,7 @@ namespace Oculus.Core.Services
                         await arg2.Interaction.RespondAsync($"Unmet Precondition: {arg3.ErrorReason}");
                         break;
                     case InteractionCommandError.UnknownCommand:
-                        await arg2.Interaction.RespondAsync("Unknown command");
+                        await arg2.Interaction.RespondAsync("Unknown slash command");
                         break;
                     case InteractionCommandError.BadArgs:
                         await arg2.Interaction.RespondAsync("Invalid number or arguments");

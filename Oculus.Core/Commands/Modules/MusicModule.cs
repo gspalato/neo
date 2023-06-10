@@ -12,19 +12,20 @@ using Oculus.Core.Services;
 using System.Text;
 using System.Text.RegularExpressions;
 using Lavalink4NET.Rest;
+using Oculus.Libraries.Interactivity;
 
 namespace Oculus.Core.Commands.Modules
 {
     public class MusicModule : InteractionModuleBase
     {
-        private readonly InteractiveService _interactiveService;
+        private readonly InteractivityService _interactivityService;
         private readonly IMusicService _musicService;
         private readonly ILoggingService _logger;
 
-        public MusicModule(InteractiveService interactiveService, IMusicService musicService,
+        public MusicModule(InteractivityService interactivityService, IMusicService musicService,
             ILoggingService logger)
         {
-            _interactiveService = interactiveService;
+            _interactivityService = interactivityService;
             _musicService = musicService;
             _logger = logger;
         }
@@ -245,6 +246,7 @@ namespace Oculus.Core.Commands.Modules
         [SlashCommand("queue", "Displays the current queue.")]
         public async Task QueueAsync()
         {
+        try {
             if (await PrecheckVoiceConditions() is not QueuedLavalinkPlayer player)
                 return;
 
@@ -257,12 +259,12 @@ namespace Oculus.Core.Commands.Modules
 
             LavalinkTrack[][] queueChunks = Enumerable.Chunk(player.Queue, 7).ToArray();
 
-            var pages = new List<PageBuilder>();
+            var pages = new List<Embed>();
 
             int pageCount = 0;
             foreach (var chunk in queueChunks)
             {
-                var page = new PageBuilder()
+                var page = new EmbedBuilder()
                     .WithTitle($"🎼  Queue | Page {pageCount + 1} / {queueChunks.Count()}")
                     .WithColor(new Color(47, 49, 54));
 
@@ -277,18 +279,27 @@ namespace Oculus.Core.Commands.Modules
 
                 page.WithDescription(description.ToString());
 
-                pages.Add(page);
+                pages.Add(page.Build());
 
                 pageCount++;
             }
 
-            var paginator = new StaticPaginatorBuilder()
-                .AddUser(Context.User)
+            var paginationBuilder = new PaginationBuilder()
                 .WithPages(pages)
-                .Build();
+                .WithDefaultButtons()
+                .WithUser(Context.User);
 
-            await DeferAsync();
-            var result = await _interactiveService.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
+            var (firstPage, components) = _interactivityService.UsePagination(paginationBuilder);
+
+            await RespondAsync(embed: firstPage, components: components.Build());
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            Console.WriteLine(e.InnerException);
+            Console.WriteLine(e.Message);
+            Console.WriteLine(e.StackTrace);
+        }
         }
 
         [SlashCommand("seek", "Skip the song to a specific position.")]

@@ -27,28 +27,39 @@ namespace Oculus.Core.Commands.Modules
 
                 if (result != null && result.ReturnValue != null)
                 {
-                    var t = result.ReturnValue.GetType();
-                    var ti = t.GetTypeInfo();
+                    var returnValue = result.ReturnValue;
+                    var type = returnValue.GetType();
+                    var typeInfo = type.GetTypeInfo();
                     var embed = Utilities.CreateDefaultEmbed("Evaluate").WithFields(
                         new[] {
                             new EmbedFieldBuilder()
                                 .WithName("Return Type")
-                                .WithValue(t.ToString()),
+                                .WithValue(type.ToString()),
                         }
                     );
 
-                    if (ti.IsPrimitive || ti.IsEnum || t == typeof(DateTime) || t == typeof(DateTimeOffset) || t == typeof(TimeSpan))
-                        embed.AddField("Value", Utilities.ObjectToString(result.ReturnValue), false);
+                    if (typeInfo.IsPrimitive || typeInfo.IsEnum || type == typeof(DateTime)
+                        || type == typeof(DateTimeOffset) || type == typeof(TimeSpan))
+                    {
+                        Console.WriteLine("Primitive");
+                        embed.WithDescription(Format.Code(Utilities.ObjectToString(result.ReturnValue), "diff"));
+                    }
                     else
                     {
-                        var rv = result.ReturnValue;
-                        var psr = ti.GetProperties();
-                        var ps = psr.Take(25);
-                        foreach (var xps in ps)
-                            embed.AddField(string.Concat(xps.Name, " (", xps.PropertyType.ToString(), ")"), Utilities.ObjectToString(xps.GetValue(rv)), true);
+                        var allPropertyInfos = typeInfo.GetProperties();
+                        var propertyInfos = allPropertyInfos.Take(25);
+                        foreach (var info in propertyInfos)
+                            embed.AddField(
+                                string.Concat(info.Name, " (", info.PropertyType.ToString(), ")"),
+                                Utilities.ObjectToString(info.GetValue(returnValue)!),
+                                true
+                            );
 
-                        if (psr.Length > 25)
-                            embed.Description = string.Concat(embed.Description, "\n\n**Warning**: Property count exceeds 25. Not all properties are displayed.");
+                        if (allPropertyInfos.Length > 25)
+                            embed.Description = string.Concat(
+                                embed.Description,
+                                "\n\n**Warning**: Property count exceeds 25. Not all properties are displayed."
+                            );
                     }
 
                     await FollowupAsync(embed: embed.Build());
@@ -67,7 +78,7 @@ namespace Oculus.Core.Commands.Modules
         }
 
 
-        public async Task<ScriptState<object>> EvaluateAsync(IInteractionContext ctx, string code)
+        private async Task<ScriptState<object>> EvaluateAsync(IInteractionContext ctx, string code)
         {
             string[] imports = {
                 "System",
@@ -91,8 +102,6 @@ namespace Oculus.Core.Commands.Modules
                 "Oculus.Core.Structures",
             };
 
-            var cs = code;
-
             await RespondAsync("Evaluating...", ephemeral: true);
 
             var globals = new OculusVariables(ctx, _serviceProvider);
@@ -101,7 +110,7 @@ namespace Oculus.Core.Commands.Modules
             scriptOptions = scriptOptions.WithImports(imports);
             scriptOptions = scriptOptions.WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 
-            var script = CSharpScript.Create(cs, scriptOptions, typeof(OculusVariables));
+            var script = CSharpScript.Create(code, scriptOptions, typeof(OculusVariables));
             script.Compile();
             var result = await script.RunAsync(globals);
 

@@ -1,7 +1,11 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.Interactions;
+using Oculus.Common.Utilities;
+using Oculus.Common.Utilities.Extensions;
 using Oculus.Core.Services;
+using Oculus.Libraries.Interactivity;
+
 using RequireBotPermissionAttribute = Discord.Interactions.RequireBotPermissionAttribute;
 using RequireUserPermissionAttribute = Discord.Interactions.RequireUserPermissionAttribute;
 
@@ -9,10 +13,13 @@ namespace Oculus.Core.Commands.Modules
 {
     public class ModerationModule : InteractionModuleBase
     {
+        private readonly InteractivityService _interactivity;
+
         private readonly ILoggingService _logger;
 
-        public ModerationModule(ILoggingService logger)
+        public ModerationModule(InteractivityService interactivity, ILoggingService logger)
         {
+            _interactivity = interactivity;
             _logger = logger;
         }
 
@@ -54,27 +61,82 @@ namespace Oculus.Core.Commands.Modules
 
             await ch.DeleteMessagesAsync(messages).ConfigureAwait(false);
 
-            /*
-            var sb = new StringBuilder();
-            sb.AppendLine($"Deleted `{messageCount}` messages.");
-            sb.AppendLine();
-
-            List<string> deletedMessageUsers = new List<string>();
-
-            foreach (var author in messages.GroupBy(b => b.Author.Id))
-            {
-                var u = await Context.Guild.GetUserAsync(author.Key);
-                deletedMessageUsers.Add($"**{u?.ToString() ?? author.Key.ToString()}**: {author.Count()} messages");
-            }
-
-            var truncatedUsers = deletedMessageUsers.Take(3);
-
-            sb.AppendJoin("\n", truncatedUsers);
-            if (truncatedUsers.Count() < deletedMessageUsers.Count)
-                sb.AppendLine("...");
-            */
-
             await RespondAsync($"Purged {messageCount} messages.", ephemeral: true);
         }
+
+        [SlashCommand("kick", "Kick a user.")]
+		[RequireBotPermission(ChannelPermission.ManageMessages)]
+		[RequireBotPermission(GuildPermission.KickMembers)]
+		[RequireUserPermission(GuildPermission.KickMembers)]
+		public async Task KickAsync(IGuildUser member, string reason = "Unspecified reason.")
+		{
+            /*
+			var displayReason = reason.Length >= 75 ? Format.Code(reason.TruncateAndSanitize(75)) : reason;
+
+            var promptPage = new PageBuilder()
+                .WithTitle("Confirmation")
+                .WithDescription($"Are you sure you want to kick {member.Mention} for {displayReason}")
+                .WithColor(Color.Orange);
+
+            var abortedPage = new PageBuilder()
+                .WithTitle("Aborted")
+                .WithDescription("Timed out.");
+
+            var selection = new EmoteSelectionBuilder()
+                .AddUser(Context.User)
+                .AddOption(new Emoji("✅"))
+                .AddOption(new Emoji("❌"))
+                .WithTimeoutPage(abortedPage)
+                .WithInputType(InputType.Buttons)
+                .WithDeletion(DeletionOptions.None)
+                .WithSelectionPage(promptPage);
+
+            var result = await _interactive.SendSelectionAsync(selection.Build(), Context.Channel, TimeSpan.FromSeconds(30));
+            var message = result.Message;
+            var value = result.Value!;
+
+			switch (value.Name)
+			{
+				case "✅":
+					{
+						try
+						{
+							await member.KickAsync(reason);
+
+							var embed = Utilities.CreateDefaultEmbed("Success", $"Kicked {member.Mention} for {displayReason}");
+							await message.ModifyAsync(props =>
+                                {
+                                    props.Embed = embed.Build();
+                                    props.Components = null;
+                                }
+                            );
+						}
+						catch
+						{
+							var embed = Utilities.CreateDefaultEmbed("Error", $"Couldn't kick {member.Mention}. Check if I have enough permissions.");
+							await message.ModifyAsync(props =>
+                                {
+                                    props.Embed = embed.Build();
+                                    props.Components = null;
+                                }
+                            );
+						}
+					}
+					break;
+
+				default:
+					{
+						var embed = Utilities.CreateDefaultEmbed("Aborted", "You can go away this time. Only this time.");
+						await message.ModifyAsync(props =>
+                            {
+                                props.Embed = embed.Build();
+                                props.Components = null;
+                            }
+                        );
+					}
+					break;
+			}
+            */
+		}
     }
 }

@@ -14,6 +14,7 @@ using Oculus.Common.Data;
 using Oculus.Core;
 using Oculus.Core.Repositories;
 using Oculus.Core.Services;
+using Oculus.Libraries.Interactivity;
 
 Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(config =>
@@ -72,14 +73,7 @@ Host.CreateDefaultBuilder(args)
             .AddSingleton<ILoggingService, LoggingService>();
 
         services
-            .AddSingleton(
-                new InteractiveConfig
-                {
-                    DefaultTimeout = TimeSpan.FromMinutes(5),
-                    ReturnAfterSendingPaginator = true
-                }
-            )
-            .AddSingleton<InteractiveService>();
+            .AddSingleton<InteractivityService>();
 
         services
             .AddSingleton<IMusicService, MusicService>()

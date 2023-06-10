@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Oculus.Common.Entities;
 using Oculus.Core.Repositories;
 using Oculus.Core.Services;
+using Oculus.Libraries.Interactivity;
 
 namespace Oculus.Core
 {
@@ -19,7 +20,7 @@ namespace Oculus.Core
         private readonly InteractionService _interactionService;
 
         private readonly CommandHandlerService _commandHandlerService;
-        private readonly InteractiveService _interactiveService;
+        private readonly InteractivityService _interactivityService;
         private readonly IMusicService _musicService;
         private readonly ILoggingService _logger;
 
@@ -27,7 +28,7 @@ namespace Oculus.Core
 
         public App(IConfiguration configuration, DiscordSocketClient client,
             InteractionService interactionService, CommandHandlerService commandHandlerService,
-            InteractiveService interactiveService, IMusicService musicService,
+            InteractivityService interactivityService, IMusicService musicService,
             ILoggingService logger, IGuildSettingsRepository guildSettingsRepository)
         {
             _configuration = configuration;
@@ -35,7 +36,7 @@ namespace Oculus.Core
             _interactionService = interactionService;
 
             _commandHandlerService = commandHandlerService;
-            _interactiveService = interactiveService;
+            _interactivityService = interactivityService;
             _musicService = musicService;
             _logger = logger;
 
@@ -47,7 +48,7 @@ namespace Oculus.Core
             _client.Log += LogAsync;
             _client.Ready += ReadyAsync;
 
-            _interactiveService.Log += LogAsync;
+            _interactionService.Log += LogAsync;
 
             await _client.LoginAsync(TokenType.Bot, _configuration.GetValue<string>("Discord:Token"));
             await _client.StartAsync();
@@ -73,6 +74,7 @@ namespace Oculus.Core
             await _interactionService.RegisterCommandsToGuildAsync(mainGuildId);
 
             await _musicService.InitializeAsync();
+            _interactivityService.Initialize();
 
             foreach (var guild in _client.Guilds)
             {
@@ -83,6 +85,7 @@ namespace Oculus.Core
                     _logger.Error($"Failed to create guild settings for guild {guild.Id}.");
             }
         }
+        
         private Task LogAsync(LogMessage msg)
         {
             switch (msg.Severity)
