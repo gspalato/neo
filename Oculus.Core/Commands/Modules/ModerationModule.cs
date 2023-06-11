@@ -148,7 +148,7 @@ namespace Oculus.Core.Commands.Modules
 		    }
 		}
 
-        [SlashCommand("Ban", "Ban a user.")]
+        [SlashCommand("ban", "Ban a user.")]
 		[RequireBotPermission(ChannelPermission.ManageMessages)]
 		[RequireBotPermission(GuildPermission.BanMembers)]
 		[RequireUserPermission(GuildPermission.BanMembers)]
