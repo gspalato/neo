@@ -45,31 +45,29 @@ namespace Oculus.Libraries.Interactivity
                 .WithLabel("First")
                 .WithStyle(ButtonStyle.Secondary)
                 .WithEmote(new Emoji("⏮️"));
+            WithButton(firstPageButton, PaginationAction.First);
 
             var previousPageButton = new ButtonBuilder()
                 .WithLabel("Previous")
                 .WithStyle(ButtonStyle.Secondary)
                 .WithEmote(new Emoji("⏪"));
+            WithButton(previousPageButton, PaginationAction.Previous);
 
             var nextPageButton = new ButtonBuilder()
                 .WithLabel("Next")
                 .WithStyle(ButtonStyle.Secondary)
                 .WithEmote(new Emoji("⏩"));
+            WithButton(nextPageButton, PaginationAction.Next);
 
             var lastPageButton = new ButtonBuilder()
                 .WithLabel("Last")
                 .WithStyle(ButtonStyle.Secondary)
                 .WithEmote(new Emoji("⏭️"));
+            WithButton(lastPageButton, PaginationAction.Last);
 
             var stopButton = new ButtonBuilder()
-                .WithLabel("Stop")
                 .WithStyle(ButtonStyle.Danger)
-                .WithEmote(new Emoji("🛑"));
-
-            WithButton(firstPageButton, PaginationAction.First);
-            WithButton(previousPageButton, PaginationAction.Previous);
-            WithButton(nextPageButton, PaginationAction.Next);
-            WithButton(lastPageButton, PaginationAction.Last);
+                .WithEmote(new Emoji("❌"));
             WithButton(stopButton, PaginationAction.Stop);
             
             return this;
@@ -140,13 +138,11 @@ namespace Oculus.Libraries.Interactivity
                 {
                     static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination)
                     {
-                        Console.WriteLine("Clicked on LAST.");
                         if (!pagination.UserIds.Contains(interaction.User.Id))
                             return false;
 
                         pagination.CurrentPage = pagination.Pages.Count - 1;
-                        interaction.UpdateAsync(m => m.Embed = pagination.Pages[pagination.CurrentPage])
-                            .ContinueWith(t => Console.WriteLine($"Set page to {pagination.CurrentPage}."));
+                        interaction.UpdateAsync(m => m.Embed = pagination.Pages[pagination.CurrentPage]);
 
                         return false;
                     };
