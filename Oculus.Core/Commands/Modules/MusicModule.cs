@@ -290,7 +290,7 @@ namespace Oculus.Core.Commands.Modules
 
             var (firstPage, components) = _interactivityService.UsePagination(paginationBuilder);
 
-            await ReplyAsync(embed: firstPage, components: components.Build());
+            await RespondAsync(embed: firstPage, components: components.Build());
         }
 
         [SlashCommand("seek", "Skip the song to a specific position.")]
