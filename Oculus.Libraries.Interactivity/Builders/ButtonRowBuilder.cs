@@ -1,9 +1,5 @@
-using Discord.Interactions;
-using Discord.WebSocket;
 using Discord;
-using System.Reflection;
-using Discord.Rest;
-using Discord.Commands;
+using Discord.WebSocket;
 using Oculus.Libraries.Interactivity.Structures;
 
 namespace Oculus.Libraries.Interactivity
