@@ -1,16 +1,12 @@
-using Discord.Interactions;
-using Discord.WebSocket;
 using Discord;
-using System.Reflection;
-using Discord.Rest;
-using Discord.Commands;
-using Oculus.Libraries.Interactivity.Structures;
+using Discord.WebSocket;
+using Oculus.Libraries.Interactivity.Structures.Contexts;
 
-namespace Oculus.Libraries.Interactivity
+namespace Oculus.Libraries.Interactivity.Structures.Builders
 {
     public class PaginationBuilder
     {
-        public List<Tuple<ButtonBuilder, Func<SocketMessageComponent, PaginationContext, bool>>> Buttons { get; private set; } = new();
+        public List<InteractivityComponent<ButtonBuilder, PaginationContext>> Buttons { get; private set; } = new();
         public List<ulong> UserIds { get; private set; } = new();
         public List<Embed> Pages { get; private set; } = new();
 
@@ -42,32 +38,28 @@ namespace Oculus.Libraries.Interactivity
         public PaginationBuilder WithDefaultButtons()
         {
             var firstPageButton = new ButtonBuilder()
-                .WithLabel("First")
                 .WithStyle(ButtonStyle.Secondary)
                 .WithEmote(new Emoji("⏮️"));
             WithButton(firstPageButton, PaginationAction.First);
 
             var previousPageButton = new ButtonBuilder()
-                .WithLabel("Previous")
                 .WithStyle(ButtonStyle.Secondary)
                 .WithEmote(new Emoji("⏪"));
             WithButton(previousPageButton, PaginationAction.Previous);
 
             var nextPageButton = new ButtonBuilder()
-                .WithLabel("Next")
                 .WithStyle(ButtonStyle.Secondary)
                 .WithEmote(new Emoji("⏩"));
             WithButton(nextPageButton, PaginationAction.Next);
 
             var lastPageButton = new ButtonBuilder()
-                .WithLabel("Last")
                 .WithStyle(ButtonStyle.Secondary)
                 .WithEmote(new Emoji("⏭️"));
             WithButton(lastPageButton, PaginationAction.Last);
 
             var stopButton = new ButtonBuilder()
                 .WithStyle(ButtonStyle.Danger)
-                .WithEmote(new Emoji("❌"));
+                .WithEmote(new Emoji("🛑"));
             WithButton(stopButton, PaginationAction.Stop);
             
             return this;
@@ -75,7 +67,7 @@ namespace Oculus.Libraries.Interactivity
 
         public PaginationBuilder WithButton(ButtonBuilder button, Func<SocketMessageComponent, PaginationContext, bool> handler)
         {
-            Buttons.Add(new Tuple<ButtonBuilder, Func<SocketMessageComponent, PaginationContext, bool>>(button, handler));
+            Buttons.Add(new InteractivityComponent<ButtonBuilder, PaginationContext>(button, handler));
             return this;
         }
 
@@ -96,7 +88,7 @@ namespace Oculus.Libraries.Interactivity
                         return false;
                     };
 
-                    Buttons.Add(new Tuple<ButtonBuilder, Func<SocketMessageComponent, PaginationContext, bool>>(button, OnClick));
+                    Buttons.Add(new InteractivityComponent<ButtonBuilder, PaginationContext>(button, OnClick));
                 }
                 break;
 
@@ -107,13 +99,16 @@ namespace Oculus.Libraries.Interactivity
                         if (!pagination.UserIds.Contains(interaction.User.Id))
                             return false;
 
-                        pagination.CurrentPage = pagination.CurrentPage == 0 ? 0 : pagination.CurrentPage - 1;
+                        pagination.CurrentPage = pagination.CurrentPage == 0
+                            ? 0
+                            : pagination.CurrentPage - 1;
+
                         interaction.UpdateAsync(m => m.Embed = pagination.Pages[pagination.CurrentPage]);
 
                         return false;
                     };
 
-                    Buttons.Add(new Tuple<ButtonBuilder, Func<SocketMessageComponent, PaginationContext, bool>>(button, OnClick));
+                    Buttons.Add(new InteractivityComponent<ButtonBuilder, PaginationContext>(button, OnClick));
                 }
                 break;
 
@@ -124,13 +119,16 @@ namespace Oculus.Libraries.Interactivity
                         if (!pagination.UserIds.Contains(interaction.User.Id))
                             return false;
 
-                        pagination.CurrentPage = pagination.CurrentPage == pagination.Pages.Count - 1 ? pagination.Pages.Count - 1 : pagination.CurrentPage + 1;
+                        pagination.CurrentPage = pagination.CurrentPage == pagination.Pages.Count - 1
+                            ? pagination.Pages.Count - 1
+                            : pagination.CurrentPage + 1;
+                            
                         interaction.UpdateAsync(m => m.Embed = pagination.Pages[pagination.CurrentPage]);
 
                         return false;
                     };
 
-                    Buttons.Add(new Tuple<ButtonBuilder, Func<SocketMessageComponent, PaginationContext, bool>>(button, OnClick));
+                    Buttons.Add(new InteractivityComponent<ButtonBuilder, PaginationContext>(button, OnClick));
                 }
                 break;
 
@@ -147,7 +145,7 @@ namespace Oculus.Libraries.Interactivity
                         return false;
                     };
 
-                    Buttons.Add(new Tuple<ButtonBuilder, Func<SocketMessageComponent, PaginationContext, bool>>(button, OnClick));
+                    Buttons.Add(new InteractivityComponent<ButtonBuilder, PaginationContext>(button, OnClick));
                 }
                 break;
 
@@ -161,7 +159,7 @@ namespace Oculus.Libraries.Interactivity
                         return true;
                     };
 
-                    Buttons.Add(new Tuple<ButtonBuilder, Func<SocketMessageComponent, PaginationContext, bool>>(button, OnClick));
+                    Buttons.Add(new InteractivityComponent<ButtonBuilder, PaginationContext>(button, OnClick));
                 }
                 break;
 

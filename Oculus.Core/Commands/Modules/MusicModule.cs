@@ -2,17 +2,15 @@
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Fergun.Interactive.Pagination;
-using Fergun.Interactive;
 using Lavalink4NET.Player;
-using Microsoft.VisualBasic;
+using Lavalink4NET.Rest;
 using Oculus.Common.Utilities;
 using Oculus.Common.Utilities.Extensions;
 using Oculus.Core.Services;
 using System.Text;
 using System.Text.RegularExpressions;
-using Lavalink4NET.Rest;
 using Oculus.Libraries.Interactivity;
+using Oculus.Libraries.Interactivity.Structures.Builders;
 
 namespace Oculus.Core.Commands.Modules
 {
@@ -56,16 +54,32 @@ namespace Oculus.Core.Commands.Modules
             var user = Context.User as SocketGuildUser;
             var voiceChannel = user!.VoiceChannel;
 
-            var player = GetPlayerAsync(voiceChannel);
+            if (voiceChannel is null)
+            {
+                var notConnectedEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"You're not connected to any voice chat.");
+                await RespondAsync(embed: notConnectedEmbed.Build(), ephemeral: true);
+                return;
+            }
+
+            await GetPlayerAsync(voiceChannel);
 
             await RespondAsync($"Connected to {voiceChannel}.");
         }
 
         [SlashCommand("play", "Plays the selected song or adds it to the queue.")]
         public async Task PlayAsync(string search)
-        {
+        {                
             var user = Context.User as SocketGuildUser;
             var voiceChannel = user!.VoiceChannel;
+
+            if (voiceChannel is null)
+            {
+                var notConnectedEmbed = Utilities.CreateDefaultEmbed(
+                    description: $"You're not connected to any voice chat.");
+                await RespondAsync(embed: notConnectedEmbed.Build(), ephemeral: true);
+                return;
+            }
 
             var player = await GetPlayerAsync(voiceChannel);
             
@@ -246,6 +260,8 @@ namespace Oculus.Core.Commands.Modules
         [SlashCommand("queue", "Displays the current queue.")]
         public async Task QueueAsync()
         {
+        try
+        {
             if (await PrecheckVoiceConditions() is not QueuedLavalinkPlayer player)
                 return;
 
@@ -291,6 +307,12 @@ namespace Oculus.Core.Commands.Modules
             var (firstPage, components) = _interactivityService.UsePagination(paginationBuilder);
 
             await RespondAsync(embed: firstPage, components: components.Build());
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            Console.WriteLine(e.StackTrace);
+        }
         }
 
         [SlashCommand("seek", "Skip the song to a specific position.")]

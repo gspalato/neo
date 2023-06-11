@@ -1,11 +1,8 @@
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Discord;
-using System.Reflection;
-using Discord.Rest;
-using Discord.Commands;
-using Oculus.Libraries.Interactivity.Structures;
-using System.Net.Sockets;
+using Oculus.Libraries.Interactivity.Structures.Builders;
+using Oculus.Libraries.Interactivity.Structures.Contexts;
 
 namespace Oculus.Libraries.Interactivity
 {
@@ -14,8 +11,8 @@ namespace Oculus.Libraries.Interactivity
         private readonly DiscordSocketClient _client;
         private readonly InteractionService _commands;
 
-        private readonly List<ButtonRowContext> _buttonContexts = new();
-        private readonly Dictionary<string, Func<SocketMessageComponent, ButtonRowContext, bool>> _buttonHandlers = new();
+        private readonly List<SelectionContext> _buttonContexts = new();
+        private readonly Dictionary<string, Func<SocketMessageComponent, SelectionContext, bool>> _buttonHandlers = new();
 
         private readonly List<PaginationContext> _paginationContexts = new();
         private readonly Dictionary<string, Func<SocketMessageComponent, PaginationContext, bool>> _paginationButtonHandlers = new();
@@ -33,7 +30,7 @@ namespace Oculus.Libraries.Interactivity
             _client.ButtonExecuted += HandleButton;
         }
 
-        public ComponentBuilder UseButtonRow(ButtonRowBuilder builder)
+        public ComponentBuilder UseSelection(SelectionBuilder builder)
         {
             var buttonRow = builder.Build();
             _buttonContexts.Add(buttonRow);
@@ -41,8 +38,8 @@ namespace Oculus.Libraries.Interactivity
             var components = new ComponentBuilder();
             foreach (var tuple in buttonRow.Buttons)
             {
-                components.WithButton(tuple.Item1);
-                RegisterButtonHandler(tuple.Item1.CustomId, tuple.Item2);
+                components.WithButton(tuple.Component);
+                RegisterButtonHandler(tuple.Component.CustomId, tuple.Callback);
             }
 
             return components;
@@ -59,14 +56,14 @@ namespace Oculus.Libraries.Interactivity
             var components = new ComponentBuilder();
             foreach (var tuple in pagination.Buttons)
             {
-                components.WithButton(tuple.Item1);
-                RegisterPaginationButtonHandler(tuple.Item1.CustomId, tuple.Item2);
+                components.WithButton(tuple.Component);
+                RegisterPaginationButtonHandler(tuple.Component.CustomId, tuple.Callback);
             }
 
             return new Tuple<Embed, ComponentBuilder>(embed, components);
         }
 
-        public bool RegisterButtonHandler(string id, Func<SocketMessageComponent, ButtonRowContext, bool> handler)
+        public bool RegisterButtonHandler(string id, Func<SocketMessageComponent, SelectionContext, bool> handler)
         {
             if (_buttonHandlers.ContainsKey(id))
                 return false;
@@ -112,33 +109,34 @@ namespace Oculus.Libraries.Interactivity
             _ = Task.Run(async () => {
                 string id = interaction.Data.CustomId;
 
-                await interaction.DeferAsync();
                 if (_paginationButtonHandlers.ContainsKey(id))
                 {
-                    Func<SocketMessageComponent, PaginationContext, bool> handler = _paginationButtonHandlers.First(x => x.Key == id).Value;
+                    var callback = _paginationButtonHandlers.First(x => x.Key == id).Value;
 
-                    var paginationContext = _paginationContexts.First(x => x.Buttons.Any(y => y.Item1.CustomId == id));
-                    bool shouldDelete = handler.Invoke(interaction, paginationContext);
+                    var paginationContext = _paginationContexts.First(x => x.Buttons.Any(y => y.Component.CustomId == id));
+                    var shouldDelete = callback.Invoke(interaction, paginationContext);
 
                     if (shouldDelete)
                     {
+                        await interaction.DeferAsync();
                         await interaction.DeleteOriginalResponseAsync();
                         _paginationContexts.Remove(paginationContext);
-                        paginationContext.Buttons.ForEach(x => _paginationButtonHandlers.Remove(x.Item1.CustomId));
+                        paginationContext.Buttons.ForEach(x => _paginationButtonHandlers.Remove(x.Component.CustomId));
                     }
                 }
                 else if (_buttonHandlers.ContainsKey(id))
                 {
-                    Func<SocketMessageComponent, ButtonRowContext, bool> handler = _buttonHandlers.First(x => x.Key == id).Value;
+                    var callback = _buttonHandlers.First(x => x.Key == id).Value;
 
-                    var buttonRowContext = _buttonContexts.First(x => x.Buttons.Any(y => y.Item1.CustomId == id));
-                    bool shouldDelete = handler.Invoke(interaction, buttonRowContext);
+                    var buttonRowContext = _buttonContexts.First(x => x.Buttons.Any(y => y.Component.CustomId == id));
+                    var shouldDelete = callback.Invoke(interaction, buttonRowContext);
 
                     if (shouldDelete)
                     {
+                        await interaction.DeferAsync();
                         await interaction.DeleteOriginalResponseAsync();
                         _buttonContexts.Remove(buttonRowContext);
-                        buttonRowContext.Buttons.ForEach(x => _buttonHandlers.Remove(x.Item1.CustomId));
+                        buttonRowContext.Buttons.ForEach(x => _buttonHandlers.Remove(x.Component.CustomId));
                     }
                 }
                 else

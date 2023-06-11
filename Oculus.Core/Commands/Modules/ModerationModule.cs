@@ -6,7 +6,8 @@ using Oculus.Common.Utilities;
 using Oculus.Common.Utilities.Extensions;
 using Oculus.Core.Services;
 using Oculus.Libraries.Interactivity;
-using Oculus.Libraries.Interactivity.Structures;
+using Oculus.Libraries.Interactivity.Structures.Builders;
+using Oculus.Libraries.Interactivity.Structures.Contexts;
 using RequireBotPermissionAttribute = Discord.Interactions.RequireBotPermissionAttribute;
 using RequireUserPermissionAttribute = Discord.Interactions.RequireUserPermissionAttribute;
 
@@ -91,23 +92,25 @@ namespace Oculus.Core.Commands.Modules
 
             TaskCompletionSource<bool> tcs = new();
 
-            bool OnConfirm(SocketMessageComponent interaction, ButtonRowContext context)
+            var OnConfirm = (SocketMessageComponent interaction, SelectionContext context) =>
             {
+                Console.WriteLine("Confirm");
                 tcs.TrySetResult(true);
                 return true;
-            }
+            };
 
-            bool OnCancel(SocketMessageComponent interaction, ButtonRowContext context)
+            var OnCancel = (SocketMessageComponent interaction, SelectionContext context) =>
             {
+                Console.WriteLine("Cancel");
                 tcs.TrySetResult(false);
                 return true;
-            }
+            };
 
-            var buttonRowBuilder = new ButtonRowBuilder()
+            var buttonRowBuilder = new SelectionBuilder()
                 .WithButton(confirmButton, OnConfirm)
                 .WithButton(cancelButton, OnCancel);
 
-            var components = _interactivity.UseButtonRow(buttonRowBuilder);
+            var components = _interactivity.UseSelection(buttonRowBuilder);
             var reply = await ReplyAsync(embed: promptPage.Build(), components: components.Build());
 
             var confirmed = await tcs.Task;
@@ -175,23 +178,23 @@ namespace Oculus.Core.Commands.Modules
 
             TaskCompletionSource<bool> tcs = new();
 
-            bool OnConfirm(SocketMessageComponent interaction, ButtonRowContext context)
+            var OnConfirm = (SocketMessageComponent interaction, SelectionContext context) =>
             {
                 tcs.TrySetResult(true);
                 return true;
-            }
+            };
 
-            bool OnCancel(SocketMessageComponent interaction, ButtonRowContext context)
+            var OnCancel = (SocketMessageComponent interaction, SelectionContext context) =>
             {
                 tcs.TrySetResult(false);
                 return true;
-            }
+            };
 
-            var buttonRowBuilder = new ButtonRowBuilder()
+            var buttonRowBuilder = new SelectionBuilder()
                 .WithButton(confirmButton, OnConfirm)
                 .WithButton(cancelButton, OnCancel);
 
-            var components = _interactivity.UseButtonRow(buttonRowBuilder);
+            var components = _interactivity.UseSelection(buttonRowBuilder);
             var reply = await ReplyAsync(embed: promptPage.Build(), components: components.Build());
 
             var confirmed = await tcs.Task;
@@ -287,23 +290,23 @@ namespace Oculus.Core.Commands.Modules
 
             TaskCompletionSource<bool> tcs = new();
 
-            bool OnConfirm(SocketMessageComponent interaction, ButtonRowContext context)
+            var OnConfirm = (SocketMessageComponent interaction, SelectionContext context) =>
             {
                 tcs.TrySetResult(true);
                 return true;
-            }
+            };
 
-            bool OnCancel(SocketMessageComponent interaction, ButtonRowContext context)
+            var OnCancel = (SocketMessageComponent interaction, SelectionContext context) =>
             {
                 tcs.TrySetResult(false);
                 return true;
-            }
+            };
 
-            var buttonRowBuilder = new ButtonRowBuilder()
+            var buttonRowBuilder = new SelectionBuilder()
                 .WithButton(confirmButton, OnConfirm)
                 .WithButton(cancelButton, OnCancel);
 
-            var components = _interactivity.UseButtonRow(buttonRowBuilder);
+            var components = _interactivity.UseSelection(buttonRowBuilder);
             var reply = await ReplyAsync(embed: promptPage.Build(), components: components.Build());
 
             var confirmed = await tcs.Task;
