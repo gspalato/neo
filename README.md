@@ -6,7 +6,8 @@
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/built-with-love.svg">
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/gluten-free.svg">
 	<br/>
-	<img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fgspalato%2Fspade%2Fbadge%3Fref%3Dv2%26token%3Df01e610fbbe81abcbd4fdc800e745acefd140a17&style=for-the-badge">
+	A work-in-progress bot with music and it's own interactivity library.
+	<br/>
 </p>
 
 ## 📦 Getting Started
