@@ -107,43 +107,48 @@ namespace Oculus.Libraries.Interactivity
             return false;
         }
 
-        private async Task HandleButton(SocketMessageComponent interaction)
+        private Task HandleButton(SocketMessageComponent interaction)
         {
-            string id = interaction.Data.CustomId;
+            _ = Task.Run(async () => {
+                string id = interaction.Data.CustomId;
 
-            if (_paginationButtonHandlers.ContainsKey(id))
-            {
-                Func<SocketMessageComponent, PaginationContext, bool> handler = _paginationButtonHandlers.First(x => x.Key == id).Value;
-
-                var paginationContext = _paginationContexts.First(x => x.Buttons.Any(y => y.Item1.CustomId == id));
-                bool shouldDelete = handler.Invoke(interaction, paginationContext);
-
-                if (shouldDelete)
+                await interaction.DeferAsync();
+                if (_paginationButtonHandlers.ContainsKey(id))
                 {
-                    await interaction.DeleteOriginalResponseAsync();
-                    _paginationContexts.Remove(paginationContext);
-                    paginationContext.Buttons.ForEach(x => _paginationButtonHandlers.Remove(x.Item1.CustomId));
+                    Func<SocketMessageComponent, PaginationContext, bool> handler = _paginationButtonHandlers.First(x => x.Key == id).Value;
+
+                    var paginationContext = _paginationContexts.First(x => x.Buttons.Any(y => y.Item1.CustomId == id));
+                    bool shouldDelete = handler.Invoke(interaction, paginationContext);
+
+                    if (shouldDelete)
+                    {
+                        await interaction.DeleteOriginalResponseAsync();
+                        _paginationContexts.Remove(paginationContext);
+                        paginationContext.Buttons.ForEach(x => _paginationButtonHandlers.Remove(x.Item1.CustomId));
+                    }
                 }
-            }
-            else if (_buttonHandlers.ContainsKey(id))
-            {
-                Func<SocketMessageComponent, ButtonRowContext, bool> handler = _buttonHandlers.First(x => x.Key == id).Value;
-
-                var buttonRowContext = _buttonContexts.First(x => x.Buttons.Any(y => y.Item1.CustomId == id));
-                bool shouldDelete = handler.Invoke(interaction, buttonRowContext);
-
-                if (shouldDelete)
+                else if (_buttonHandlers.ContainsKey(id))
                 {
-                    await interaction.DeleteOriginalResponseAsync();
-                    _buttonContexts.Remove(buttonRowContext);
-                    buttonRowContext.Buttons.ForEach(x => _buttonHandlers.Remove(x.Item1.CustomId));
+                    Func<SocketMessageComponent, ButtonRowContext, bool> handler = _buttonHandlers.First(x => x.Key == id).Value;
+
+                    var buttonRowContext = _buttonContexts.First(x => x.Buttons.Any(y => y.Item1.CustomId == id));
+                    bool shouldDelete = handler.Invoke(interaction, buttonRowContext);
+
+                    if (shouldDelete)
+                    {
+                        await interaction.DeleteOriginalResponseAsync();
+                        _buttonContexts.Remove(buttonRowContext);
+                        buttonRowContext.Buttons.ForEach(x => _buttonHandlers.Remove(x.Item1.CustomId));
+                    }
                 }
-            }
-            else
-            {
-                await interaction.FollowupAsync("Unknown button.");
-                return;
-            }
+                else
+                {
+                    await interaction.FollowupAsync("Unknown button.");
+                    return;
+                }
+            });
+
+            return Task.CompletedTask;
         }
     }
 }
