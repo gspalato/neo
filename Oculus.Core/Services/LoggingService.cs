@@ -14,7 +14,7 @@ namespace Oculus.Core.Services
         void Error(string message, Exception? exception = null, string? className = null);
         void Critical(string message, Exception? exception = null, string? className = null);
 
-        void Log(object source, string message, LogLevel level = LogLevel.Information, Exception exception = null);
+        void Log(object source, string message, LogLevel level = LogLevel.Information, Exception? exception = null);
     }
 
     public class LoggingService : ILogger, ILoggingService
@@ -51,7 +51,7 @@ namespace Oculus.Core.Services
             string? className = null) =>
             BaseLog("crit:", "#ff0000", message, exception, className);
 
-        public void Log(object source, string message, LogLevel level = LogLevel.Information, Exception exception = null)
+        public void Log(object source, string message, LogLevel level = LogLevel.Information, Exception? exception = null)
         {
             switch (level)
             {

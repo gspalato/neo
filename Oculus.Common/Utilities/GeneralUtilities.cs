@@ -45,7 +45,7 @@ namespace Oculus.Common.Utilities
                     return string.Concat(", ", flags);
 
                 default:
-                    return o.ToString();
+                    return o.ToString() ?? "";
             }
         }
     }

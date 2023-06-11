@@ -13,33 +13,14 @@ namespace Oculus.Common.Utilities.Extensions
             if (!user.Activities.Any())
                 return "";
 
-            CustomStatusGame customStatus;
-            try
-            {
-                customStatus = (CustomStatusGame)user.Activities.First((act) => act.Type is ActivityType.CustomStatus);
-            }
-            catch (Exception ex)
-            {
-                customStatus = null;
-            }
-
-
+            CustomStatusGame? customStatus = (CustomStatusGame)user.Activities.FirstOrDefault((act) => act.Type is ActivityType.CustomStatus)!;
             if (customStatus is not null)
             {
                 text.AppendLine($"> {customStatus.Emote} {customStatus.State}");
                 text.AppendLine();
             }
 
-            IActivity activity;
-            try
-            {
-                activity = user.Activities.First((act) => act.Type is not ActivityType.CustomStatus);
-            }
-            catch (Exception ex)
-            {
-                activity = null;
-            }
-
+            IActivity? activity = user.Activities.FirstOrDefault((act) => act.Type is not ActivityType.CustomStatus);
             if (activity is null)
                 return text.ToString();
 
