@@ -1,18 +1,25 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.VisualBasic;
+using Oculus.Common.Utilities;
 using Oculus.Common.Utilities.Extensions;
 using Oculus.Core.Services;
+using Oculus.Libraries.Interactivity;
+using Oculus.Libraries.Interactivity.Structures.Builders;
+using Oculus.Libraries.Interactivity.Structures.Contexts;
 using System.Diagnostics;
 
 namespace Oculus.Core.Commands.Modules
 {
     public class MiscellaneousModule : InteractionModuleBase
     {
+        private readonly InteractivityService _interactivity;
         private readonly ILoggingService _logger;
 
-        public MiscellaneousModule(ILoggingService logger)
+        public MiscellaneousModule(InteractivityService interactivity, ILoggingService logger)
         {
+            _interactivity = interactivity;
             _logger = logger;
         }
 
@@ -64,14 +71,6 @@ namespace Oculus.Core.Commands.Modules
 
             var status = member.GetStatus();
 
-            Console.WriteLine(totalName);
-            Console.WriteLine($"#{member.Discriminator}");
-            Console.WriteLine(member.Id.ToString());
-            Console.WriteLine(member.IsBot ? "Yes" : "No");
-            Console.WriteLine(member.Status.ToString());
-            Console.WriteLine(member.JoinedAt?.ToUniversalTime().ToString().Substring(1, 18));
-            Console.WriteLine(rolesList.Any().ToString(), string.Join(", ", rolesList));
-
             var embed = new EmbedBuilder()
                 .WithAuthor($"{member.Username}#{member.Discriminator}", user.GetAvatarUrl())
                 .WithDescription(status ?? "​")
@@ -89,6 +88,16 @@ namespace Oculus.Core.Commands.Modules
 
             if (rolesList.Any())
                 embed.AddField("Roles", string.Join(", ", rolesList));
+
+            await RespondAsync(embed: embed.Build());
+        }
+
+        [SlashCommand("pfp", "Get an user's profile picture.")]
+        public async Task ProfilePictureAsync(IUser user)
+        {
+            var embed = Utilities.CreateDefaultEmbed()
+                .WithAuthor($"{user.Username}#{user.Discriminator}", user.GetAvatarUrl())
+                .WithImageUrl(user.GetAvatarUrl(ImageFormat.Png, 2048));
 
             await RespondAsync(embed: embed.Build());
         }
