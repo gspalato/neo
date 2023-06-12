@@ -28,15 +28,15 @@ namespace Oculus.Libraries.Interactivity.Structures.Builders
             return this;
         }
 
-        public SelectionBuilder WithButton(ButtonBuilder button, Func<SocketMessageComponent, SelectionContext, bool> handler)
+        public SelectionBuilder WithButton(ButtonBuilder button, Func<SocketMessageComponent, SelectionContext, string, bool> handler)
         {
             Buttons.Add(new InteractivityComponent<ButtonBuilder, SelectionContext>(button, handler));
             return this;
         }
 
-        public SelectionContext Build()
+        internal SelectionContext Build(string interactivityId)
         {
-            return new SelectionContext(UserIds, Buttons);
+            return new SelectionContext(interactivityId, UserIds, Buttons);
         }
     }
 }

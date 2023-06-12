@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Oculus.Libraries.Interactivity;
 using Oculus.Libraries.Interactivity.Structures.Builders;
+using Oculus.Libraries.Interactivity.Structures.Contexts;
 
 namespace Oculus.Core.Commands.Modules
 {
@@ -304,7 +305,10 @@ namespace Oculus.Core.Commands.Modules
                 .WithDefaultButtons()
                 .WithUser(Context.User);
 
-            var (firstPage, components) = _interactivityService.UsePagination(paginationBuilder);
+            var interactivityBuilder = new InteractivityBuilder()
+                .WithPagination(paginationBuilder);
+
+            var (firstPage, components) = _interactivityService.UseInteractivity(interactivityBuilder);
 
             await RespondAsync(embed: firstPage, components: components.Build());
         }

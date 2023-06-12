@@ -7,22 +7,17 @@ namespace Oculus.Libraries.Interactivity.Structures.Contexts
     {
         public int CurrentPage { get; internal set; }
 
-        public List<InteractivityComponent<ButtonBuilder, PaginationContext>> Buttons { get; internal set; } = new();
-        public List<ulong> UserIds { get; internal set; } = new();
-        public List<Embed> Pages { get; internal set; } = new();
+        public List<InteractivityComponent<ButtonBuilder, PaginationContext>> Buttons { get; private set; } = new();
+        public List<ulong> UserIds { get; private set; } = new();
+        public List<Embed> Pages { get; private set; } = new();
 
-        public PaginationContext(IList<Embed> pages, IList<ulong> userIds,
+        internal PaginationContext(string sessionId, List<Embed> pages, List<ulong> userIds,
             List<InteractivityComponent<ButtonBuilder, PaginationContext>> buttons)
-            : base()
+            : base(sessionId)
         {
             Pages = pages.ToList();
             UserIds = userIds.ToList();
-            Buttons = buttons.Select(x =>
-            {
-                var button = x.Component;
-                button.WithCustomId(Guid.NewGuid().ToString());
-                return new InteractivityComponent<ButtonBuilder, PaginationContext>(button, x.Callback);
-            }).ToList();
+            Buttons = buttons.ToList();
         }
     }
 }

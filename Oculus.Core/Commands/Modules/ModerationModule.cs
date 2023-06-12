@@ -92,14 +92,14 @@ namespace Oculus.Core.Commands.Modules
 
             TaskCompletionSource<bool> tcs = new();
 
-            var OnConfirm = (SocketMessageComponent interaction, SelectionContext context) =>
+            var OnConfirm = (SocketMessageComponent interaction, SelectionContext context, string id) =>
             {
                 Console.WriteLine("Confirm");
                 tcs.TrySetResult(true);
                 return true;
             };
 
-            var OnCancel = (SocketMessageComponent interaction, SelectionContext context) =>
+            var OnCancel = (SocketMessageComponent interaction, SelectionContext context, string id) =>
             {
                 Console.WriteLine("Cancel");
                 tcs.TrySetResult(false);
@@ -110,7 +110,10 @@ namespace Oculus.Core.Commands.Modules
                 .WithButton(confirmButton, OnConfirm)
                 .WithButton(cancelButton, OnCancel);
 
-            var components = _interactivity.UseSelection(buttonRowBuilder);
+            var interactivityBuilder = new InteractivityBuilder()
+                .AddSelection(buttonRowBuilder);
+
+            var (_, components) = _interactivity.UseInteractivity(interactivityBuilder);
             var reply = await ReplyAsync(embed: promptPage.Build(), components: components.Build());
 
             var confirmed = await tcs.Task;
@@ -178,13 +181,13 @@ namespace Oculus.Core.Commands.Modules
 
             TaskCompletionSource<bool> tcs = new();
 
-            var OnConfirm = (SocketMessageComponent interaction, SelectionContext context) =>
+            var OnConfirm = (SocketMessageComponent interaction, SelectionContext context, string id) =>
             {
                 tcs.TrySetResult(true);
                 return true;
             };
 
-            var OnCancel = (SocketMessageComponent interaction, SelectionContext context) =>
+            var OnCancel = (SocketMessageComponent interaction, SelectionContext context, string id) =>
             {
                 tcs.TrySetResult(false);
                 return true;
@@ -194,7 +197,10 @@ namespace Oculus.Core.Commands.Modules
                 .WithButton(confirmButton, OnConfirm)
                 .WithButton(cancelButton, OnCancel);
 
-            var components = _interactivity.UseSelection(buttonRowBuilder);
+            var interactivityBuilder = new InteractivityBuilder()
+                .AddSelection(buttonRowBuilder);
+
+            var (_, components) = _interactivity.UseInteractivity(interactivityBuilder);
             var reply = await ReplyAsync(embed: promptPage.Build(), components: components.Build());
 
             var confirmed = await tcs.Task;
@@ -238,28 +244,32 @@ namespace Oculus.Core.Commands.Modules
         [SlashCommand("unban", "Unban an user.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
 		[RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task UnbanAsync(ulong id)
+        public async Task UnbanAsync(string id)
         {
             var bans = await Context.Guild.GetBansAsync().FlattenAsync();
 
-            IBan? ban;
+            IBan? ban = bans.FirstOrDefault(x => x.User.Id.ToString() == id);
+
+            ulong numberId;
             try
             {
-                ban = bans.First(x => x.User.Id == id);
+                numberId = Convert.ToUInt64(id);
             }
             catch
             {
-                ban = null;
+                await ReplyAsync("Invalid ID.");
+                return;
             }
 
             if (ban is not null)
             {
-                await Context.Guild.RemoveBanAsync(id);
+                Convert.ToUInt64(id);
+                await Context.Guild.RemoveBanAsync(numberId);
                 await ReplyAsync($"Unbanned {ban.User.Mention}.");
             }
             else
             {
-                await ReplyAsync($"Couldn't unban {id}. Maybe this user wasn't banned before?");
+                await ReplyAsync($"Couldn't unban {numberId}. Maybe this user wasn't banned before?");
             }
         }
 
@@ -290,13 +300,13 @@ namespace Oculus.Core.Commands.Modules
 
             TaskCompletionSource<bool> tcs = new();
 
-            var OnConfirm = (SocketMessageComponent interaction, SelectionContext context) =>
+            var OnConfirm = (SocketMessageComponent interaction, SelectionContext context, string id) =>
             {
                 tcs.TrySetResult(true);
                 return true;
             };
 
-            var OnCancel = (SocketMessageComponent interaction, SelectionContext context) =>
+            var OnCancel = (SocketMessageComponent interaction, SelectionContext context, string id) =>
             {
                 tcs.TrySetResult(false);
                 return true;
@@ -306,7 +316,10 @@ namespace Oculus.Core.Commands.Modules
                 .WithButton(confirmButton, OnConfirm)
                 .WithButton(cancelButton, OnCancel);
 
-            var components = _interactivity.UseSelection(buttonRowBuilder);
+            var interactivityBuilder = new InteractivityBuilder()
+                .AddSelection(buttonRowBuilder);
+
+            var (_, components) = _interactivity.UseInteractivity(interactivityBuilder);
             var reply = await ReplyAsync(embed: promptPage.Build(), components: components.Build());
 
             var confirmed = await tcs.Task;

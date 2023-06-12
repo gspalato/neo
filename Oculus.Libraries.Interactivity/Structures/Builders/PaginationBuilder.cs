@@ -65,7 +65,7 @@ namespace Oculus.Libraries.Interactivity.Structures.Builders
             return this;
         }
 
-        public PaginationBuilder WithButton(ButtonBuilder button, Func<SocketMessageComponent, PaginationContext, bool> handler)
+        public PaginationBuilder WithButton(ButtonBuilder button, Func<SocketMessageComponent, PaginationContext, string, bool> handler)
         {
             Buttons.Add(new InteractivityComponent<ButtonBuilder, PaginationContext>(button, handler));
             return this;
@@ -77,7 +77,7 @@ namespace Oculus.Libraries.Interactivity.Structures.Builders
             {
                 case PaginationAction.First:
                 {
-                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination)
+                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination, string id)
                     {
                         if (!pagination.UserIds.Contains(interaction.User.Id))
                             return false;
@@ -94,7 +94,7 @@ namespace Oculus.Libraries.Interactivity.Structures.Builders
 
                 case PaginationAction.Previous:
                 {
-                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination)
+                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination, string id)
                     {
                         if (!pagination.UserIds.Contains(interaction.User.Id))
                             return false;
@@ -114,7 +114,7 @@ namespace Oculus.Libraries.Interactivity.Structures.Builders
 
                 case PaginationAction.Next:
                 {
-                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination)
+                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination, string id)
                     {
                         if (!pagination.UserIds.Contains(interaction.User.Id))
                             return false;
@@ -122,7 +122,7 @@ namespace Oculus.Libraries.Interactivity.Structures.Builders
                         pagination.CurrentPage = pagination.CurrentPage == pagination.Pages.Count - 1
                             ? pagination.Pages.Count - 1
                             : pagination.CurrentPage + 1;
-                            
+
                         interaction.UpdateAsync(m => m.Embed = pagination.Pages[pagination.CurrentPage]);
 
                         return false;
@@ -134,7 +134,7 @@ namespace Oculus.Libraries.Interactivity.Structures.Builders
 
                 case PaginationAction.Last:
                 {
-                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination)
+                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination, string id)
                     {
                         if (!pagination.UserIds.Contains(interaction.User.Id))
                             return false;
@@ -151,7 +151,7 @@ namespace Oculus.Libraries.Interactivity.Structures.Builders
 
                 case PaginationAction.Stop:
                 {
-                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination)
+                    static bool OnClick(SocketMessageComponent interaction, PaginationContext pagination, string id)
                     {
                         if (!pagination.UserIds.Contains(interaction.User.Id))
                             return false;
@@ -170,9 +170,9 @@ namespace Oculus.Libraries.Interactivity.Structures.Builders
             return this;
         }
 
-        public PaginationContext Build()
+        internal PaginationContext Build(string interactivityId)
         {
-            return new PaginationContext(Pages, UserIds, Buttons);
+            return new PaginationContext(interactivityId, Pages, UserIds, Buttons);
         }
     }
 }

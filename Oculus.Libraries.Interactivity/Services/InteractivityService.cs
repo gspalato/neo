@@ -6,98 +6,163 @@ using Oculus.Libraries.Interactivity.Structures.Contexts;
 
 namespace Oculus.Libraries.Interactivity
 {
+    using MenuCallback = Func<SocketMessageComponent, MenuContext, string, bool>;
+    using PaginationCallback = Func<SocketMessageComponent, PaginationContext, string, bool>;
+    using SelectionCallback = Func<SocketMessageComponent, SelectionContext, string, bool>;
+
     public class InteractivityService
     {
-        private readonly DiscordSocketClient _client;
-        private readonly InteractionService _commands;
+        private DiscordSocketClient Client { get; }
 
-        private readonly List<SelectionContext> _buttonContexts = new();
-        private readonly Dictionary<string, Func<SocketMessageComponent, SelectionContext, bool>> _buttonHandlers = new();
+        private Dictionary<string, Structures.InteractivitySession> Interactivities { get; } = new();
 
-        private readonly List<PaginationContext> _paginationContexts = new();
-        private readonly Dictionary<string, Func<SocketMessageComponent, PaginationContext, bool>> _paginationButtonHandlers = new();
+        private List<SelectionContext> ButtonContexts { get; } = new();
+        private Dictionary<string, SelectionCallback> ButtonCallbacks { get; } = new();
+
+        private List<PaginationContext> PaginationContexts { get; } = new();
+        private Dictionary<string, PaginationCallback> PaginationCallbacks { get; } = new();
+
+        private List<MenuContext> MenuContexts { get; } = new();
+        private Dictionary<string, MenuCallback> MenuCallbacks { get; } = new();
 
 
-
-        public InteractivityService(DiscordSocketClient client, InteractionService commands)
+        public InteractivityService(DiscordSocketClient client)
         {
-            _client = client;
-            _commands = commands;
+            Client = client;
         }
 
         public void Initialize()
         {
-            _client.ButtonExecuted += HandleButton;
+            Client.ButtonExecuted += HandleButton;
+            Client.SelectMenuExecuted += HandleSelectMenu;
         }
 
-        public ComponentBuilder UseSelection(SelectionBuilder builder)
+        public Tuple<Embed?, ComponentBuilder> UseInteractivity(InteractivityBuilder builder)
         {
-            var buttonRow = builder.Build();
-            _buttonContexts.Add(buttonRow);
+            var interactivity = builder.Build();
 
-            var components = new ComponentBuilder();
-            foreach (var tuple in buttonRow.Buttons)
+            if (Interactivities.ContainsKey(interactivity.Id))
+                return default!;
+
+            Interactivities.Add(interactivity.Id, interactivity);
+            var components = interactivity.Components;
+
+            Embed? initialPaginationPage = interactivity.PaginationContext?.Pages[interactivity.PaginationContext.CurrentPage];
+
+            if (interactivity.PaginationContext is not null)
             {
-                components.WithButton(tuple.Component);
-                RegisterButtonHandler(tuple.Component.CustomId, tuple.Callback);
+                Console.WriteLine($"Registering pagination from Interactivity {interactivity.Id}");
+                PaginationContexts.Add(interactivity.PaginationContext);
+
+                foreach (var button in interactivity.PaginationContext.Buttons)
+                    RegisterPaginationButtonHandler(button.Component.CustomId, button.Callback);
             }
 
-            return components;
-        }
-
-        public Tuple<Embed, ComponentBuilder> UsePagination(PaginationBuilder builder)
-        {
-            var pages = builder.Pages;
-
-            var pagination = builder.Build();
-            _paginationContexts.Add(pagination);
-
-            var embed = pages[pagination.CurrentPage];
-            var components = new ComponentBuilder();
-            foreach (var tuple in pagination.Buttons)
+            foreach (var menuContext in interactivity.MenuContexts)
             {
-                components.WithButton(tuple.Component);
-                RegisterPaginationButtonHandler(tuple.Component.CustomId, tuple.Callback);
+                Console.WriteLine($"Registering select menu with {menuContext.Options.Count} options from Interactivity {interactivity.Id}");
+                MenuContexts.Add(menuContext);
+
+                foreach (var option in menuContext.Options)
+                    RegisterSelectMenuOptionHandler(option.Component.Value, option.Callback);
             }
 
-            return new Tuple<Embed, ComponentBuilder>(embed, components);
+            foreach (var buttonContext in interactivity.ButtonContexts)
+            {
+                Console.WriteLine($"Registering button row with {buttonContext.Buttons.Count} buttons from Interactivity {interactivity.Id}");
+                ButtonContexts.Add(buttonContext);
+
+                foreach (var button in buttonContext.Buttons)
+                    RegisterButtonHandler(button.Component.CustomId, button.Callback);
+            }
+
+            return new Tuple<Embed?, ComponentBuilder>(initialPaginationPage, components);
         }
 
-        public bool RegisterButtonHandler(string id, Func<SocketMessageComponent, SelectionContext, bool> handler)
+        public bool UnregisterInteractivity(string id)
         {
-            if (_buttonHandlers.ContainsKey(id))
+            if (!Interactivities.ContainsKey(id))
                 return false;
 
-            _buttonHandlers.Add(id, handler);
+            var interactivity = Interactivities[id];
+            Interactivities.Remove(id);
+
+            if (interactivity.PaginationContext is not null)
+            {
+                PaginationContexts.Remove(interactivity.PaginationContext);
+                interactivity.PaginationContext.Buttons.ForEach(x => PaginationCallbacks.Remove(x.Component.CustomId));
+            }
+
+            foreach (var menuContext in interactivity.MenuContexts)
+            {
+                MenuContexts.Remove(menuContext);
+                menuContext.Options.ForEach(x => MenuCallbacks.Remove(x.Component.Value));
+            }
+
+            foreach (var buttonContext in interactivity.ButtonContexts)
+            {
+                ButtonContexts.Remove(buttonContext);
+                buttonContext.Buttons.ForEach(x => ButtonCallbacks.Remove(x.Component.CustomId));
+            }
+
+            return true;
+        }
+
+        public bool RegisterButtonHandler(string id, Func<SocketMessageComponent, SelectionContext, string, bool> handler)
+        {
+            if (ButtonCallbacks.ContainsKey(id))
+                return false;
+
+            ButtonCallbacks.Add(id, handler);
             return true;
         }
 
         public bool UnregisterButtonHandler(string id)
         {
-            if (_buttonHandlers.ContainsKey(id))
+            if (ButtonCallbacks.ContainsKey(id))
             {
-                _buttonHandlers.Remove(id);
+                ButtonCallbacks.Remove(id);
                 return true;
             }
 
             return false;
         }
 
-        public bool RegisterPaginationButtonHandler(string id, Func<SocketMessageComponent, PaginationContext, bool> handler)
+        public bool RegisterPaginationButtonHandler(string id, Func<SocketMessageComponent, PaginationContext, string, bool> handler)
         {
-            if (_paginationButtonHandlers.ContainsKey(id))
+            if (PaginationCallbacks.ContainsKey(id))
                 return false;
 
 
-            _paginationButtonHandlers.Add(id, handler);
+            PaginationCallbacks.Add(id, handler);
             return true;
         }
 
         public bool UnregisterPaginationButtonHandler(string id)
         {
-            if (_paginationButtonHandlers.ContainsKey(id))
+            if (PaginationCallbacks.ContainsKey(id))
             {
-                _paginationButtonHandlers.Remove(id);
+                PaginationCallbacks.Remove(id);
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool RegisterSelectMenuOptionHandler(string id, Func<SocketMessageComponent, MenuContext, string, bool> handler)
+        {
+            if (MenuCallbacks.ContainsKey(id))
+                return false;
+
+            MenuCallbacks.Add(id, handler);
+            return true;
+        }
+
+        public bool UnregisterSelectMenuOptionHandler(string id)
+        {
+            if (MenuCallbacks.ContainsKey(id))
+            {
+                MenuCallbacks.Remove(id);
                 return true;
             }
 
@@ -106,43 +171,78 @@ namespace Oculus.Libraries.Interactivity
 
         private Task HandleButton(SocketMessageComponent interaction)
         {
-            _ = Task.Run(async () => {
+            _ = Task.Run(async () =>
+            {
                 string id = interaction.Data.CustomId;
 
-                if (_paginationButtonHandlers.ContainsKey(id))
+                if (PaginationCallbacks.ContainsKey(id))
                 {
-                    var callback = _paginationButtonHandlers.First(x => x.Key == id).Value;
+                    var callback = PaginationCallbacks[id];
 
-                    var paginationContext = _paginationContexts.First(x => x.Buttons.Any(y => y.Component.CustomId == id));
-                    var shouldDelete = callback.Invoke(interaction, paginationContext);
+                    var paginationContext = PaginationContexts.First(x => x.Buttons.Any(y => y.Component.CustomId == id));
+                    var shouldDelete = callback.Invoke(interaction, paginationContext, id);
 
                     if (shouldDelete)
                     {
                         await interaction.DeferAsync();
                         await interaction.DeleteOriginalResponseAsync();
-                        _paginationContexts.Remove(paginationContext);
-                        paginationContext.Buttons.ForEach(x => _paginationButtonHandlers.Remove(x.Component.CustomId));
+                        UnregisterInteractivity(paginationContext.InteractivitySessionId);
                     }
                 }
-                else if (_buttonHandlers.ContainsKey(id))
+                else if (ButtonCallbacks.ContainsKey(id))
                 {
-                    var callback = _buttonHandlers.First(x => x.Key == id).Value;
+                    var callback = ButtonCallbacks[id];
 
-                    var buttonRowContext = _buttonContexts.First(x => x.Buttons.Any(y => y.Component.CustomId == id));
-                    var shouldDelete = callback.Invoke(interaction, buttonRowContext);
+                    var selectionContext = ButtonContexts.First(x => x.Buttons.Any(y => y.Component.CustomId == id));
+                    var shouldDelete = callback.Invoke(interaction, selectionContext, id);
 
                     if (shouldDelete)
                     {
                         await interaction.DeferAsync();
                         await interaction.DeleteOriginalResponseAsync();
-                        _buttonContexts.Remove(buttonRowContext);
-                        buttonRowContext.Buttons.ForEach(x => _buttonHandlers.Remove(x.Component.CustomId));
+                        UnregisterInteractivity(selectionContext.InteractivitySessionId);
                     }
                 }
                 else
                 {
                     await interaction.FollowupAsync("Unknown button.");
                     return;
+                }
+            });
+
+            return Task.CompletedTask;
+        }
+
+        private Task HandleSelectMenu(SocketMessageComponent interaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                var selectedIds = interaction.Data.Values;
+                Console.WriteLine(string.Join(", ", selectedIds));
+
+                if (!selectedIds.All(id => MenuCallbacks.ContainsKey(id)))
+                {
+                    await interaction.FollowupAsync("Unknown option.");
+                    return;
+                }
+                
+                var menuContext = MenuContexts.First(x => x.Menu.Options.Any(y => interaction.Data.Values.Any(z => y.Value == z)));
+                menuContext.SelectedOptions = selectedIds.ToList();
+                foreach (var option in menuContext.Menu.Options)
+                {
+                    if (!selectedIds.Contains(option.Value))
+                        continue;
+
+                    var callback = MenuCallbacks.First(x => x.Key == option.Value).Value;
+                    var shouldDelete = callback.Invoke(interaction, menuContext, option.Value);
+
+                    if (shouldDelete)
+                    {
+                        await interaction.DeferAsync();
+                        await interaction.DeleteOriginalResponseAsync();
+                        MenuContexts.Remove(menuContext);
+                        menuContext.Menu.Options.ForEach(x => MenuCallbacks.Remove(x.Value));
+                    }
                 }
             });
 
