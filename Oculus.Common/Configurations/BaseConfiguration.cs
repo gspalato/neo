@@ -2,6 +2,8 @@ namespace Oculus.Common.Configurations
 {
     public class BaseConfiguration
     {
+        public bool DebugMode { get; set; } = default!;
+
         public DatabaseSection Database { get; set; } = default!;
         public class DatabaseSection
         {

@@ -68,10 +68,19 @@ namespace Oculus.Core
 
         private async Task ReadyAsync()
         {
-            ulong mainGuildId = _configuration.GetValue<ulong>("Discord:MainGuildId");
+            bool debug = _configuration.GetValue<bool>("DebugMode");
+            if (debug)
+            {
+                ulong mainGuildId = _configuration.GetValue<ulong>("Discord:MainGuildId");
 
-            _logger.Info($"In debug mode, adding commands to {mainGuildId}...", className: "App");
-            await _interactionService.RegisterCommandsToGuildAsync(mainGuildId);
+                _logger.Info($"In debug mode, adding commands to {mainGuildId}...", className: "App");
+                await _interactionService.RegisterCommandsToGuildAsync(mainGuildId);
+            }
+            else
+            {
+                _logger.Info("Registering commands globally...", className: "App");
+                await _interactionService.RegisterCommandsGloballyAsync();
+            }
 
             await _musicService.InitializeAsync();
             _interactivityService.Initialize();
