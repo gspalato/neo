@@ -15,7 +15,7 @@ using Oculus.Libraries.Interactivity.Structures.Contexts;
 
 namespace Oculus.Core.Commands.Modules
 {
-    public class MusicModule : InteractionModuleBase
+    public partial class MusicModule : InteractionModuleBase
     {
         private readonly InteractivityService _interactivityService;
         private readonly IMusicService _musicService;
@@ -83,6 +83,7 @@ namespace Oculus.Core.Commands.Modules
             }
 
             var player = await GetPlayerAsync(voiceChannel);
+            await player.SetVolumeAsync(50f / 100f, true);
             
             async Task HandleSingleTrack(LavalinkTrack? track)
             {
@@ -125,7 +126,7 @@ namespace Oculus.Core.Commands.Modules
                 foreach (LavalinkTrack track in response.Tracks)
                 {
                     var position = await player.PlayAsync(track);
-                    firstPosition = (firstPosition is null) ? position : firstPosition;
+                    firstPosition = firstPosition is null ? position : firstPosition;
                 }
 
                 if (firstPosition is 0)
@@ -142,8 +143,7 @@ namespace Oculus.Core.Commands.Modules
                 }
             }
 
-            var playlistLinkRegex = new Regex(@"^.*(youtu.be\/|list=)([^#\&\?]*).*");
-            if (playlistLinkRegex.Match(search).Success)
+            if (YouTubePlaylistRegex().Match(search).Success)
             {
                 var response = await _musicService.LoadTracksAsync(search, SearchMode.YouTube);
 
@@ -457,5 +457,9 @@ namespace Oculus.Core.Commands.Modules
 
             return player;
         }
+
+
+        [GeneratedRegex("^.*(youtu.be\\/|list=)([^#\\&\\?]*).*")]
+        private static partial Regex YouTubePlaylistRegex();
     }
 }
