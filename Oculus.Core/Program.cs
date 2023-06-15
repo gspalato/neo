@@ -2,7 +2,6 @@
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
-using Fergun.Interactive;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +40,8 @@ Host.CreateDefaultBuilder(args)
         services
             .AddSingleton(new DiscordSocketConfig
             {
-                GatewayIntents = GatewayIntents.All
+                GatewayIntents = GatewayIntents.All,
+                MessageCacheSize = 10
             })
             .AddSingleton(new InteractionServiceConfig
             {
@@ -69,11 +69,10 @@ Host.CreateDefaultBuilder(args)
 
         services
             .AddSingleton<CommandHandlerService>()
+            .AddSingleton<InteractivityService>()
             .AddSingleton<ILogger, LoggingService>()
-            .AddSingleton<ILoggingService, LoggingService>();
-
-        services
-            .AddSingleton<InteractivityService>();
+            .AddSingleton<ILoggingService, LoggingService>()
+            .AddSingleton<SnipeService>();
 
         services
             .AddSingleton<IMusicService, MusicService>()
