@@ -6,21 +6,21 @@ using Oculus.Common.Utilities;
 using Oculus.Common.Utilities.Extensions;
 using Oculus.Core.Services;
 using Oculus.Libraries.Interactivity;
-using Oculus.Libraries.Interactivity.Structures.Builders;
-using Oculus.Libraries.Interactivity.Structures.Contexts;
 using System.Diagnostics;
 
 namespace Oculus.Core.Commands.Modules
 {
     public class MiscellaneousModule : InteractionModuleBase
     {
-        private readonly InteractivityService _interactivity;
-        private readonly ILoggingService _logger;
+        private InteractivityService InteractivityService { get; }
+        private ILoggingService Logger { get; }
+        private SnipeService SnipeService { get; }
 
-        public MiscellaneousModule(InteractivityService interactivity, ILoggingService logger)
+        public MiscellaneousModule(InteractivityService interactivity, ILoggingService logger, SnipeService snipeService)
         {
-            _interactivity = interactivity;
-            _logger = logger;
+            InteractivityService = interactivity;
+            Logger = logger;
+            SnipeService = snipeService;
         }
 
         [SlashCommand("ping", "Pong!")]
@@ -29,7 +29,7 @@ namespace Oculus.Core.Commands.Modules
             var sw = new Stopwatch();
 
             sw.Start();
-            await RespondAsync("Measuring...");
+            var response = await ReplyAsync("Measuring...").ConfigureAwait(false);
             sw.Stop();
 
             var uptime = DateTime.Now - Process.GetCurrentProcess().StartTime.ToUniversalTime();
@@ -44,7 +44,7 @@ namespace Oculus.Core.Commands.Modules
                 .AddField("Bot Latency", Format.Code($"{botLatency}ms", ""), true)
                 .AddField("Uptime", Format.Code(uptime.ToHumanDuration(), ""), true);
 
-            await FollowupAsync(embed: embed.Build()).ConfigureAwait(false);
+            await response.ModifyAsync(x => x.Embed = embed.Build()).ConfigureAwait(false);
         }
 
         [SlashCommand("say", "Makes the bot say something")]
@@ -56,7 +56,7 @@ namespace Oculus.Core.Commands.Modules
         [SlashCommand("whois", "Shows information about that user.")]
         public async Task WhoIsAsync(IUser user)
         {
-            var member = (SocketGuildUser) await Context.Guild.GetUserAsync(user.Id);
+            var member = (SocketGuildUser) await Context.Guild.GetUserAsync(user.Id).ConfigureAwait(false);
 
             var escapedUsername = Format.Sanitize(user.Username);
             var escapedNickname = member.Nickname is not null
@@ -89,7 +89,7 @@ namespace Oculus.Core.Commands.Modules
             if (rolesList.Any())
                 embed.AddField("Roles", string.Join(", ", rolesList));
 
-            await RespondAsync(embed: embed.Build());
+            await RespondAsync(embed: embed.Build()).ConfigureAwait(false);
         }
 
         [SlashCommand("pfp", "Get an user's profile picture.")]
@@ -99,7 +99,29 @@ namespace Oculus.Core.Commands.Modules
                 .WithAuthor($"{user.Username}#{user.Discriminator}", user.GetAvatarUrl())
                 .WithImageUrl(user.GetAvatarUrl(ImageFormat.Png, 2048));
 
-            await RespondAsync(embed: embed.Build());
+            await RespondAsync(embed: embed.Build()).ConfigureAwait(false);
+        }
+
+        [SlashCommand("snipe", "Get the latest deleted message!")]
+        public async Task SnipeAsync(IGuildChannel? channel)
+        {
+            channel ??= Context.Channel as IGuildChannel;
+
+            var snipedMessage = this.SnipeService.GetLatestMessageFromChannel(channel!.Id);
+
+            if (snipedMessage is null)
+            {
+                await RespondAsync("Couldn't retrieve latest deleted message.", ephemeral: true).ConfigureAwait(false);
+                return;
+            }
+
+            var embed = Utilities.CreateDefaultEmbed()
+                .WithAuthor($"{snipedMessage.Author.Username}#{snipedMessage.Author.Discriminator}",
+                    snipedMessage.Author.GetAvatarUrl())
+                .WithDescription(snipedMessage.Content + (snipedMessage.Embeds.Any() ? "\n\n[Embed]" : ""))
+                .WithFooter($"Deleted in #{channel.Name} at {snipedMessage.Timestamp.ToUniversalTime():HH:mm:ss}");
+
+            await RespondAsync(embed: embed.Build()).ConfigureAwait(false);
         }
     }
 }
