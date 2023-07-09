@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://i.ibb.co/GchDVq0/Logo-v2-Text.png" width="800"/>
+	<img src="https://raw.githubusercontent.com/gspalato/neo/v3/.project/icon_circle.png" width="150" height="150" />
 </p>
 <p align="center">
 	<img href="https://forthebadge.com" src="https://forthebadge.com/images/badges/made-with-c-sharp.svg">
