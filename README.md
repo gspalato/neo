@@ -11,39 +11,42 @@
 </p>
 
 ## 📦 Getting Started
+
 ### Prerequisites
 
--  [x] [.NET 7](https://dotnet.microsoft.com/)
--  [x] [Lavalink](https://github.com/Frederikam/Lavalink/)
--  [x] [MongoDB](https://www.mongodb.com/)
--  [x] [Docker](https://docker.com/)
+- [x] [.NET 7](https://dotnet.microsoft.com/)
+- [x] [Lavalink](https://github.com/Frederikam/Lavalink/)
+- [x] [MongoDB](https://www.mongodb.com/)
+- [x] [Docker](https://docker.com/)
 
 ### Installing
 
-* Clone the repository;
-* Restore;
-* Compile;
-* Create a `.env` file on the root folder:
+- Clone the repository;
+- Restore;
+- Compile;
+- Create a `.env` file on the root folder:
+
 ```env
 # Discord
-OCULUS__Discord__Token=
-OCULUS__Discord__MainGuildId=
+NEO__Discord__Token=
+NEO__Discord__MainGuildId=
 
 # Lavalink
-OCULUS__Lavalink__RestUri=http://lavalink:2333
-OCULUS__Lavalink__WebSocketUri=ws://lavalink:2333
-OCULUS__Lavalink__Password=youshallnotpass
+NEO__Lavalink__RestUri=http://lavalink:2333
+NEO__Lavalink__WebSocketUri=ws://lavalink:2333
+NEO__Lavalink__Password=youshallnotpass
 
 # Database
-OCULUS__Database__Url=mongodb://root:example@db
-OCULUS__Database__Name=oculus
+NEO__Database__Url=mongodb://root:example@db
+NEO__Database__Name=neo
 
 MONGO_INITDB_ROOT_USERNAME=root
 MONGO_INITDB_ROOT_PASSWORD=example
 ```
 
 #### With Docker
-* Run `docker compose build && docker compose up -d`.
+
+- Run `docker compose build && docker compose up -d`.
 
 ## 👨‍🏫 Authors
 

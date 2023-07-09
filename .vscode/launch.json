@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Oculus.Core/bin/Debug/net7.0/Oculus.Core.dll",
+            "program": "${workspaceFolder}/Neo.Core/bin/Debug/net7.0/Neo.Core.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Oculus.Core",
+            "cwd": "${workspaceFolder}/Neo.Core",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
