@@ -15,6 +15,7 @@ import (
 	"github.com/zekrotja/ken/store"
 
 	slashCommands "unreal.sh/neo/internal/commands/slash"
+	"unreal.sh/neo/internal/middlewares"
 	"unreal.sh/neo/internal/services"
 	"unreal.sh/neo/internal/services/music"
 	"unreal.sh/neo/internal/utils"
@@ -50,19 +51,33 @@ func main() {
 	utils.MUST(err)
 
 	err = k.RegisterCommands(
+		new(slashCommands.BanCommand),
+		new(slashCommands.KickCommand),
+		new(slashCommands.NowPlayingCommand),
+		new(slashCommands.PauseCommand),
 		new(slashCommands.PingCommand),
 		new(slashCommands.PlayCommand),
+		new(slashCommands.PurgeCommand),
+		new(slashCommands.ResumeCommand),
 		new(slashCommands.SkipCommand),
+		new(slashCommands.SoftbanCommand),
+		new(slashCommands.StopCommand),
 		new(slashCommands.WhoIsCommand),
 	)
 	utils.MUST(err)
+
+	err = k.RegisterMiddlewares(
+		new(middlewares.PermissionsMiddleware),
+	)
+	utils.MUST(err)
+
 	defer k.Unregister()
 
 	err = session.Open()
 	utils.MUST(err)
 	defer session.Close()
 
-	// Wait for the bot to be ready to create MusicService, which depends on the session.
+	// Open session before creating MusicService, which depends on it.
 	musicService, err := music.NewMusicService(session)
 	utils.MUST(err)
 	dependencyProvider.Register("MusicService", musicService)
