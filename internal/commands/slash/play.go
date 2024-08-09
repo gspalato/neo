@@ -13,7 +13,7 @@ import (
 
 	"unreal.sh/neo/internal/services/music"
 	"unreal.sh/neo/internal/utils/static"
-	stringutils "unreal.sh/neo/internal/utils/strings"
+	stringutils "unreal.sh/neo/internal/utils/stringutils"
 )
 
 type PlayCommand struct{}
@@ -56,6 +56,10 @@ func (c *PlayCommand) Guild() string {
 
 func (c *PlayCommand) Run(ctx ken.Context) (err error) {
 	session := ctx.GetSession()
+
+	if err = ctx.Defer(); err != nil {
+		return err
+	}
 
 	musicService := ctx.Get("MusicService").(*music.MusicService)
 	if musicService == nil {
@@ -121,23 +125,25 @@ func (c *PlayCommand) Run(ctx ken.Context) (err error) {
 
 		// Loaded a search result
 		func(tracks []lavalink.Track) {
-
 			if len(tracks) == 0 {
 				ctx.FollowUpMessage("No results found.")
 				return
 			}
 
 			slog.Info(fmt.Sprintf("Found %d tracks.", len(tracks)))
+
+			musicSession.SupressNextEventMessage()
 			enqueued, err := musicSession.PlayOrEnqueue(&tracks[0])
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failed to play or enqueue track: %s", err.Error()))
 				ctx.FollowUpMessage("Failed to play or enqueue track.")
+				return
 			}
 
-			var description string
 			if enqueued {
 				slog.Info(fmt.Sprintf("Enqueued %s.", tracks[0].Info.Title))
-				description = fmt.Sprintf("**Enqueued** [%s](%s)",
+
+				description := fmt.Sprintf("▶ **Enqueued** [%s](%s)",
 					stringutils.Truncate(tracks[0].Info.Title, 30), *tracks[0].Info.URI)
 
 				embed := &discordgo.MessageEmbed{
@@ -147,6 +153,15 @@ func (c *PlayCommand) Run(ctx ken.Context) (err error) {
 
 				if m := ctx.FollowUpEmbed(embed).Send(); m.Error != nil {
 					slog.Error(fmt.Sprintf("Failed to send enqueued message: %s", m.Error.Error()))
+					return
+				}
+
+				return
+			} else {
+				embed := GetPlayingNotificationEmbed(&tracks[0])
+				if m := ctx.FollowUpEmbed(embed).Send(); m.Error != nil {
+					slog.Error(fmt.Sprintf("Failed to send playing notification: %s", m.Error.Error()))
+					return
 				}
 			}
 
@@ -200,15 +215,25 @@ func (c *PlayCommand) Run(ctx ken.Context) (err error) {
 		// Nothing matching the query found
 		func() {
 			slog.Info("No results found.")
-			ctx.FollowUpMessage("No results found.")
+			ctx.SetEphemeral(true)
+			ctx.FollowUpMessage("No results found.").Send()
 		},
 
 		// Something went wrong
 		func(err error) {
 			slog.Error("Something went wrong while loading the track.")
-			ctx.FollowUpMessage("Something went wrong while loading the track.")
+			ctx.SetEphemeral(true)
+			ctx.FollowUpMessage("Something went wrong while loading the track.").Send()
 		},
 	))
 
 	return nil
+}
+
+func GetPlayingNotificationEmbed(track *lavalink.Track) *discordgo.MessageEmbed {
+	return &discordgo.MessageEmbed{
+		Title:       "🎶 **Now Playing**",
+		Color:       static.ColorEmbedGray,
+		Description: fmt.Sprintf("[%s](%s)", stringutils.Truncate(track.Info.Title, 30), *track.Info.URI),
+	}
 }
