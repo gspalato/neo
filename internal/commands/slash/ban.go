@@ -54,7 +54,7 @@ func (c *BanCommand) Options() []*discordgo.ApplicationCommandOption {
 			Required:    false,
 		},
 		{
-			Type:        discordgo.ApplicationCommandOptionNumber,
+			Type:        discordgo.ApplicationCommandOptionInteger,
 			Name:        "days",
 			Description: "The amount of days of messages to delete.",
 			Required:    false,
@@ -104,7 +104,7 @@ func (c *BanCommand) Run(ctx ken.Context) (err error) {
 		},
 	}
 
-	prompt := ctx.FollowUpEmbed(&embed)
+	prompt := ctx.FollowUpEmbed(embed)
 
 	prompt.AddComponents(func(cb *ken.ComponentBuilder) {
 		cb.Add(discordgo.Button{
@@ -115,7 +115,7 @@ func (c *BanCommand) Run(ctx ken.Context) (err error) {
 			err = session.GuildBanCreateWithReason(guild.ID, user.ID, reason, days)
 			if err != nil {
 				embed = embedutils.CreateErrorEmbed("Failed to ban user.")
-				ctx.FollowUpEmbed(&embed).Send()
+				ctx.FollowUpEmbed(embed).Send()
 				return false
 			}
 
@@ -123,7 +123,7 @@ func (c *BanCommand) Run(ctx ken.Context) (err error) {
 				fmt.Sprintf("Banned %s for `%s`", user.String(), reason),
 			)
 
-			ctx.FollowUpEmbed(&embed).Send()
+			ctx.FollowUpEmbed(embed).Send()
 
 			return true
 		}, true)

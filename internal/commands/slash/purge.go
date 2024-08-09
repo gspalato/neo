@@ -44,7 +44,7 @@ func (c *PurgeCommand) Type() discordgo.ApplicationCommandType {
 func (c *PurgeCommand) Options() []*discordgo.ApplicationCommandOption {
 	return []*discordgo.ApplicationCommandOption{
 		{
-			Type:        discordgo.ApplicationCommandOptionNumber,
+			Type:        discordgo.ApplicationCommandOptionInteger,
 			Name:        "amount",
 			Description: "The amount of messages to purge.",
 			Required:    true,
