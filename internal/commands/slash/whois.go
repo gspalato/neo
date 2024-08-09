@@ -13,9 +13,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
 
-	discordutil "unreal.sh/neo/internal/utils/discord"
+	discordutil "unreal.sh/neo/internal/utils/discordutils"
 	"unreal.sh/neo/internal/utils/static"
-	stringutil "unreal.sh/neo/internal/utils/strings"
+	stringutil "unreal.sh/neo/internal/utils/stringutils"
 )
 
 type WhoIsCommand struct {
