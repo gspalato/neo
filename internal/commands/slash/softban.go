@@ -99,7 +99,7 @@ func (c *SoftbanCommand) Run(ctx ken.Context) (err error) {
 		},
 	}
 
-	prompt := ctx.FollowUpEmbed(&embed)
+	prompt := ctx.FollowUpEmbed(embed)
 
 	prompt.AddComponents(func(cb *ken.ComponentBuilder) {
 		cb.Add(
@@ -112,14 +112,14 @@ func (c *SoftbanCommand) Run(ctx ken.Context) (err error) {
 				err = session.GuildBanCreateWithReason(guild.ID, user.ID, reason, days)
 				if err != nil {
 					embed = embedutils.CreateErrorEmbed("Failed to softban user.")
-					ctx.FollowUpEmbed(&embed).Send()
+					ctx.FollowUpEmbed(embed).Send()
 					return false
 				}
 
 				err = session.GuildBanDelete(guild.ID, user.ID)
 				if err != nil {
 					embed = embedutils.CreateErrorEmbed("Failed to softban user.")
-					ctx.FollowUpEmbed(&embed).Send()
+					ctx.FollowUpEmbed(embed).Send()
 					return false
 				}
 
@@ -127,7 +127,7 @@ func (c *SoftbanCommand) Run(ctx ken.Context) (err error) {
 					fmt.Sprintf("Softbanned %s for `%s`", user.String(), reason),
 				)
 
-				ctx.FollowUpEmbed(&embed).Send()
+				ctx.FollowUpEmbed(embed).Send()
 
 				return true
 			},

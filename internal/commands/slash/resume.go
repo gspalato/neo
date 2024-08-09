@@ -7,7 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
 	"unreal.sh/neo/internal/services/music"
-	"unreal.sh/neo/internal/utils/static"
+	embedutils "unreal.sh/neo/internal/utils/embedutils"
 )
 
 type ResumeCommand struct{}
@@ -102,11 +102,7 @@ func (c *ResumeCommand) Run(ctx ken.Context) (err error) {
 		return err
 	}
 
-	embed := &discordgo.MessageEmbed{
-		Color:       static.ColorEmbedGray,
-		Description: "⏸ **Resumed**",
-	}
-
+	embed := embedutils.CreateBasicEmbed("⏸ **Resumed**")
 	err = ctx.RespondEmbed(embed)
 	if err != nil {
 		slog.Error("Failed to respond to command.", err)

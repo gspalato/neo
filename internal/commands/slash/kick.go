@@ -93,7 +93,7 @@ func (c *KickCommand) Run(ctx ken.Context) (err error) {
 		},
 	}
 
-	prompt := ctx.FollowUpEmbed(&embed)
+	prompt := ctx.FollowUpEmbed(embed)
 
 	prompt.AddComponents(func(cb *ken.ComponentBuilder) {
 		cb.Add(discordgo.Button{
@@ -104,7 +104,7 @@ func (c *KickCommand) Run(ctx ken.Context) (err error) {
 			err = session.GuildMemberDeleteWithReason(guild.ID, user.ID, reason)
 			if err != nil {
 				embed = embedutils.CreateErrorEmbed("Failed to kick user.")
-				ctx.FollowUpEmbed(&embed).Send()
+				ctx.FollowUpEmbed(embed).Send()
 				return false
 			}
 
@@ -112,7 +112,7 @@ func (c *KickCommand) Run(ctx ken.Context) (err error) {
 				fmt.Sprintf("Kicked %s for `%s`", user.String(), reason),
 			)
 
-			ctx.FollowUpEmbed(&embed).Send()
+			ctx.FollowUpEmbed(embed).Send()
 
 			return true
 		}, true)

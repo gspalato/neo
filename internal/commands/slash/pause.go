@@ -7,6 +7,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
 	"unreal.sh/neo/internal/services/music"
+
+	embedutils "unreal.sh/neo/internal/utils/embedutils"
 )
 
 type PauseCommand struct{}
@@ -97,16 +99,12 @@ func (c *PauseCommand) Run(ctx ken.Context) (err error) {
 
 	musicSession.Pause()
 
-	/*
-		embed := &discordgo.MessageEmbed{
-			Description: "⏸ **Paused**",
-		}
-
-		err = ctx.RespondEmbed(embed)
-		if err != nil {
-			slog.Error("Failed to respond to command.", err)
-		}
-	*/
+	embed := embedutils.CreateBasicEmbed("⏸ **Paused**")
+	err = ctx.RespondEmbed(embed)
+	if err != nil {
+		slog.Error("Failed to respond to command.", err)
+		return err
+	}
 
 	return nil
 }
