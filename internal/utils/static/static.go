@@ -21,7 +21,8 @@ const (
 )
 
 const (
-	ColorEmbedGray = 0x2B2D31
+	ColorEmbedGray   = 0x2B2D31
+	ColorEmbedOrange = 0xCC5500
 )
 
 const (
