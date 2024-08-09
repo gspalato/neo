@@ -18,6 +18,7 @@ import (
 	"unreal.sh/neo/internal/middlewares"
 	"unreal.sh/neo/internal/services"
 	"unreal.sh/neo/internal/services/music"
+	"unreal.sh/neo/internal/services/snipe"
 	"unreal.sh/neo/internal/utils"
 	"unreal.sh/neo/internal/utils/cmdline"
 )
@@ -90,6 +91,11 @@ func main() {
 	})
 
 	musicService.HookEvents()
+
+	// Create snipe service
+	snipeService := snipe.NewSnipeService(session)
+	dependencyProvider.Register("SnipeService", snipeService)
+	snipeService.HookEvents()
 
 	slog.Info(fmt.Sprintf("Started bot as %s.", session.State.User.String()))
 
