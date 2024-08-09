@@ -8,26 +8,34 @@ import (
 	"github.com/disgoorg/disgolink/v3/disgolink"
 	"github.com/disgoorg/disgolink/v3/lavalink"
 	"unreal.sh/neo/internal/utils/static"
-	stringutils "unreal.sh/neo/internal/utils/strings"
+	stringutils "unreal.sh/neo/internal/utils/stringutils"
 )
 
 type MusicSession struct {
 	session *discordgo.Session
 	player  *disgolink.Player
 
+	shouldNotify bool
+
 	TextChannelID string
 	GuildID       string
-	Queue         []*lavalink.Track
-	CurrentTrack  *lavalink.Track
+
+	Queue        []*lavalink.Track
+	CurrentTrack *lavalink.Track
 }
 
 func NewMusicSession(session *discordgo.Session, player *disgolink.Player, guildID string, textChannelID string) *MusicSession {
 	return &MusicSession{
-		session:       session,
-		player:        player,
+		session: session,
+		player:  player,
+
+		shouldNotify: true,
+
 		GuildID:       guildID,
 		TextChannelID: textChannelID,
-		Queue:         make([]*lavalink.Track, 0),
+
+		Queue:        make([]*lavalink.Track, 0),
+		CurrentTrack: nil,
 	}
 }
 
@@ -64,6 +72,10 @@ func (s *MusicSession) Dequeue() *lavalink.Track {
 	s.Queue = s.Queue[1:]
 
 	return track
+}
+
+func (s *MusicSession) SupressNextEventMessage() {
+	s.shouldNotify = false
 }
 
 // IsPlaying returns whether the session is currently playing a track.
@@ -114,8 +126,32 @@ func (s *MusicSession) Stop() error {
 	return nil
 }
 
+func (s *MusicSession) Position() lavalink.Duration {
+	player := (*s.player)
+
+	return player.State().Position
+}
+
+func (s *MusicSession) Remaining() lavalink.Duration {
+	player := (*s.player)
+
+	return player.Track().Info.Length - player.State().Position
+}
+
+func (s *MusicSession) Volume(volume int) error {
+	player := (*s.player)
+
+	return player.Update(context.TODO(), lavalink.WithVolume(volume))
+}
+
 func (s *MusicSession) HandleTrackStart(track *lavalink.Track) error {
 	s.CurrentTrack = track
+
+	// Supress once, and reset.
+	if !s.shouldNotify {
+		s.shouldNotify = true
+		return nil
+	}
 
 	textChannel, err := s.session.Channel(s.TextChannelID)
 	if err != nil {
@@ -137,6 +173,12 @@ func (s *MusicSession) HandleTrackStart(track *lavalink.Track) error {
 }
 
 func (s *MusicSession) HandleTrackPause(track *lavalink.Track) error {
+	// Supress once, and reset.
+	if !s.shouldNotify {
+		s.shouldNotify = true
+		return nil
+	}
+
 	textChannel, err := s.session.Channel(s.TextChannelID)
 	if err != nil {
 		return err
@@ -144,7 +186,7 @@ func (s *MusicSession) HandleTrackPause(track *lavalink.Track) error {
 
 	embed := &discordgo.MessageEmbed{
 		Color:       static.ColorEmbedGray,
-		Description: fmt.Sprintf("**Paused** [%s](%s).", track.Info.Title, *track.Info.URI),
+		Description: fmt.Sprintf("⏸ **Paused** [%s](%s).", track.Info.Title, *track.Info.URI),
 	}
 
 	_, err = s.session.ChannelMessageSendEmbed(textChannel.ID, embed)
