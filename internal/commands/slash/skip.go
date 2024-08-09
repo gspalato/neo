@@ -41,10 +41,6 @@ func (c *SkipCommand) Guild() string {
 }
 
 func (c *SkipCommand) Run(ctx ken.Context) (err error) {
-	if err = ctx.Defer(); err != nil {
-		return nil
-	}
-
 	session := ctx.GetSession()
 
 	musicService := ctx.Get("MusicService").(*music.MusicService)
@@ -62,7 +58,7 @@ func (c *SkipCommand) Run(ctx ken.Context) (err error) {
 	var isBotInVoiceChannel bool
 	var botVoiceState *discordgo.VoiceState
 	for _, state := range guild.VoiceStates {
-		if state.UserID == ctx.GetSession().State.User.ID {
+		if state.UserID == session.State.User.ID {
 			isBotInVoiceChannel = true
 			botVoiceState = state
 		}
@@ -84,24 +80,8 @@ func (c *SkipCommand) Run(ctx ken.Context) (err error) {
 		ctx.RespondMessage("You need to be in a voice channel to use this command.")
 		return nil
 	} else if *voiceChannelID != botVoiceState.ChannelID {
-		var hasOtherPeople bool
-		for _, state := range guild.VoiceStates {
-			if state.ChannelID == botVoiceState.ChannelID && state.UserID != session.State.User.ID {
-				hasOtherPeople = true
-				break
-			}
-		}
-
-		if hasOtherPeople {
-			ctx.RespondMessage("You have to be in the same voice channel as me to use this command.")
-		} else {
-			// Move bot to user's voice channel
-			err = session.ChannelVoiceJoinManual(guild.ID, *voiceChannelID, false, false)
-			if err != nil {
-				slog.Error("Failed to join voice channel.")
-				return err
-			}
-		}
+		ctx.RespondMessage("You have to be in the same voice channel as me to use this command.")
+		return nil
 	}
 
 	musicSession := musicService.GetMusicSession(guild.ID)
@@ -111,7 +91,11 @@ func (c *SkipCommand) Run(ctx ken.Context) (err error) {
 		return nil
 	}
 
-	musicSession.Skip()
+	err = musicSession.Skip()
+	if err != nil {
+		slog.Error("Failed to skip track.", err)
+		return err
+	}
 
 	return nil
 }
