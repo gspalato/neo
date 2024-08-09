@@ -147,12 +147,6 @@ func (s *MusicSession) Volume(volume int) error {
 func (s *MusicSession) HandleTrackStart(track *lavalink.Track) error {
 	s.CurrentTrack = track
 
-	// Supress once, and reset.
-	if !s.shouldNotify {
-		s.shouldNotify = true
-		return nil
-	}
-
 	textChannel, err := s.session.Channel(s.TextChannelID)
 	if err != nil {
 		return err
@@ -173,26 +167,22 @@ func (s *MusicSession) HandleTrackStart(track *lavalink.Track) error {
 }
 
 func (s *MusicSession) HandleTrackPause(track *lavalink.Track) error {
-	// Supress once, and reset.
-	if !s.shouldNotify {
-		s.shouldNotify = true
-		return nil
-	}
+	/*
+		textChannel, err := s.session.Channel(s.TextChannelID)
+		if err != nil {
+			return err
+		}
 
-	textChannel, err := s.session.Channel(s.TextChannelID)
-	if err != nil {
-		return err
-	}
+		embed := &discordgo.MessageEmbed{
+			Color:       static.ColorEmbedGray,
+			Description: fmt.Sprintf("⏸ **Paused** [%s](%s).", track.Info.Title, *track.Info.URI),
+		}
 
-	embed := &discordgo.MessageEmbed{
-		Color:       static.ColorEmbedGray,
-		Description: fmt.Sprintf("⏸ **Paused** [%s](%s).", track.Info.Title, *track.Info.URI),
-	}
-
-	_, err = s.session.ChannelMessageSendEmbed(textChannel.ID, embed)
-	if err != nil {
-		return err
-	}
+		_, err = s.session.ChannelMessageSendEmbed(textChannel.ID, embed)
+		if err != nil {
+			return err
+		}
+	*/
 
 	return nil
 }
