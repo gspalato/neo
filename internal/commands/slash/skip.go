@@ -93,11 +93,11 @@ func (c *SkipCommand) Run(ctx ken.Context) (err error) {
 
 	err = musicSession.Skip()
 	if err != nil {
-		slog.Error("Failed to skip track.", err)
+		slog.Error("Failed to skip track.", slog.String("error", err.Error()))
 		return err
 	}
 
-	ctx.FollowUpMessage("Skipped the current track!")
+	ctx.FollowUpMessage("Skipped the current track!").Send()
 
 	return nil
 }

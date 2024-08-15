@@ -98,7 +98,7 @@ func (c *StopCommand) Run(ctx ken.Context) (err error) {
 
 	err = musicSession.Stop()
 	if err != nil {
-		slog.Error("Failed to stop track.", err)
+		slog.Error("Failed to stop track.", slog.String("error", err.Error()))
 		return err
 	}
 
@@ -109,7 +109,7 @@ func (c *StopCommand) Run(ctx ken.Context) (err error) {
 
 	err = ctx.RespondEmbed(embed)
 	if err != nil {
-		slog.Error("Failed to respond to command.", err)
+		slog.Error("Failed to respond to command.", slog.String("error", err.Error()))
 	}
 
 	return nil

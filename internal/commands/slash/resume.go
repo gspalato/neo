@@ -98,14 +98,14 @@ func (c *ResumeCommand) Run(ctx ken.Context) (err error) {
 
 	err = musicSession.Resume()
 	if err != nil {
-		slog.Error("Failed to resume track.", err)
+		slog.Error("Failed to resume track.", slog.String("error", err.Error()))
 		return err
 	}
 
 	embed := embedutils.CreateBasicEmbed("⏸ **Resumed**")
 	err = ctx.RespondEmbed(embed)
 	if err != nil {
-		slog.Error("Failed to respond to command.", err)
+		slog.Error("Failed to respond to command.", slog.String("error", err.Error()))
 	}
 
 	return nil

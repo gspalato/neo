@@ -145,7 +145,7 @@ func (c *NowPlayingCommand) Run(ctx ken.Context) (err error) {
 
 	err = ctx.RespondEmbed(embed)
 	if err != nil {
-		slog.Error("Failed to respond to command.", err)
+		slog.Error("Failed to respond to command.", slog.String("error", err.Error()))
 	}
 
 	return nil

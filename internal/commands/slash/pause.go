@@ -102,7 +102,7 @@ func (c *PauseCommand) Run(ctx ken.Context) (err error) {
 	embed := embedutils.CreateBasicEmbed("⏸ **Paused**")
 	err = ctx.RespondEmbed(embed)
 	if err != nil {
-		slog.Error("Failed to respond to command.", err)
+		slog.Error("Failed to respond to command.", slog.String("error", err.Error()))
 		return err
 	}
 
