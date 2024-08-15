@@ -3,6 +3,7 @@ package music
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
@@ -18,12 +19,11 @@ type MusicSession struct {
 	session *discordgo.Session
 	player  *disgolink.Player
 
-	shouldNotify bool
-
 	TextChannelID string
 	GuildID       string
 
-	Queue        []*lavalink.Track
+	Queue        []*lavalink.Track  // A queue of tracks to play next.
+	Data         []TrackRequestData // A list of data for each track in the queue.
 	CurrentTrack *lavalink.Track
 }
 
@@ -31,8 +31,6 @@ func NewMusicSession(session *discordgo.Session, player *disgolink.Player, guild
 	return &MusicSession{
 		session: session,
 		player:  player,
-
-		shouldNotify: true,
 
 		GuildID:       guildID,
 		TextChannelID: textChannelID,
@@ -43,8 +41,8 @@ func NewMusicSession(session *discordgo.Session, player *disgolink.Player, guild
 }
 
 // Play plays a track.
-func (s *MusicSession) Play(track *lavalink.Track) error {
-	err := (*s.player).Update(context.TODO(), lavalink.WithTrack(*track))
+func (s *MusicSession) Play(track *lavalink.Track, data TrackRequestData) error {
+	err := (*s.player).Update(context.TODO(), lavalink.WithTrack(*track), lavalink.WithTrackUserData(data))
 	if err != nil {
 		return err
 	}
@@ -53,34 +51,32 @@ func (s *MusicSession) Play(track *lavalink.Track) error {
 }
 
 // Enqueue adds a track to the queue.
-func (s *MusicSession) Enqueue(track *lavalink.Track) {
+func (s *MusicSession) Enqueue(track *lavalink.Track, data TrackRequestData) {
 	s.Queue = append(s.Queue, track)
+	s.Data = append(s.Data, data)
 }
 
-func (s *MusicSession) PlayOrEnqueue(track *lavalink.Track) (enqueued bool, err error) {
+func (s *MusicSession) PlayOrEnqueue(track *lavalink.Track, data TrackRequestData) (enqueued bool, err error) {
 	if s.IsPlaying() {
-		s.Enqueue(track)
+		s.Enqueue(track, data)
 		return true, nil
 	}
 
-	return false, s.Play(track)
+	return false, s.Play(track, data)
 }
 
-func (s *MusicSession) Dequeue() *lavalink.Track {
+func (s *MusicSession) Dequeue() (*lavalink.Track, TrackRequestData) {
 	if len(s.Queue) == 0 {
-		return nil
+		return nil, TrackRequestData{}
 	}
 
 	track := s.Queue[0]
 	s.Queue = s.Queue[1:]
 
-	return track
-}
+	data := s.Data[0]
+	s.Data = s.Data[1:]
 
-func (s *MusicSession) SupressNextEventMessage() {
-	s.Lock()
-	s.shouldNotify = false
-	s.Unlock()
+	return track, data
 }
 
 // IsPlaying returns whether the session is currently playing a track.
@@ -113,11 +109,11 @@ func (s *MusicSession) Resume() error {
 func (s *MusicSession) Skip() error {
 	player := (*s.player)
 
-	next := s.Dequeue()
+	next, data := s.Dequeue()
 	if next == nil {
 		return s.Stop()
 	} else {
-		player.Update(context.TODO(), lavalink.WithTrack(*next))
+		player.Update(context.TODO(), lavalink.WithTrack(*next), lavalink.WithTrackUserData(data))
 	}
 
 	return nil
@@ -164,6 +160,15 @@ func (s *MusicSession) HandleTrackStart(track *lavalink.Track) error {
 		color = c
 	}
 
+	var data TrackRequestData
+	slog.Debug(fmt.Sprintf("Unmarshalling user data: %s", track.UserData.String()))
+	track.UserData.Unmarshal(&data)
+
+	author, err := s.session.User(data.AuthorID)
+	if err != nil {
+		return err
+	}
+
 	embed := &discordgo.MessageEmbed{
 		Title: "🎶  **Now Playing**",
 		Color: color,
@@ -171,6 +176,10 @@ func (s *MusicSession) HandleTrackStart(track *lavalink.Track) error {
 			stringutils.Truncate(track.Info.Title, 30), *track.Info.URI, track.Info.Author),
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: *track.Info.ArtworkURL,
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			IconURL: author.AvatarURL("512"),
+			Text:    fmt.Sprintf("Requested by %s", author.Username),
 		},
 	}
 
@@ -183,23 +192,6 @@ func (s *MusicSession) HandleTrackStart(track *lavalink.Track) error {
 }
 
 func (s *MusicSession) HandleTrackPause(track *lavalink.Track) error {
-	/*
-		textChannel, err := s.session.Channel(s.TextChannelID)
-		if err != nil {
-			return err
-		}
-
-		embed := &discordgo.MessageEmbed{
-			Color:       static.ColorEmbedGray,
-			Description: fmt.Sprintf("⏸ **Paused** [%s](%s).", track.Info.Title, *track.Info.URI),
-		}
-
-		_, err = s.session.ChannelMessageSendEmbed(textChannel.ID, embed)
-		if err != nil {
-			return err
-		}
-	*/
-
 	return nil
 }
 
@@ -210,10 +202,9 @@ func (s *MusicSession) HandleTrackEnd(track *lavalink.Track) error {
 		return nil
 	}
 
-	nextTrack := s.Queue[0]
-	s.Queue = s.Queue[1:]
+	next, data := s.Dequeue()
 
-	s.Play(nextTrack)
+	s.Play(next, data)
 
 	return nil
 }
