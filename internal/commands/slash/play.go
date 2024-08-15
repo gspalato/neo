@@ -12,6 +12,7 @@ import (
 	"github.com/zekrotja/ken"
 
 	"unreal.sh/neo/internal/services/music"
+	embedutils "unreal.sh/neo/internal/utils/embedutils"
 	"unreal.sh/neo/internal/utils/static"
 	stringutils "unreal.sh/neo/internal/utils/stringutils"
 )
@@ -118,6 +119,17 @@ func (c *PlayCommand) Run(ctx ken.Context) (err error) {
 		// Loaded a playlist
 		func(playlist lavalink.Playlist) {
 			slog.Info(fmt.Sprintf("Found a playlist %s with %d tracks.", playlist.Info.Name, len(playlist.Tracks)))
+
+			var description string
+			if len(playlist.Tracks) == 1 {
+				description = fmt.Sprintf("Loaded playlist **%s** with %d track.\n\n", playlist.Info.Name, len(playlist.Tracks))
+			} else {
+				description = fmt.Sprintf("Loaded playlist **%s** with %d tracks.\n\n", playlist.Info.Name, len(playlist.Tracks))
+			}
+
+			embed := embedutils.CreateBasicEmbed(description)
+			ctx.FollowUpEmbed(embed).Send()
+
 			for _, track := range playlist.Tracks {
 				musicSession.PlayOrEnqueue(&track)
 			}
@@ -158,58 +170,8 @@ func (c *PlayCommand) Run(ctx ken.Context) (err error) {
 
 				return
 			} else {
-				embed := GetPlayingNotificationEmbed(&tracks[0])
-				if m := ctx.FollowUpEmbed(embed).Send(); m.Error != nil {
-					slog.Error(fmt.Sprintf("Failed to send playing notification: %s", m.Error.Error()))
-					return
-				}
+				ctx.FollowUpMessage("Here we go!").Send()
 			}
-
-			/*
-				slog.Info(fmt.Sprintf("Found %d tracks.", len(tracks)))
-
-				var description string
-				for i, track := range tracks {
-					slog.Info(fmt.Sprintf("Track %d: %s", i+1, track.Info.Title))
-					description += fmt.Sprintf("**%d.** [%s](%s)\n",
-						i+1, stringutils.EllipticalTruncate(track.Info.Title, 30), *track.Info.URI)
-				}
-
-				embed := &discordgo.MessageEmbed{
-					Title:       "Search Results",
-					Description: description,
-					Color:       static.ColorEmbedGray,
-				}
-
-				b := ctx.FollowUpEmbed(embed)
-				b.AddComponents(func(cb *ken.ComponentBuilder) {
-					cb.AddActionsRow(func(b ken.ComponentAssembler) {
-						for i, track := range tracks {
-							b.Add(discordgo.Button{
-								Label:    string(i + 1),
-								Style:    discordgo.PrimaryButton,
-								CustomID: fmt.Sprintf("play:%s", *track.Info.URI),
-							}, func(ctx ken.ComponentContext) bool {
-								musicSession.PlayOrEnqueue(&track)
-								return true
-							}, true)
-						}
-					}).Condition(func(cctx ken.ComponentContext) bool {
-						return cctx.User().ID == ctx.User().ID
-					})
-				})
-
-				msg := b.Send()
-				if msg == nil {
-					slog.Error("Failed to send search results.")
-					return
-				} else if msg.Error != nil {
-					slog.Error("Failed to send search results: %s", msg.Error.Error())
-					return
-				}
-
-				slog.Info("Sent search results.")
-			*/
 		},
 
 		// Nothing matching the query found

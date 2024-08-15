@@ -22,6 +22,14 @@ func Filter[T any](s []T, f func(T) bool) []T {
 	return m
 }
 
+// Returns an array of slices of size chunkSize.
+func Chunk[T any](items []T, chunkSize int) (chunks [][]T) {
+	for chunkSize < len(items) {
+		items, chunks = items[chunkSize:], append(chunks, items[0:chunkSize:chunkSize])
+	}
+	return append(chunks, items)
+}
+
 // Checks if the subset is a subset of the superset.
 // This effectively means that it checks if all elements of the subset are present in the superset.
 func IsSubset[T comparable](subset []T, superset []T) bool {

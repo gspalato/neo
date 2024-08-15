@@ -1,6 +1,7 @@
 package slash
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -11,38 +12,45 @@ import (
 	embedutils "unreal.sh/neo/internal/utils/embedutils"
 )
 
-type PauseCommand struct{}
+type VolumeCommand struct{}
 
 var (
-	_ ken.SlashCommand       = (*PauseCommand)(nil)
-	_ ken.GuildScopedCommand = (*PauseCommand)(nil)
+	_ ken.SlashCommand       = (*VolumeCommand)(nil)
+	_ ken.GuildScopedCommand = (*VolumeCommand)(nil)
 )
 
-func (c *PauseCommand) Name() string {
-	return "pause"
+func (c *VolumeCommand) Name() string {
+	return "volume"
 }
 
-func (c *PauseCommand) Description() string {
-	return "Pauses the current song."
+func (c *VolumeCommand) Description() string {
+	return "Sets the volume."
 }
 
-func (c *PauseCommand) Version() string {
+func (c *VolumeCommand) Version() string {
 	return "1.0.0"
 }
 
-func (c *PauseCommand) Type() discordgo.ApplicationCommandType {
+func (c *VolumeCommand) Type() discordgo.ApplicationCommandType {
 	return discordgo.ChatApplicationCommand
 }
 
-func (c *PauseCommand) Options() []*discordgo.ApplicationCommandOption {
-	return []*discordgo.ApplicationCommandOption{}
+func (c *VolumeCommand) Options() []*discordgo.ApplicationCommandOption {
+	return []*discordgo.ApplicationCommandOption{
+		{
+			Type:        discordgo.ApplicationCommandOptionInteger,
+			Name:        "volume",
+			Description: "The volume to set.",
+			Required:    true,
+		},
+	}
 }
 
-func (c *PauseCommand) Guild() string {
+func (c *VolumeCommand) Guild() string {
 	return os.Getenv("MISFITS_GUILD_ID")
 }
 
-func (c *PauseCommand) Run(ctx ken.Context) (err error) {
+func (c *VolumeCommand) Run(ctx ken.Context) (err error) {
 	if err = ctx.Defer(); err != nil {
 		return nil
 	}
@@ -97,12 +105,14 @@ func (c *PauseCommand) Run(ctx ken.Context) (err error) {
 		return nil
 	}
 
-	musicSession.Pause()
+	volume := ctx.Options().GetByName("volume").IntValue()
+	musicSession.Volume(int(volume))
 
-	embed := embedutils.CreateBasicEmbed("⏸ **Paused**")
+	embed := embedutils.CreateBasicEmbed("🔊 **Set volume to `" + fmt.Sprint(volume) + "%`.**")
 	err = ctx.RespondEmbed(embed)
 	if err != nil {
-		slog.Error("Failed to respond to command.", err)
+		slog.Error("Failed to respond to command.")
+		slog.Error(err.Error())
 		return err
 	}
 

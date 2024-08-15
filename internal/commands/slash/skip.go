@@ -97,5 +97,7 @@ func (c *SkipCommand) Run(ctx ken.Context) (err error) {
 		return err
 	}
 
+	ctx.FollowUpMessage("Skipped the current track!")
+
 	return nil
 }

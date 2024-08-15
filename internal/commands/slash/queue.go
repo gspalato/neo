@@ -1,48 +1,52 @@
 package slash
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
 	"unreal.sh/neo/internal/services/music"
+	"unreal.sh/neo/pkg/widgets"
 
 	embedutils "unreal.sh/neo/internal/utils/embedutils"
+	sliceutils "unreal.sh/neo/internal/utils/sliceutils"
+	stringutils "unreal.sh/neo/internal/utils/stringutils"
 )
 
-type PauseCommand struct{}
+type QueueCommand struct{}
 
 var (
-	_ ken.SlashCommand       = (*PauseCommand)(nil)
-	_ ken.GuildScopedCommand = (*PauseCommand)(nil)
+	_ ken.SlashCommand       = (*QueueCommand)(nil)
+	_ ken.GuildScopedCommand = (*QueueCommand)(nil)
 )
 
-func (c *PauseCommand) Name() string {
-	return "pause"
+func (c *QueueCommand) Name() string {
+	return "queue"
 }
 
-func (c *PauseCommand) Description() string {
-	return "Pauses the current song."
+func (c *QueueCommand) Description() string {
+	return "Shows the track queue."
 }
 
-func (c *PauseCommand) Version() string {
+func (c *QueueCommand) Version() string {
 	return "1.0.0"
 }
 
-func (c *PauseCommand) Type() discordgo.ApplicationCommandType {
+func (c *QueueCommand) Type() discordgo.ApplicationCommandType {
 	return discordgo.ChatApplicationCommand
 }
 
-func (c *PauseCommand) Options() []*discordgo.ApplicationCommandOption {
+func (c *QueueCommand) Options() []*discordgo.ApplicationCommandOption {
 	return []*discordgo.ApplicationCommandOption{}
 }
 
-func (c *PauseCommand) Guild() string {
+func (c *QueueCommand) Guild() string {
 	return os.Getenv("MISFITS_GUILD_ID")
 }
 
-func (c *PauseCommand) Run(ctx ken.Context) (err error) {
+func (c *QueueCommand) Run(ctx ken.Context) (err error) {
 	if err = ctx.Defer(); err != nil {
 		return nil
 	}
@@ -97,12 +101,42 @@ func (c *PauseCommand) Run(ctx ken.Context) (err error) {
 		return nil
 	}
 
-	musicSession.Pause()
+	queue := musicSession.Queue
+	list := make([]string, len(queue))
 
-	embed := embedutils.CreateBasicEmbed("⏸ **Paused**")
-	err = ctx.RespondEmbed(embed)
+	for i, track := range queue {
+		list[i] = fmt.Sprintf("**%d.** [%s](%s)", i+1, stringutils.Truncate(track.Info.Title, 30), *track.Info.URI)
+	}
+
+	split := sliceutils.Chunk(list, 5)
+	pages := make([]*discordgo.MessageEmbed, 0)
+
+	if len(queue) == 0 {
+		embed := embedutils.CreateBasicEmbed("No tracks in queue.")
+		embed.Title = "🎼  **Queue**"
+		pages = append(pages, embed)
+	} else {
+		for i, chunk := range split {
+			var description string
+
+			for _, item := range chunk {
+				description += item + "\n"
+			}
+
+			embed := embedutils.CreateBasicEmbed(description)
+			embed.Title = fmt.Sprintf("🎼  **Queue** (Page %d/%d)", i+1, len(split))
+
+			pages = append(pages, embed)
+		}
+	}
+
+	paginator := widgets.NewPaginator(&ctx)
+	paginator.Add(pages...)
+
+	err = paginator.Spawn()
 	if err != nil {
-		slog.Error("Failed to respond to command.", err)
+		slog.Error("Failed to spawn paginator.")
+		slog.Error(err.Error())
 		return err
 	}
 

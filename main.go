@@ -52,6 +52,7 @@ func main() {
 	utils.MUST(err)
 
 	err = k.RegisterCommands(
+		new(slashCommands.AvatarCommand),
 		new(slashCommands.BanCommand),
 		new(slashCommands.KickCommand),
 		new(slashCommands.NowPlayingCommand),
@@ -63,12 +64,15 @@ func main() {
 		new(slashCommands.SkipCommand),
 		new(slashCommands.SoftbanCommand),
 		new(slashCommands.StopCommand),
+		new(slashCommands.QueueCommand),
+		new(slashCommands.VolumeCommand),
 		new(slashCommands.WhoIsCommand),
 	)
 	utils.MUST(err)
 
 	err = k.RegisterMiddlewares(
 		new(middlewares.PermissionsMiddleware),
+		new(middlewares.VoiceChannelMiddleware),
 	)
 	utils.MUST(err)
 

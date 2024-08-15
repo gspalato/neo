@@ -3,15 +3,18 @@ package music
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/disgoorg/disgolink/v3/disgolink"
 	"github.com/disgoorg/disgolink/v3/lavalink"
+	"unreal.sh/neo/internal/utils/colorutils"
 	"unreal.sh/neo/internal/utils/static"
 	stringutils "unreal.sh/neo/internal/utils/stringutils"
 )
 
 type MusicSession struct {
+	sync.Mutex
 	session *discordgo.Session
 	player  *disgolink.Player
 
@@ -75,7 +78,9 @@ func (s *MusicSession) Dequeue() *lavalink.Track {
 }
 
 func (s *MusicSession) SupressNextEventMessage() {
+	s.Lock()
 	s.shouldNotify = false
+	s.Unlock()
 }
 
 // IsPlaying returns whether the session is currently playing a track.
@@ -152,10 +157,21 @@ func (s *MusicSession) HandleTrackStart(track *lavalink.Track) error {
 		return err
 	}
 
+	// Get the prominent color of the track's artwork.
+	color := static.ColorEmbedGray
+	c, err := colorutils.GetDominantColorFromImageURL(*track.Info.ArtworkURL)
+	if err == nil {
+		color = c
+	}
+
 	embed := &discordgo.MessageEmbed{
-		Title:       "🎶 **Now Playing**",
-		Color:       static.ColorEmbedGray,
-		Description: fmt.Sprintf("[%s](%s)", stringutils.Truncate(track.Info.Title, 30), *track.Info.URI),
+		Title: "🎶  **Now Playing**",
+		Color: color,
+		Description: fmt.Sprintf("**[%s](%s)**\nby %s\n",
+			stringutils.Truncate(track.Info.Title, 30), *track.Info.URI, track.Info.Author),
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: *track.Info.ArtworkURL,
+		},
 	}
 
 	_, err = s.session.ChannelMessageSendEmbed(textChannel.ID, embed)
