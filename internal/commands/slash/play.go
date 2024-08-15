@@ -113,7 +113,8 @@ func (c *PlayCommand) Run(ctx ken.Context) (err error) {
 		// Loaded a single track
 		func(track lavalink.Track) {
 			slog.Info(fmt.Sprintf("Found track %s.", track.Info.Title))
-			musicSession.PlayOrEnqueue(&track)
+			request := music.NewTrackRequestData(ctx.User().ID, nil)
+			musicSession.PlayOrEnqueue(&track, request)
 		},
 
 		// Loaded a playlist
@@ -131,7 +132,8 @@ func (c *PlayCommand) Run(ctx ken.Context) (err error) {
 			ctx.FollowUpEmbed(embed).Send()
 
 			for _, track := range playlist.Tracks {
-				musicSession.PlayOrEnqueue(&track)
+				request := music.NewTrackRequestData(ctx.User().ID, nil)
+				musicSession.PlayOrEnqueue(&track, request)
 			}
 		},
 
@@ -144,8 +146,8 @@ func (c *PlayCommand) Run(ctx ken.Context) (err error) {
 
 			slog.Info(fmt.Sprintf("Found %d tracks.", len(tracks)))
 
-			musicSession.SupressNextEventMessage()
-			enqueued, err := musicSession.PlayOrEnqueue(&tracks[0])
+			request := music.NewTrackRequestData(ctx.User().ID, nil)
+			enqueued, err := musicSession.PlayOrEnqueue(&tracks[0], request)
 			if err != nil {
 				slog.Error(fmt.Sprintf("Failed to play or enqueue track: %s", err.Error()))
 				ctx.FollowUpMessage("Failed to play or enqueue track.")

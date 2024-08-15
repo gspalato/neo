@@ -105,7 +105,17 @@ func (c *QueueCommand) Run(ctx ken.Context) (err error) {
 	list := make([]string, len(queue))
 
 	for i, track := range queue {
-		list[i] = fmt.Sprintf("**%d.** [%s](%s)", i+1, stringutils.Truncate(track.Info.Title, 30), *track.Info.URI)
+		var data music.TrackRequestData
+		track.UserData.Unmarshal(&data)
+
+		author := "Unknown"
+		user, err := ctx.GetSession().User(data.AuthorID)
+		if err == nil {
+			author = user.Username
+		}
+
+		list[i] = fmt.Sprintf("**%d.** **[%s](%s)** — Requested by %s", i+1,
+			stringutils.Truncate(track.Info.Title, 30), *track.Info.URI, author)
 	}
 
 	split := sliceutils.Chunk(list, 5)
