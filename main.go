@@ -15,9 +15,12 @@ import (
 	"github.com/zekrotja/ken"
 	"github.com/zekrotja/ken/store"
 
-	slashCommands "unreal.sh/neo/internal/commands/slash"
+	"unreal.sh/neo/internal/commands/slash"
+	"unreal.sh/neo/internal/database"
 	"unreal.sh/neo/internal/middlewares"
+	mods "unreal.sh/neo/internal/modules"
 	"unreal.sh/neo/internal/services"
+	"unreal.sh/neo/internal/services/modules"
 	"unreal.sh/neo/internal/services/music"
 	"unreal.sh/neo/internal/utils"
 	"unreal.sh/neo/internal/utils/cmdline"
@@ -55,6 +58,10 @@ func main() {
 		return
 	}
 
+	// Create database
+	db, err := database.NewDatabase()
+	utils.MUST(err)
+
 	// Setup commands and services
 	dependencyProvider := services.NewServiceProvider()
 
@@ -65,21 +72,22 @@ func main() {
 	utils.MUST(err)
 
 	err = k.RegisterCommands(
-		new(slashCommands.AvatarCommand),
-		new(slashCommands.BanCommand),
-		new(slashCommands.KickCommand),
-		new(slashCommands.NowPlayingCommand),
-		new(slashCommands.PauseCommand),
-		new(slashCommands.PingCommand),
-		new(slashCommands.PlayCommand),
-		new(slashCommands.PurgeCommand),
-		new(slashCommands.ResumeCommand),
-		new(slashCommands.SkipCommand),
-		new(slashCommands.SoftbanCommand),
-		new(slashCommands.StopCommand),
-		new(slashCommands.QueueCommand),
-		new(slashCommands.VolumeCommand),
-		new(slashCommands.WhoIsCommand),
+		new(slash.AvatarCommand),
+		new(slash.BanCommand),
+		new(slash.KickCommand),
+		new(slash.ModuleCommand),
+		new(slash.NowPlayingCommand),
+		new(slash.PauseCommand),
+		new(slash.PingCommand),
+		new(slash.PlayCommand),
+		new(slash.PurgeCommand),
+		new(slash.ResumeCommand),
+		new(slash.SkipCommand),
+		new(slash.SoftbanCommand),
+		new(slash.StopCommand),
+		new(slash.QueueCommand),
+		new(slash.VolumeCommand),
+		new(slash.WhoIsCommand),
 	)
 	utils.MUST(err)
 
@@ -95,6 +103,12 @@ func main() {
 	utils.MUST(err)
 	defer session.Close()
 
+	dependencyProvider.Register("Database", db)
+
+	// Create guild settings for guilds that do not have one yet.
+	guilds := session.State.Guilds
+	_ = db.AssureGuildSettings(guilds...)
+
 	// Open session before creating MusicService, which depends on it.
 	musicService, err := music.NewMusicService(session)
 	utils.MUST(err)
@@ -108,6 +122,19 @@ func main() {
 	})
 
 	musicService.HookEvents()
+
+	// Start module system.
+	moduleManager := modules.NewModuleManager(session, db)
+	moduleManager.RegisterModules(
+		new(mods.BaseModule),
+		new(mods.ModerationModule),
+		new(mods.MusicModule),
+	)
+
+	moduleManager.EnableModule("base", "")
+	moduleManager.Initialize()
+
+	dependencyProvider.Register("ModuleManager", moduleManager)
 
 	slog.Info(fmt.Sprintf("Started bot as %s.", session.State.User.String()))
 
