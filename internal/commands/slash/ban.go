@@ -13,6 +13,7 @@ import (
 type BanCommand struct{}
 
 var (
+	_ ken.Command            = (*BanCommand)(nil)
 	_ ken.SlashCommand       = (*BanCommand)(nil)
 	_ ken.GuildScopedCommand = (*BanCommand)(nil)
 

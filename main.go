@@ -11,6 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/disgoorg/disgolink/v3/disgolink"
 	"github.com/joho/godotenv"
+	"github.com/lmittmann/tint"
 	"github.com/zekrotja/ken"
 	"github.com/zekrotja/ken/store"
 
@@ -18,31 +19,43 @@ import (
 	"unreal.sh/neo/internal/middlewares"
 	"unreal.sh/neo/internal/services"
 	"unreal.sh/neo/internal/services/music"
-	"unreal.sh/neo/internal/services/snipe"
 	"unreal.sh/neo/internal/utils"
 	"unreal.sh/neo/internal/utils/cmdline"
 )
 
 func main() {
+	// Setup logger
+	slog.SetDefault(slog.New(
+		tint.NewHandler(os.Stderr, &tint.Options{
+			Level:      slog.LevelInfo,
+			TimeFormat: "01/02/2006 15:04:05",
+		}),
+	))
+
+	// Load environment variables
 	err := godotenv.Load()
 	utils.MUST(err)
 
+	// Get token from environment
 	token, exists := os.LookupEnv("DISCORD_TOKEN")
 	if !exists {
 		panic("No token provided.")
 	}
 
+	// Create Discord bot session
 	session, err := discordgo.New("Bot " + token)
 	utils.MUST(err)
 
 	session.Identify.Intents = discordgo.IntentsAll
 
+	// Handle command line arguments
 	end, err := cmdline.HandleCommandLineArguments(session)
 	utils.MUST(err)
 	if end {
 		return
 	}
 
+	// Setup commands and services
 	dependencyProvider := services.NewServiceProvider()
 
 	k, err := ken.New(session, ken.Options{
@@ -95,11 +108,6 @@ func main() {
 	})
 
 	musicService.HookEvents()
-
-	// Create snipe service
-	snipeService := snipe.NewSnipeService(session)
-	dependencyProvider.Register("SnipeService", snipeService)
-	snipeService.HookEvents()
 
 	slog.Info(fmt.Sprintf("Started bot as %s.", session.State.User.String()))
 

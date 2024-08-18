@@ -14,6 +14,7 @@ import (
 type PauseCommand struct{}
 
 var (
+	_ ken.Command            = (*PauseCommand)(nil)
 	_ ken.SlashCommand       = (*PauseCommand)(nil)
 	_ ken.GuildScopedCommand = (*PauseCommand)(nil)
 )

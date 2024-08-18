@@ -30,6 +30,22 @@ func Chunk[T any](items []T, chunkSize int) (chunks [][]T) {
 	return append(chunks, items)
 }
 
+func Any[T comparable](s []T, f func(T) bool) bool {
+	for _, v := range s {
+		if f(v) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func Contains[T comparable](s []T, e T) bool {
+	return Any(s, func(a T) bool {
+		return a == e
+	})
+}
+
 // Checks if the subset is a subset of the superset.
 // This effectively means that it checks if all elements of the subset are present in the superset.
 func IsSubset[T comparable](subset []T, superset []T) bool {

@@ -20,8 +20,9 @@ import (
 type PlayCommand struct{}
 
 var (
-	_ ken.SlashCommand       = (*PingCommand)(nil)
-	_ ken.GuildScopedCommand = (*PingCommand)(nil)
+	_ ken.Command            = (*PlayCommand)(nil)
+	_ ken.SlashCommand       = (*PlayCommand)(nil)
+	_ ken.GuildScopedCommand = (*PlayCommand)(nil)
 )
 
 func (c *PlayCommand) Name() string {

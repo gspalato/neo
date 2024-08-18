@@ -18,6 +18,7 @@ import (
 type QueueCommand struct{}
 
 var (
+	_ ken.Command            = (*QueueCommand)(nil)
 	_ ken.SlashCommand       = (*QueueCommand)(nil)
 	_ ken.GuildScopedCommand = (*QueueCommand)(nil)
 )

@@ -13,8 +13,9 @@ import (
 type ResumeCommand struct{}
 
 var (
-	_ ken.SlashCommand       = (*PingCommand)(nil)
-	_ ken.GuildScopedCommand = (*PingCommand)(nil)
+	_ ken.Command            = (*ResumeCommand)(nil)
+	_ ken.SlashCommand       = (*ResumeCommand)(nil)
+	_ ken.GuildScopedCommand = (*ResumeCommand)(nil)
 )
 
 func (c *ResumeCommand) Name() string {

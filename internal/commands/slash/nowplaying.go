@@ -17,8 +17,9 @@ import (
 type NowPlayingCommand struct{}
 
 var (
-	_ ken.SlashCommand       = (*PingCommand)(nil)
-	_ ken.GuildScopedCommand = (*PingCommand)(nil)
+	_ ken.Command            = (*NowPlayingCommand)(nil)
+	_ ken.SlashCommand       = (*NowPlayingCommand)(nil)
+	_ ken.GuildScopedCommand = (*NowPlayingCommand)(nil)
 )
 
 func (c *NowPlayingCommand) Name() string {

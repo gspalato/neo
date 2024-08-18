@@ -12,8 +12,9 @@ import (
 type SkipCommand struct{}
 
 var (
-	_ ken.SlashCommand       = (*PingCommand)(nil)
-	_ ken.GuildScopedCommand = (*PingCommand)(nil)
+	_ ken.Command            = (*SkipCommand)(nil)
+	_ ken.SlashCommand       = (*SkipCommand)(nil)
+	_ ken.GuildScopedCommand = (*SkipCommand)(nil)
 )
 
 func (c *SkipCommand) Name() string {
@@ -97,7 +98,7 @@ func (c *SkipCommand) Run(ctx ken.Context) (err error) {
 		return err
 	}
 
-	ctx.FollowUpMessage("Skipped the current track!").Send()
+	ctx.RespondMessage("Skipped the current track!")
 
 	return nil
 }

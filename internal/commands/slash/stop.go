@@ -13,8 +13,9 @@ import (
 type StopCommand struct{}
 
 var (
-	_ ken.SlashCommand       = (*PingCommand)(nil)
-	_ ken.GuildScopedCommand = (*PingCommand)(nil)
+	_ ken.Command            = (*StopCommand)(nil)
+	_ ken.SlashCommand       = (*StopCommand)(nil)
+	_ ken.GuildScopedCommand = (*StopCommand)(nil)
 )
 
 func (c *StopCommand) Name() string {

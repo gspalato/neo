@@ -11,6 +11,7 @@ import (
 type AvatarCommand struct{}
 
 var (
+	_ ken.Command            = (*AvatarCommand)(nil)
 	_ ken.SlashCommand       = (*AvatarCommand)(nil)
 	_ ken.GuildScopedCommand = (*AvatarCommand)(nil)
 )

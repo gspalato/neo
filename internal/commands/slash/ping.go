@@ -13,6 +13,7 @@ import (
 type PingCommand struct{}
 
 var (
+	_ ken.Command            = (*PingCommand)(nil)
 	_ ken.SlashCommand       = (*PingCommand)(nil)
 	_ ken.GuildScopedCommand = (*PingCommand)(nil)
 )

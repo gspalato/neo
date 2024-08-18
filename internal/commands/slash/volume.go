@@ -15,6 +15,7 @@ import (
 type VolumeCommand struct{}
 
 var (
+	_ ken.Command            = (*VolumeCommand)(nil)
 	_ ken.SlashCommand       = (*VolumeCommand)(nil)
 	_ ken.GuildScopedCommand = (*VolumeCommand)(nil)
 )

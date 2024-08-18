@@ -23,6 +23,7 @@ type WhoIsCommand struct {
 }
 
 var (
+	_ ken.Command            = (*WhoIsCommand)(nil)
 	_ ken.SlashCommand       = (*WhoIsCommand)(nil)
 	_ ken.GuildScopedCommand = (*WhoIsCommand)(nil)
 )

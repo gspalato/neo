@@ -15,6 +15,7 @@ import (
 type PurgeCommand struct{}
 
 var (
+	_ ken.Command            = (*PurgeCommand)(nil)
 	_ ken.SlashCommand       = (*PurgeCommand)(nil)
 	_ ken.GuildScopedCommand = (*PurgeCommand)(nil)
 
