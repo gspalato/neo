@@ -1,7 +1,6 @@
 package modules
 
 import (
-	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
 
 	"unreal.sh/neo/internal/commands/slash"
@@ -19,7 +18,7 @@ func (m *MusicModule) ID() string {
 }
 
 func (m *MusicModule) Name() string {
-	return "🎧 Music"
+	return "\\🎧 Music"
 }
 
 func (m *MusicModule) Description() string {
@@ -51,6 +50,6 @@ func (m *MusicModule) Middlewares() []ken.Middleware {
 	return []ken.Middleware{}
 }
 
-func (m *MusicModule) EventHandlers() []discordgo.EventHandler {
-	return []discordgo.EventHandler{}
+func (m *MusicModule) EventHandlers() []interface{} {
+	return []interface{}{}
 }

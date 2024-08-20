@@ -1,7 +1,6 @@
 package modules
 
 import (
-	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
 
 	"unreal.sh/neo/internal/commands/slash"
@@ -19,7 +18,7 @@ func (m *BaseModule) ID() string {
 }
 
 func (m *BaseModule) Name() string {
-	return "🚀 Base"
+	return "\\🚀 Base"
 }
 
 func (m *BaseModule) Description() string {
@@ -47,6 +46,6 @@ func (m *BaseModule) Middlewares() []ken.Middleware {
 	return []ken.Middleware{}
 }
 
-func (m *BaseModule) EventHandlers() []discordgo.EventHandler {
-	return []discordgo.EventHandler{}
+func (m *BaseModule) EventHandlers() []interface{} {
+	return []interface{}{}
 }

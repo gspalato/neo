@@ -1,6 +1,8 @@
 package modules
 
 import (
+	"log/slog"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/ken"
 
@@ -19,7 +21,7 @@ func (m *ModerationModule) ID() string {
 }
 
 func (m *ModerationModule) Name() string {
-	return "🛡️ Moderation"
+	return "\\🛡️ Moderation"
 }
 
 func (m *ModerationModule) Description() string {
@@ -47,6 +49,10 @@ func (m *ModerationModule) Middlewares() []ken.Middleware {
 	return []ken.Middleware{}
 }
 
-func (m *ModerationModule) EventHandlers() []discordgo.EventHandler {
-	return []discordgo.EventHandler{}
+func (m *ModerationModule) EventHandlers() []interface{} {
+	return []interface{}{
+		func(session *discordgo.Session, handler *discordgo.MessageCreate) {
+			slog.Info("Message received! TEST SUCCEEDED!")
+		},
+	}
 }

@@ -133,6 +133,7 @@ func main() {
 
 	moduleManager.EnableModule("base", "")
 	moduleManager.Initialize()
+	moduleManager.RegisterEventHandlers()
 
 	dependencyProvider.Register("ModuleManager", moduleManager)
 

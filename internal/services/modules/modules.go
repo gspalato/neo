@@ -14,6 +14,8 @@ import (
 	"unreal.sh/neo/internal/database"
 )
 
+//go:generate go run ../../../tools/cmd/module_events/main.go
+
 // Module represents a module of the bot.
 // A module is a collection of commands, middlewares and event handlers.
 //
@@ -41,7 +43,8 @@ type Module interface {
 	Middlewares() []ken.Middleware
 
 	// EventHandlers of the module.
-	EventHandlers() []discordgo.EventHandler
+	// These should be exactly like the example given by discordgo.
+	EventHandlers() []interface{}
 }
 
 // ModuleManager manages the modules of the bot.

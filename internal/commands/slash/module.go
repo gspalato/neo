@@ -74,8 +74,8 @@ func (c *ModuleCommand) Options() []*discordgo.ApplicationCommandOption {
 		},
 		{
 			Type:        discordgo.ApplicationCommandOptionSubCommand,
-			Name:        "get",
-			Description: "Gets a list of modules.",
+			Name:        "list",
+			Description: "Shows the enabled and available modules!",
 		},
 	}
 }
@@ -86,12 +86,21 @@ func (c *ModuleCommand) Guild() string {
 
 func (c *ModuleCommand) Run(ctx ken.Context) (err error) {
 	err = ctx.HandleSubCommands(
-		ken.SubCommandHandler{"enable", c.enable},
-		ken.SubCommandHandler{"disable", c.disable},
-		ken.SubCommandHandler{"get", c.get},
+		ken.SubCommandHandler{
+			Name: "enable",
+			Run:  c.enable,
+		},
+		ken.SubCommandHandler{
+			Name: "disable",
+			Run:  c.disable,
+		},
+		ken.SubCommandHandler{
+			Name: "get",
+			Run:  c.get,
+		},
 	)
 
-	return
+	return err
 }
 
 func (c *ModuleCommand) enable(ctx ken.SubCommandContext) error {
@@ -108,6 +117,12 @@ func (c *ModuleCommand) enable(ctx ken.SubCommandContext) error {
 	_, exists := manager.GetModule(moduleName)
 	if !exists {
 		ctx.FollowUpMessage("Module doesn't exist.")
+	}
+
+	_, isGlobal := manager.GlobalModules[moduleName]
+	if isGlobal {
+		ctx.FollowUpMessage("Global modules are always enabled.")
+		return nil
 	}
 
 	err := manager.EnableModule(moduleName, ctx.GetEvent().GuildID)
@@ -139,6 +154,12 @@ func (c *ModuleCommand) disable(ctx ken.SubCommandContext) error {
 	_, exists := manager.GetModule(moduleName)
 	if !exists {
 		ctx.FollowUpMessage("Module doesn't exist.")
+	}
+
+	_, isGlobal := manager.GlobalModules[moduleName]
+	if isGlobal {
+		ctx.FollowUpMessage("You can't disable global modules.")
+		return nil
 	}
 
 	err := manager.DisableModule(moduleName, ctx.GetEvent().GuildID)
@@ -195,10 +216,16 @@ func (c *ModuleCommand) get(ctx ken.SubCommandContext) (err error) {
 			continue
 		}
 
+		// Skip global modules, which can't be disabled.
+		_, isGlobal := manager.GlobalModules[id]
+		if isGlobal {
+			continue
+		}
+
 		disabled += fmt.Sprintf("• **%s** (`%s`)\n", module.Name(), id)
 	}
 
-	embed := embedutils.CreateBasicEmbed("")
+	embed := embedutils.CreateBasicEmbed("Check out the available modules for Ark!")
 	embed.Title = "📦  **Modules**"
 	embed.Fields = []*discordgo.MessageEmbedField{
 		{
